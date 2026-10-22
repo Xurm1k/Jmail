@@ -21,7 +21,7 @@
       <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 mb-2">
         Jmail Wizard 🚀
       </h1>
-      <p class="text-slate-400">Automate your job application tracking & cover letters with Gemini AI & Google Workspace</p>
+      <p class="text-slate-400">Automate your job search, matching, custom Cover Letters & tailored CVs with Gemini AI</p>
     </header>
 
     <!-- Stepper Navigation -->
@@ -48,13 +48,12 @@
       <!-- STEP 1: Overview & Workspace Credentials -->
       <div v-if="currentStep === 1" class="space-y-6">
         <div>
-          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 1: Setup & Gmail Integration</h2>
-          <p class="text-slate-400 text-sm">Jmail connects Gmail job alerts (StepStone, Indeed, LinkedIn) with Google Sheets & Gemini AI.</p>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 1: Credentials & Drive Setup</h2>
+          <p class="text-slate-400 text-sm">Connect your Google Workspace & Gemini API to automate job matching.</p>
         </div>
 
-        <!-- How It Works Banner -->
         <div class="bg-blue-950/40 border border-blue-800/60 rounded-xl p-4 text-xs text-blue-200 leading-relaxed">
-          💡 <strong>How Jmail Works:</strong> Set up job alert emails from portals (StepStone, Indeed, LinkedIn, etc.) to forward to your Gmail. Jmail automatically parses incoming job alerts, filters out unwanted roles & long commutes (ÖPNV), logs clean data into Google Sheets, and drafts human-like cover letters saved as PDF!
+          💡 <strong>How Jmail Works:</strong> Automatically parses incoming email job alerts (StepStone, Indeed, LinkedIn), filters by commute (ÖPNV) & match score, logs data to Google Sheets, and generates tailored Cover Letters & customized CVs in PDF format directly into your Google Drive folder.
         </div>
 
         <!-- Interactive Setup Accordion -->
@@ -81,7 +80,7 @@
             <div v-if="activeGuide === 'drive'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-2">
               <ol class="list-decimal list-inside space-y-1">
                 <li>Go to <a href="https://drive.google.com/" target="_blank" class="text-blue-400 underline">Google Drive</a> and create a folder named <code class="text-emerald-400 bg-slate-800 px-1 py-0.5 rounded">CoverLetter_Temp</code>.</li>
-                <li>Open the folder, copy its <strong>entire URL link</strong> from the browser address bar, and paste it below. (We automatically extract the ID!).</li>
+                <li>Copy the folder link or ID and paste it below.</li>
               </ol>
             </div>
           </div>
@@ -100,7 +99,6 @@
             <span v-if="form.driveFolderId" class="text-xs text-emerald-400 mt-1 block">✓ Auto-extracted Folder ID: {{ form.driveFolderId }}</span>
           </div>
 
-          <!-- Gmail Label Customization -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-700/60">
             <div>
               <label class="block text-xs font-medium mb-1 text-slate-300">Gmail Incoming Label</label>
@@ -114,11 +112,11 @@
         </div>
       </div>
 
-      <!-- STEP 2: Logistics & ÖPNV -->
+      <!-- STEP 2: Logistics, ÖPNV & Match Score Threshold -->
       <div v-if="currentStep === 2" class="space-y-6">
         <div>
-          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 2: Logistics & Commute Limit</h2>
-          <p class="text-slate-400 text-sm">Define your starting location and strict public transit (ÖPNV) travel time limit.</p>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 2: Logistics & Match Threshold</h2>
+          <p class="text-slate-400 text-sm">Define public transit limit and AI match score requirement.</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -144,18 +142,32 @@
             <span>90 mins</span>
           </div>
         </div>
+
+        <!-- NEW: Match Score Threshold Slider -->
+        <div class="pt-4 border-t border-slate-700/60">
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-sm font-medium text-slate-200">Minimum AI Match Score Threshold</label>
+            <span class="text-emerald-400 font-bold text-lg">{{ form.minMatchScore }}%</span>
+          </div>
+          <input v-model.number="form.minMatchScore" type="range" min="50" max="95" step="5" class="w-full accent-emerald-500 cursor-pointer">
+          <div class="flex justify-between text-xs text-slate-500 mt-1">
+            <span>50% (Flexible)</span>
+            <span>70% (Balanced)</span>
+            <span>95% (Strict match)</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Jobs scoring below {{ form.minMatchScore }}% relevance will be automatically moved to Trash.</p>
+        </div>
       </div>
 
-      <!-- STEP 3: Sheet Columns & Blacklist -->
+      <!-- STEP 3: Table Structure & Blacklist -->
       <div v-if="currentStep === 3" class="space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 3: Table Layout & Blacklist</h2>
-          <p class="text-slate-400 text-sm">Customize Google Sheet columns and specify roles to auto-delete to Trash.</p>
+          <p class="text-slate-400 text-sm">Customize Google Sheet columns and specify roles to auto-delete.</p>
         </div>
         
-        <!-- Column Manager -->
         <div>
-          <label class="block text-sm font-medium mb-2 text-slate-200">Google Sheet Columns (Editable Order & Names)</label>
+          <label class="block text-sm font-medium mb-2 text-slate-200">Google Sheet Columns</label>
           <div class="space-y-2 mb-3">
             <div v-for="(col, index) in form.columns" :key="index" class="flex items-center gap-2">
               <span class="text-slate-500 w-6 text-xs text-right">{{ index + 1 }}.</span>
@@ -166,7 +178,6 @@
           <button @click="addColumn" class="text-xs text-blue-400 hover:underline font-medium">+ Add Custom Column</button>
         </div>
 
-        <!-- Blacklist Keywords -->
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">Blacklisted Job Roles (Auto-move to Trash)</label>
           <div class="flex gap-2 mb-2">
@@ -182,11 +193,11 @@
         </div>
       </div>
 
-      <!-- STEP 4: Applicant Details & Language Selection -->
+      <!-- STEP 4: Applicant Profile & Multiple Resume Contexts -->
       <div v-if="currentStep === 4" class="space-y-6">
         <div>
-          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 4: Applicant Profile & Resume</h2>
-          <p class="text-slate-400 text-sm">Provide your resume details and preferred cover letter language.</p>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 4: Applicant Profile & Resume Background</h2>
+          <p class="text-slate-400 text-sm">Provide your contact info and experience directions (QA, Support, Ops, etc.).</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -195,9 +206,8 @@
             <input v-model="form.applicant.fullName" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
 
-          <!-- Expanded Language Selector + Custom Input -->
           <div>
-            <label class="block text-sm font-medium mb-1 text-slate-200">Cover Letter Language</label>
+            <label class="block text-sm font-medium mb-1 text-slate-200">Target Language for Documents</label>
             <select v-model="selectedLanguageOption" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
               <option value="German">German (Deutsch)</option>
               <option value="English">English</option>
@@ -207,24 +217,22 @@
               <option value="Polish">Polish (Polski)</option>
               <option value="CUSTOM">Custom / Manual Input...</option>
             </select>
-            
-            <input v-if="selectedLanguageOption === 'CUSTOM'" v-model="customLanguageInput" type="text" placeholder="Enter language (e.g. Italian, Dutch)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 mt-2 text-sm text-white outline-none">
+            <input v-if="selectedLanguageOption === 'CUSTOM'" v-model="customLanguageInput" type="text" placeholder="Enter language" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 mt-2 text-sm text-white outline-none">
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">Full Address & Contact Details</label>
+          <label class="block text-sm font-medium mb-1 text-slate-200">Full Address & Contact Info</label>
           <input v-model="form.applicant.address" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
         </div>
 
-        <!-- Resume Input Option: Text or Google Drive Link -->
         <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">Resume / CV Content (Paste Text or Google Drive Link)</label>
-          <textarea v-model="form.applicant.resumeText" rows="5" placeholder="Paste your CV text or public Google Drive CV link here. Gemini will use this to generate human-like cover letters matching your background..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
+          <label class="block text-sm font-medium mb-1 text-slate-200">Resume / CV Experience Directions</label>
+          <textarea v-model="form.applicant.resumeText" rows="6" placeholder="Describe your experience across different roles (e.g. QA testing background, Customer Support / Supervisor skills, Operations experience). Gemini will automatically select the best match and tailor both the Cover Letter and PDF Resume specifically for each matched company..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
         </div>
       </div>
 
-      <!-- STEP 5: Code Output & Complete Step-by-Step Execution Guide -->
+      <!-- STEP 5: Code Output & Execution Guide -->
       <div v-if="currentStep === 5" class="space-y-6">
         <div class="flex justify-between items-center">
           <h2 class="text-2xl font-bold text-emerald-400">Your Code.gs is Ready!</h2>
@@ -233,34 +241,17 @@
           </button>
         </div>
 
-        <!-- Code Block -->
         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 h-80 overflow-y-auto whitespace-pre select-all">{{ generatedCode }}</div>
 
-        <!-- Complete A-to-Z Execution Guide -->
         <div class="border border-slate-700 rounded-xl p-5 bg-slate-900/80 space-y-4">
-          <h3 class="text-lg font-bold text-blue-400 flex items-center gap-2">📖 Complete Step-by-Step Guide: How to Launch in Google</h3>
-          
-          <ol class="list-decimal list-inside space-y-3 text-sm text-slate-300 leading-relaxed">
-            <li>
-              <strong>Create a new Google Sheet:</strong> Open <a href="https://sheets.new" target="_blank" class="text-blue-400 underline">sheets.new</a> in your browser.
-            </li>
-            <li>
-              <strong>Open Apps Script Editor:</strong> In the top menu, click <strong>Extensions</strong> ➔ <strong>Apps Script</strong>.
-            </li>
-            <li>
-              <strong>Paste Code:</strong> Clear any existing code in the editor, paste the copied code above, and click the <strong>Save (💾)</strong> icon.
-            </li>
-            <li>
-              <strong>First Test Run:</strong> Select function <code class="text-emerald-400 bg-slate-800 px-1 py-0.5 rounded">processJobAlerts</code> and click <strong>Run</strong>. Review and approve permissions when prompted by Google.
-            </li>
-            <li>
-              <strong>Enable Daily Automation:</strong> Click the <strong>Triggers (⏰ Clock icon)</strong> on the left sidebar ➔ Click <strong>Add Trigger</strong> ➔ Set Event Source to <em>Time-driven</em> ➔ Set Timer to <em>Day timer (e.g. 8am to 9am)</em> ➔ Click <strong>Save</strong>.
-            </li>
+          <h3 class="text-lg font-bold text-blue-400 flex items-center gap-2">📖 Step-by-Step Launch Guide</h3>
+          <ol class="list-decimal list-inside space-y-2 text-sm text-slate-300">
+            <li>Open <a href="https://sheets.new" target="_blank" class="text-blue-400 underline">sheets.new</a> in Google Sheets.</li>
+            <li>Click <strong>Extensions</strong> ➔ <strong>Apps Script</strong>.</li>
+            <li>Paste the copied code and click <strong>Save (💾)</strong>.</li>
+            <li>Run <code class="text-emerald-400 bg-slate-800 px-1 py-0.5 rounded">processJobAlerts</code> once to authorize Google services.</li>
+            <li>Click <strong>Triggers (⏰ Clock)</strong> ➔ <strong>Add Trigger</strong> ➔ Set to <em>Time-driven (Daily)</em>.</li>
           </ol>
-
-          <div class="bg-slate-800 p-3 rounded-lg text-xs text-slate-400 border border-slate-700">
-            ℹ️ <strong>Note:</strong> Make sure your job alerts (StepStone, Indeed, LinkedIn) send emails to Gmail and carry the label <code class="text-blue-300">{{ form.gmail.inboxLabel }}</code>.
-          </div>
         </div>
       </div>
 
@@ -308,6 +299,7 @@
           geminiApiKey: '',
           driveFolderInput: '',
           driveFolderId: '',
+          minMatchScore: 70,
           logistics: {
             homePostcode: '60386',
             city: 'Frankfurt am Main',
@@ -319,10 +311,10 @@
             "Job Title",
             "Location",
             "Travel Time (ÖPNV)",
+            "Match Score",
             "Salary Range",
             "Job URL",
-            "Status",
-            "Notes"
+            "Status"
           ],
           filters: {
             blacklistKeywords: ['Data Analyst', 'Call Center Agent', 'Manual Labor', 'Warehouse Worker']
@@ -336,11 +328,10 @@
             address: 'Musterstraße 1, 60386 Frankfurt am Main',
             phone: '+49 123 456789',
             email: 'max.mustermann@example.com',
-            resumeText: '5 years of professional experience in customer support, QA supervision, and administrative operations.'
+            resumeText: 'Experience in QA & Quality Control supervision, Customer Support Management, and Operations Operations...'
           }
         });
 
-        // Smart Drive Folder ID Extractor
         const parseFolderId = () => {
           const input = form.value.driveFolderInput.trim();
           const match = input.match(/[-\w]{25,}/);
@@ -362,7 +353,6 @@
         };
         const removeBlacklistWord = (idx) => form.value.filters.blacklistKeywords.splice(idx, 1);
 
-        // Code Generator Function
         const generatedCode = computed(() => {
           const f = form.value;
           const colsJson = JSON.stringify(f.columns, null, 2);
@@ -371,7 +361,7 @@
 
           return [
             '/**',
-            ' * AUTOMATICALLY GENERATED JOB AUTOMATION SCRIPT',
+            ' * AUTOMATICALLY GENERATED JOB AUTOMATION SCRIPT WITH DUAL PDF GENERATION',
             ' * Generated via: Jmail Wizard',
             ' * Generated for: ' + f.applicant.fullName,
             ' */',
@@ -382,6 +372,7 @@
             '  HOME_POSTCODE: "' + f.logistics.homePostcode + '",',
             '  CITY: "' + f.logistics.city + '",',
             '  MAX_TRAVEL_MINUTES: ' + f.logistics.maxTravelMinutes + ',',
+            '  MIN_MATCH_SCORE: ' + f.minMatchScore + ',',
             '  TRANSPORT_MODE: "ÖPNV",',
             '  ',
             '  COLUMNS: ' + colsJson + ',',
@@ -410,10 +401,7 @@
             '  }',
             '',
             '  const threads = inboxLabel.getThreads();',
-            '  if (threads.length === 0) {',
-            '    Logger.log("No new job alert threads to process.");',
-            '    return;',
-            '  }',
+            '  if (threads.length === 0) return;',
             '',
             '  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();',
             '  ensureSheetHeaders(sheet);',
@@ -425,14 +413,12 @@
             '    const emailSubject = lastMessage.getSubject();',
             '',
             '    if (containsBlacklistKeywords(emailSubject + " " + emailBody)) {',
-            '      Logger.log("Job rejected due to blacklist keywords: " + emailSubject);',
             '      thread.moveToTrash();',
             '      continue;',
             '    }',
             '',
             '    const analysis = analyzeJobWithGemini(emailSubject, emailBody);',
-            '    if (!analysis || !analysis.isSuitable) {',
-            '      Logger.log("Job filtered out by Gemini constraints: " + emailSubject);',
+            '    if (!analysis || !analysis.isSuitable || analysis.matchScore < CONFIG.MIN_MATCH_SCORE) {',
             '      thread.moveToTrash();',
             '      continue;',
             '    }',
@@ -445,14 +431,16 @@
             '      else if (lower.includes("title") || lower.includes("job")) rowData.push(analysis.jobTitle || emailSubject);',
             '      else if (lower.includes("location") || lower.includes("city")) rowData.push(analysis.location || CONFIG.CITY);',
             '      else if (lower.includes("travel") || lower.includes("opnv")) rowData.push((analysis.travelTimeMinutes || "?") + " mins (ÖPNV)");',
+            '      else if (lower.includes("score") || lower.includes("match")) rowData.push(analysis.matchScore + "%");',
             '      else if (lower.includes("salary")) rowData.push(analysis.salary || "Not specified");',
             '      else if (lower.includes("url") || lower.includes("link")) rowData.push(analysis.jobUrl || "From Email");',
-            '      else if (lower.includes("status")) rowData.push("Cover Letter Created");',
+            '      else if (lower.includes("status")) rowData.push("Cover Letter & CV Generated");',
             '      else rowData.push(analysis.notes || "Matches profile");',
             '    });',
             '    sheet.appendRow(rowData);',
             '',
-            '    generateAndSaveCoverLetterPDF(analysis);',
+            '    // Generate Both Cover Letter & Tailored CV PDFs',
+            '    generateAndSaveDocuments(analysis);',
             '    thread.addLabel(doneLabel);',
             '    thread.removeLabel(inboxLabel);',
             '  }',
@@ -472,7 +460,7 @@
             '',
             'function analyzeJobWithGemini(subject, body) {',
             '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
-            '  const prompt = "Analyze job: " + subject + "\\nBody: " + body + "\\nConstraints: max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via ÖPNV from " + CONFIG.HOME_POSTCODE + ". Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Return valid JSON with keys: isSuitable, companyName, jobTitle, location, travelTimeMinutes, salary, jobUrl, notes.";',
+            '  const prompt = "Analyze job: " + subject + "\\nBody: " + body + "\\nConstraints: max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via ÖPNV from " + CONFIG.HOME_POSTCODE + ". Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON with keys: isSuitable (bool), matchScore (number), companyName, jobTitle, location, travelTimeMinutes, salary, jobUrl, notes.";',
             '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
             '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
@@ -481,33 +469,34 @@
             '    const rawText = json.candidates[0].content.parts[0].text;',
             '    const cleanJsonText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();',
             '    return JSON.parse(cleanJsonText);',
-            '  } catch (e) {',
-            '    Logger.log("Gemini API Error: " + e.toString());',
-            '    return null;',
-            '  }',
+            '  } catch (e) { return null; }',
             '}',
             '',
-            'function generateAndSaveCoverLetterPDF(jobData) {',
+            'function generateAndSaveDocuments(jobData) {',
             '  const folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);',
-            '  const letterText = generateLetterTextWithGemini(jobData);',
-            '  const htmlContent = "<html><head><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#333;}.sender{font-size:8pt;color:#666;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:20px;}.recipient{margin-bottom:30px;}.date{text-align:right;margin-bottom:20px;}.subject{font-weight:bold;font-size:12pt;margin-bottom:20px;}.content{text-align:justify;white-space:pre-line;}.signature{margin-top:30px;}</style></head><body><div class=\\"sender\\">" + CONFIG.APPLICANT.NAME + " • " + CONFIG.APPLICANT.ADDRESS + "</div><div class=\\"recipient\\"><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + CONFIG.CITY + ", " + new Date().toLocaleDateString("de-DE") + "</div><div class=\\"subject\\">Application as " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div><div class=\\"signature\\">Sincerely,<br><br><strong>" + CONFIG.APPLICANT.NAME + "</strong></div></body></html>";',
-            '  const blob = Utilities.newBlob(htmlContent, "text/html", "CoverLetter_" + jobData.companyName + ".html");',
-            '  const pdf = blob.getAs("application/pdf").setName("CoverLetter_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
-            '  folder.createFile(pdf);',
+            '  ',
+            '  // 1. Generate Cover Letter PDF',
+            '  const letterText = generateWithGemini("Write a formal cover letter in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying to " + jobData.companyName + " as " + jobData.jobTitle + ". Avoid AI cliches. Resume background: " + CONFIG.APPLICANT.RESUME_TEXT);',
+            '  const letterHtml = "<html><head><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#333;}.sender{font-size:8pt;color:#666;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:20px;}.recipient{margin-bottom:30px;}.date{text-align:right;margin-bottom:20px;}.subject{font-weight:bold;font-size:12pt;margin-bottom:20px;}.content{text-align:justify;white-space:pre-line;}.signature{margin-top:30px;}</style></head><body><div class=\\"sender\\">" + CONFIG.APPLICANT.NAME + " • " + CONFIG.APPLICANT.ADDRESS + "</div><div class=\\"recipient\\"><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + CONFIG.CITY + ", " + new Date().toLocaleDateString("de-DE") + "</div><div class=\\"subject\\">Application as " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div><div class=\\"signature\\">Sincerely,<br><br><strong>" + CONFIG.APPLICANT.NAME + "</strong></div></body></html>";',
+            '  const letterPdf = Utilities.newBlob(letterHtml, "text/html").getAs("application/pdf").setName("CoverLetter_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
+            '  folder.createFile(letterPdf);',
+            '',
+            '  // 2. Generate Tailored CV PDF',
+            '  const cvText = generateWithGemini("Create a structured, tailored CV/Resume in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " specifically customized for the position of " + jobData.jobTitle + " at " + jobData.companyName + ". Highlight relevant skills and experience from background: " + CONFIG.APPLICANT.RESUME_TEXT);',
+            '  const cvHtml = "<html><head><style>body{font-family:Arial,sans-serif;font-size:10.5pt;line-height:1.4;margin:40px;color:#222;}.header{border-bottom:2px solid #2563eb;padding-bottom:10px;margin-bottom:20px;}.name{font-size:18pt;font-weight:bold;color:#1e3a8a;}.contact{font-size:9pt;color:#555;}.content{white-space:pre-line;}</style></head><body><div class=\\"header\\"><div class=\\"name\\">" + CONFIG.APPLICANT.NAME + "</div><div class=\\"contact\\">" + CONFIG.APPLICANT.ADDRESS + " | " + CONFIG.APPLICANT.EMAIL + "</div></div><div class=\\"content\\">" + cvText + "</div></body></html>";',
+            '  const cvPdf = Utilities.newBlob(cvHtml, "text/html").getAs("application/pdf").setName("CV_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
+            '  folder.createFile(cvPdf);',
             '}',
             '',
-            'function generateLetterTextWithGemini(jobData) {',
+            'function generateWithGemini(promptText) {',
             '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
-            '  const prompt = "Write a natural, human-like formal cover letter in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying to " + jobData.companyName + " as " + jobData.jobTitle + ". Avoid AI cliches like \'I am thrilled\' or \'In today\'s fast-paced world\'. Resume context: " + CONFIG.APPLICANT.RESUME_TEXT;',
-            '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
+            '  const payload = { contents: [{ parts: [{ text: promptText }] }] };',
             '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
             '    const response = UrlFetchApp.fetch(url, options);',
             '    const json = JSON.parse(response.getContentText());',
             '    return json.candidates[0].content.parts[0].text.trim();',
-            '  } catch (e) {',
-            '    return "Dear Hiring Manager,\\n\\nI am writing to apply for the position of " + jobData.jobTitle + ".";',
-            '  }',
+            '  } catch (e) { return "Generated Document Content"; }',
             '}'
           ].join('\n');
         });

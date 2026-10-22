@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2563eb">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Automation Wizard — Custom Code Generator</title>
+  <title>Jmail — Job Automation Wizard</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Vue 3 -->
@@ -21,9 +19,9 @@
     <!-- Header -->
     <header class="text-center mb-8">
       <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 mb-2">
-        Job Automation Wizard 🚀
+        Jmail Wizard 🚀
       </h1>
-      <p class="text-slate-400">Generate your personalized Google Apps Script for automated job application processing</p>
+      <p class="text-slate-400">Automate your job application tracking & cover letters with Gemini AI & Google Workspace</p>
     </header>
 
     <!-- Stepper Navigation -->
@@ -44,50 +42,47 @@
       </div>
     </div>
 
-    <!-- Main Card Content -->
+    <!-- Main Content Card -->
     <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
 
-      <!-- STEP 1: Google Workspace Setup & Instructions -->
+      <!-- STEP 1: Overview & Workspace Credentials -->
       <div v-if="currentStep === 1" class="space-y-6">
         <div>
-          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 1: Setup & API Credentials</h2>
-          <p class="text-slate-400 text-sm">Follow the instructions below to prepare your Google Workspace environment.</p>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 1: Setup & Gmail Integration</h2>
+          <p class="text-slate-400 text-sm">Jmail connects Gmail job alerts (StepStone, Indeed, LinkedIn) with Google Sheets & Gemini AI.</p>
         </div>
 
-        <!-- Interactive Visual Guide (Accordion) -->
+        <!-- How It Works Banner -->
+        <div class="bg-blue-950/40 border border-blue-800/60 rounded-xl p-4 text-xs text-blue-200 leading-relaxed">
+          💡 <strong>How Jmail Works:</strong> Set up job alert emails from portals (StepStone, Indeed, LinkedIn, etc.) to forward to your Gmail. Jmail automatically parses incoming job alerts, filters out unwanted roles & long commutes (ÖPNV), logs clean data into Google Sheets, and drafts human-like cover letters saved as PDF!
+        </div>
+
+        <!-- Interactive Setup Accordion -->
         <div class="space-y-3">
           <div class="border border-slate-700 rounded-xl overflow-hidden bg-slate-900/50">
             <button @click="toggleGuide('api')" class="w-full p-4 text-left font-semibold flex justify-between items-center text-slate-200 hover:bg-slate-800/50 transition-colors">
-              <span class="flex items-center gap-2">🔑 How to get free Gemini API Key</span>
+              <span class="flex items-center gap-2">🔑 1. How to get a free Gemini API Key</span>
               <span>{{ activeGuide === 'api' ? '▲' : '▼' }}</span>
             </button>
-            <div v-if="activeGuide === 'api'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-3">
+            <div v-if="activeGuide === 'api'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-2">
               <ol class="list-decimal list-inside space-y-1">
-                <li>Go to <a href="https://aistudio.google.com/" target="_blank" class="text-blue-400 underline">Google AI Studio</a>.</li>
-                <li>Sign in with your Google Account.</li>
+                <li>Visit <a href="https://aistudio.google.com/" target="_blank" class="text-blue-400 underline">Google AI Studio</a>.</li>
                 <li>Click <strong>"Get API key"</strong> and then <strong>"Create API key"</strong>.</li>
-                <li>Copy the generated key and paste it into the field below.</li>
+                <li>Copy and paste the API key into the field below.</li>
               </ol>
-              <div class="bg-slate-900 p-4 rounded-lg border border-dashed border-slate-700 text-center text-slate-500 text-xs">
-                [ Screenshot / GIF Placeholder: Obtaining Gemini API Key ]
-              </div>
             </div>
           </div>
 
           <div class="border border-slate-700 rounded-xl overflow-hidden bg-slate-900/50">
             <button @click="toggleGuide('drive')" class="w-full p-4 text-left font-semibold flex justify-between items-center text-slate-200 hover:bg-slate-800/50 transition-colors">
-              <span class="flex items-center gap-2">📁 How to setup Google Drive folder</span>
+              <span class="flex items-center gap-2">📁 2. How to create Google Drive folder</span>
               <span>{{ activeGuide === 'drive' ? '▲' : '▼' }}</span>
             </button>
-            <div v-if="activeGuide === 'drive'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-3">
+            <div v-if="activeGuide === 'drive'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-2">
               <ol class="list-decimal list-inside space-y-1">
-                <li>Open your <a href="https://drive.google.com/" target="_blank" class="text-blue-400 underline">Google Drive</a>.</li>
-                <li>Create a new folder named <code class="bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">CoverLetter_Temp</code>.</li>
-                <li>Open the folder and copy its ID from the browser URL bar (e.g. <code class="bg-slate-800 px-1.5 py-0.5 rounded">drive.google.com/drive/folders/<strong>1a2b3c...</strong></code>).</li>
+                <li>Go to <a href="https://drive.google.com/" target="_blank" class="text-blue-400 underline">Google Drive</a> and create a folder named <code class="text-emerald-400 bg-slate-800 px-1 py-0.5 rounded">CoverLetter_Temp</code>.</li>
+                <li>Open the folder, copy its <strong>entire URL link</strong> from the browser address bar, and paste it below. (We automatically extract the ID!).</li>
               </ol>
-              <div class="bg-slate-900 p-4 rounded-lg border border-dashed border-slate-700 text-center text-slate-500 text-xs">
-                [ Screenshot / GIF Placeholder: Copying Folder ID from URL ]
-              </div>
             </div>
           </div>
         </div>
@@ -100,8 +95,21 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1 text-slate-200">Google Drive Folder ID (CoverLetter_Temp)</label>
-            <input v-model="form.driveFolderId" type="text" placeholder="1a2b3c4d5e..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
+            <label class="block text-sm font-medium mb-1 text-slate-200">Google Drive Folder Link or ID (CoverLetter_Temp)</label>
+            <input v-model="form.driveFolderInput" @input="parseFolderId" type="text" placeholder="Paste full Google Drive folder link here..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
+            <span v-if="form.driveFolderId" class="text-xs text-emerald-400 mt-1 block">✓ Auto-extracted Folder ID: {{ form.driveFolderId }}</span>
+          </div>
+
+          <!-- Gmail Label Customization -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-700/60">
+            <div>
+              <label class="block text-xs font-medium mb-1 text-slate-300">Gmail Incoming Label</label>
+              <input v-model="form.gmail.inboxLabel" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium mb-1 text-slate-300">Gmail Processed Label</label>
+              <input v-model="form.gmail.doneLabel" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
+            </div>
           </div>
         </div>
       </div>
@@ -109,8 +117,8 @@
       <!-- STEP 2: Logistics & ÖPNV -->
       <div v-if="currentStep === 2" class="space-y-6">
         <div>
-          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 2: Logistics & Public Transit (ÖPNV)</h2>
-          <p class="text-slate-400 text-sm">Define your origin location and maximum allowed travel time via public transport.</p>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 2: Logistics & Commute Limit</h2>
+          <p class="text-slate-400 text-sm">Define your starting location and strict public transit (ÖPNV) travel time limit.</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -141,13 +149,13 @@
       <!-- STEP 3: Sheet Columns & Blacklist -->
       <div v-if="currentStep === 3" class="space-y-6">
         <div>
-          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 3: Sheet Structure & Role Blacklist</h2>
-          <p class="text-slate-400 text-sm">Customize your Google Sheet columns and set strict job exclusion keywords.</p>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 3: Table Layout & Blacklist</h2>
+          <p class="text-slate-400 text-sm">Customize Google Sheet columns and specify roles to auto-delete to Trash.</p>
         </div>
         
         <!-- Column Manager -->
         <div>
-          <label class="block text-sm font-medium mb-2 text-slate-200">Google Sheet Columns (Editable Order)</label>
+          <label class="block text-sm font-medium mb-2 text-slate-200">Google Sheet Columns (Editable Order & Names)</label>
           <div class="space-y-2 mb-3">
             <div v-for="(col, index) in form.columns" :key="index" class="flex items-center gap-2">
               <span class="text-slate-500 w-6 text-xs text-right">{{ index + 1 }}.</span>
@@ -155,12 +163,12 @@
               <button @click="removeColumn(index)" class="text-rose-400 hover:text-rose-300 px-2 font-bold">✕</button>
             </div>
           </div>
-          <button @click="addColumn" class="text-xs text-blue-400 hover:underline font-medium">+ Add New Column</button>
+          <button @click="addColumn" class="text-xs text-blue-400 hover:underline font-medium">+ Add Custom Column</button>
         </div>
 
         <!-- Blacklist Keywords -->
         <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">Blacklisted Job Titles / Keywords</label>
+          <label class="block text-sm font-medium mb-1 text-slate-200">Blacklisted Job Roles (Auto-move to Trash)</label>
           <div class="flex gap-2 mb-2">
             <input v-model="newBlacklistWord" @keyup.enter="addBlacklistWord" type="text" placeholder="e.g. Data Analyst" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white outline-none">
             <button @click="addBlacklistWord" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm">Add</button>
@@ -174,11 +182,11 @@
         </div>
       </div>
 
-      <!-- STEP 4: Applicant Information -->
+      <!-- STEP 4: Applicant Details & Language Selection -->
       <div v-if="currentStep === 4" class="space-y-6">
         <div>
-          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 4: Applicant Details</h2>
-          <p class="text-slate-400 text-sm">These details will be used by Gemini AI to format cover letters.</p>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 4: Applicant Profile & Resume</h2>
+          <p class="text-slate-400 text-sm">Provide your resume details and preferred cover letter language.</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -186,36 +194,74 @@
             <label class="block text-sm font-medium mb-1 text-slate-200">Full Name</label>
             <input v-model="form.applicant.fullName" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
+
+          <!-- Expanded Language Selector + Custom Input -->
           <div>
-            <label class="block text-sm font-medium mb-1 text-slate-200">Target Language for Letters</label>
-            <select v-model="form.filters.targetLanguage" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <label class="block text-sm font-medium mb-1 text-slate-200">Cover Letter Language</label>
+            <select v-model="selectedLanguageOption" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
               <option value="German">German (Deutsch)</option>
               <option value="English">English</option>
+              <option value="Ukrainian">Ukrainian (Українська)</option>
+              <option value="Spanish">Spanish (Español)</option>
+              <option value="French">French (Français)</option>
+              <option value="Polish">Polish (Polski)</option>
+              <option value="CUSTOM">Custom / Manual Input...</option>
             </select>
+            
+            <input v-if="selectedLanguageOption === 'CUSTOM'" v-model="customLanguageInput" type="text" placeholder="Enter language (e.g. Italian, Dutch)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 mt-2 text-sm text-white outline-none">
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">Full Address</label>
+          <label class="block text-sm font-medium mb-1 text-slate-200">Full Address & Contact Details</label>
           <input v-model="form.applicant.address" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
         </div>
 
+        <!-- Resume Input Option: Text or Google Drive Link -->
         <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">Resume / CV Summary Text</label>
-          <textarea v-model="form.applicant.resumeText" rows="4" placeholder="Paste your key experience and skills here..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
+          <label class="block text-sm font-medium mb-1 text-slate-200">Resume / CV Content (Paste Text or Google Drive Link)</label>
+          <textarea v-model="form.applicant.resumeText" rows="5" placeholder="Paste your CV text or public Google Drive CV link here. Gemini will use this to generate human-like cover letters matching your background..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
         </div>
       </div>
 
-      <!-- STEP 5: Code Output -->
+      <!-- STEP 5: Code Output & Complete Step-by-Step Execution Guide -->
       <div v-if="currentStep === 5" class="space-y-6">
         <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-emerald-400">Your Customized Code.gs is Ready!</h2>
+          <h2 class="text-2xl font-bold text-emerald-400">Your Code.gs is Ready!</h2>
           <button @click="copyToClipboard" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-all">
-            {{ copied ? '✓ Copied!' : '📋 Copy Code' }}
+            {{ copied ? '✓ Copied to Clipboard!' : '📋 Copy Code' }}
           </button>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 h-96 overflow-y-auto whitespace-pre select-all">{{ generatedCode }}</div>
+        <!-- Code Block -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 h-80 overflow-y-auto whitespace-pre select-all">{{ generatedCode }}</div>
+
+        <!-- Complete A-to-Z Execution Guide -->
+        <div class="border border-slate-700 rounded-xl p-5 bg-slate-900/80 space-y-4">
+          <h3 class="text-lg font-bold text-blue-400 flex items-center gap-2">📖 Complete Step-by-Step Guide: How to Launch in Google</h3>
+          
+          <ol class="list-decimal list-inside space-y-3 text-sm text-slate-300 leading-relaxed">
+            <li>
+              <strong>Create a new Google Sheet:</strong> Open <a href="https://sheets.new" target="_blank" class="text-blue-400 underline">sheets.new</a> in your browser.
+            </li>
+            <li>
+              <strong>Open Apps Script Editor:</strong> In the top menu, click <strong>Extensions</strong> ➔ <strong>Apps Script</strong>.
+            </li>
+            <li>
+              <strong>Paste Code:</strong> Clear any existing code in the editor, paste the copied code above, and click the <strong>Save (💾)</strong> icon.
+            </li>
+            <li>
+              <strong>First Test Run:</strong> Select function <code class="text-emerald-400 bg-slate-800 px-1 py-0.5 rounded">processJobAlerts</code> and click <strong>Run</strong>. Review and approve permissions when prompted by Google.
+            </li>
+            <li>
+              <strong>Enable Daily Automation:</strong> Click the <strong>Triggers (⏰ Clock icon)</strong> on the left sidebar ➔ Click <strong>Add Trigger</strong> ➔ Set Event Source to <em>Time-driven</em> ➔ Set Timer to <em>Day timer (e.g. 8am to 9am)</em> ➔ Click <strong>Save</strong>.
+            </li>
+          </ol>
+
+          <div class="bg-slate-800 p-3 rounded-lg text-xs text-slate-400 border border-slate-700">
+            ℹ️ <strong>Note:</strong> Make sure your job alerts (StepStone, Indeed, LinkedIn) send emails to Gmail and carry the label <code class="text-blue-300">{{ form.gmail.inboxLabel }}</code>.
+          </div>
+        </div>
       </div>
 
       <!-- Navigation Buttons -->
@@ -251,6 +297,8 @@
         const activeGuide = ref('api');
         const copied = ref(false);
         const newBlacklistWord = ref('');
+        const selectedLanguageOption = ref('German');
+        const customLanguageInput = ref('');
 
         const toggleGuide = (guideName) => {
           activeGuide.value = activeGuide.value === guideName ? null : guideName;
@@ -258,6 +306,7 @@
 
         const form = ref({
           geminiApiKey: '',
+          driveFolderInput: '',
           driveFolderId: '',
           logistics: {
             homePostcode: '60386',
@@ -276,16 +325,30 @@
             "Notes"
           ],
           filters: {
-            blacklistKeywords: ['Data Analyst', 'Call Center Agent', 'Manual Labor', 'Warehouse Worker'],
-            targetLanguage: 'German'
+            blacklistKeywords: ['Data Analyst', 'Call Center Agent', 'Manual Labor', 'Warehouse Worker']
+          },
+          gmail: {
+            inboxLabel: 'Bew./Job-Alerts',
+            doneLabel: 'Bew./Fertig'
           },
           applicant: {
             fullName: 'Max Mustermann',
             address: 'Musterstraße 1, 60386 Frankfurt am Main',
             phone: '+49 123 456789',
             email: 'max.mustermann@example.com',
-            resumeText: '5 years of experience in customer operations, QA, and administrative supervision.'
+            resumeText: '5 years of professional experience in customer support, QA supervision, and administrative operations.'
           }
+        });
+
+        // Smart Drive Folder ID Extractor
+        const parseFolderId = () => {
+          const input = form.value.driveFolderInput.trim();
+          const match = input.match(/[-\w]{25,}/);
+          form.value.driveFolderId = match ? match[0] : input;
+        };
+
+        const targetLanguage = computed(() => {
+          return selectedLanguageOption.value === 'CUSTOM' ? (customLanguageInput.value || 'English') : selectedLanguageOption.value;
         });
 
         const addColumn = () => form.value.columns.push('Column ' + (form.value.columns.length + 1));
@@ -299,7 +362,7 @@
         };
         const removeBlacklistWord = (idx) => form.value.filters.blacklistKeywords.splice(idx, 1);
 
-        // Safe Clean String Generation
+        // Code Generator Function
         const generatedCode = computed(() => {
           const f = form.value;
           const colsJson = JSON.stringify(f.columns, null, 2);
@@ -309,7 +372,7 @@
           return [
             '/**',
             ' * AUTOMATICALLY GENERATED JOB AUTOMATION SCRIPT',
-            ' * Generated via: Job Automation Wizard',
+            ' * Generated via: Jmail Wizard',
             ' * Generated for: ' + f.applicant.fullName,
             ' */',
             '',
@@ -323,10 +386,10 @@
             '  ',
             '  COLUMNS: ' + colsJson + ',',
             '  BLACKLIST_KEYWORDS: ' + blacklistJson + ',',
-            '  TARGET_LANGUAGE: "' + f.filters.targetLanguage + '",',
+            '  TARGET_LANGUAGE: "' + targetLanguage.value + '",',
             '  ',
-            '  GMAIL_INBOX_LABEL: "Bew./Job-Alerts",',
-            '  GMAIL_DONE_LABEL: "Bew./Fertig",',
+            '  GMAIL_INBOX_LABEL: "' + f.gmail.inboxLabel + '",',
+            '  GMAIL_DONE_LABEL: "' + f.gmail.doneLabel + '",',
             '  ',
             '  APPLICANT: {',
             '    NAME: "' + f.applicant.fullName + '",',
@@ -435,7 +498,7 @@
             '',
             'function generateLetterTextWithGemini(jobData) {',
             '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
-            '  const prompt = "Write formal cover letter in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying to " + jobData.companyName + " as " + jobData.jobTitle + ". Resume context: " + CONFIG.APPLICANT.RESUME_TEXT;',
+            '  const prompt = "Write a natural, human-like formal cover letter in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying to " + jobData.companyName + " as " + jobData.jobTitle + ". Avoid AI cliches like \'I am thrilled\' or \'In today\'s fast-paced world\'. Resume context: " + CONFIG.APPLICANT.RESUME_TEXT;',
             '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
             '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
@@ -460,6 +523,9 @@
           activeGuide,
           toggleGuide,
           form,
+          parseFolderId,
+          selectedLanguageOption,
+          customLanguageInput,
           newBlacklistWord,
           addColumn,
           removeColumn,

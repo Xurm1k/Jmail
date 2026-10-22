@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Automation Wizard — Custom Code Generator</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    [v-cloak] { display: none; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+
+  <div id="app" v-cloak class="max-w-4xl mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 mb-2">
+        Job Automation Wizard 🚀
+      </h1>
+      <p class="text-slate-400">Generate your personalized Google Apps Script for automated job application processing</p>
+    </header>
+
+    <!-- Stepper Navigation -->
+    <div class="flex items-center justify-between mb-8 bg-slate-800 p-4 rounded-xl border border-slate-700">
+      <div v-for="stepNum in 5" :key="stepNum" class="flex items-center">
+        <div 
+          :class="[
+            'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all',
+            currentStep === stepNum ? 'bg-blue-600 text-white ring-4 ring-blue-500/30' : 
+            currentStep > stepNum ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-400'
+          ]"
+        >
+          {{ currentStep > stepNum ? '✓' : stepNum }}
+        </div>
+        <div v-if="stepNum < 5" class="w-8 sm:w-16 h-1 mx-2 bg-slate-700">
+          <div class="h-full bg-emerald-500 transition-all" :style="{ width: currentStep > stepNum ? '100%' : '0%' }"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Card Content -->
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
+
+      <!-- STEP 1: Google Workspace Setup & Instructions -->
+      <div v-if="currentStep === 1" class="space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 1: Setup & API Credentials</h2>
+          <p class="text-slate-400 text-sm">Follow the instructions below to prepare your Google Workspace environment.</p>
+        </div>
+
+        <!-- Interactive Visual Guide (Accordion) -->
+        <div class="space-y-3">
+          <div class="border border-slate-700 rounded-xl overflow-hidden bg-slate-900/50">
+            <button @click="toggleGuide('api')" class="w-full p-4 text-left font-semibold flex justify-between items-center text-slate-200 hover:bg-slate-800/50 transition-colors">
+              <span class="flex items-center gap-2">🔑 How to get free Gemini API Key</span>
+              <span>{{ activeGuide === 'api' ? '▲' : '▼' }}</span>
+            </button>
+            <div v-if="activeGuide === 'api'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-3">
+              <ol class="list-decimal list-inside space-y-1">
+                <li>Go to <a href="https://aistudio.google.com/" target="_blank" class="text-blue-400 underline">Google AI Studio</a>.</li>
+                <li>Sign in with your Google Account.</li>
+                <li>Click <strong>"Get API key"</strong> and then <strong>"Create API key"</strong>.</li>
+                <li>Copy the generated key and paste it into the field below.</li>
+              </ol>
+              <div class="bg-slate-900 p-4 rounded-lg border border-dashed border-slate-700 text-center text-slate-500 text-xs">
+                [ Screenshot / GIF Placeholder: Obtaining Gemini API Key ]
+              </div>
+            </div>
+          </div>
+
+          <div class="border border-slate-700 rounded-xl overflow-hidden bg-slate-900/50">
+            <button @click="toggleGuide('drive')" class="w-full p-4 text-left font-semibold flex justify-between items-center text-slate-200 hover:bg-slate-800/50 transition-colors">
+              <span class="flex items-center gap-2">📁 How to setup Google Drive folder</span>
+              <span>{{ activeGuide === 'drive' ? '▲' : '▼' }}</span>
+            </button>
+            <div v-if="activeGuide === 'drive'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-3">
+              <ol class="list-decimal list-inside space-y-1">
+                <li>Open your <a href="https://drive.google.com/" target="_blank" class="text-blue-400 underline">Google Drive</a>.</li>
+                <li>Create a new folder named <code class="bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">CoverLetter_Temp</code>.</li>
+                <li>Open the folder and copy its ID from the browser URL bar (e.g. <code class="bg-slate-800 px-1.5 py-0.5 rounded">drive.google.com/drive/folders/<strong>1a2b3c...</strong></code>).</li>
+              </ol>
+              <div class="bg-slate-900 p-4 rounded-lg border border-dashed border-slate-700 text-center text-slate-500 text-xs">
+                [ Screenshot / GIF Placeholder: Copying Folder ID from URL ]
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Fields -->
+        <div class="space-y-4 pt-2">
+          <div>
+            <label class="block text-sm font-medium mb-1 text-slate-200">Gemini API Key</label>
+            <input v-model="form.geminiApiKey" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1 text-slate-200">Google Drive Folder ID (CoverLetter_Temp)</label>
+            <input v-model="form.driveFolderId" type="text" placeholder="1a2b3c4d5e..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Logistics & ÖPNV -->
+      <div v-if="currentStep === 2" class="space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 2: Logistics & Public Transit (ÖPNV)</h2>
+          <p class="text-slate-400 text-sm">Define your origin location and maximum allowed travel time via public transport.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1 text-slate-200">Postal Code (PLZ)</label>
+            <input v-model="form.logistics.homePostcode" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1 text-slate-200">City</label>
+            <input v-model="form.logistics.city" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-sm font-medium text-slate-200">Max Travel Time (Strictly ÖPNV / Public Transit)</label>
+            <span class="text-blue-400 font-bold text-lg">{{ form.logistics.maxTravelMinutes }} mins</span>
+          </div>
+          <input v-model.number="form.logistics.maxTravelMinutes" type="range" min="15" max="90" step="5" class="w-full accent-blue-500 cursor-pointer">
+          <div class="flex justify-between text-xs text-slate-500 mt-1">
+            <span>15 mins</span>
+            <span>45 mins</span>
+            <span>90 mins</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Sheet Columns & Blacklist -->
+      <div v-if="currentStep === 3" class="space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 3: Sheet Structure & Role Blacklist</h2>
+          <p class="text-slate-400 text-sm">Customize your Google Sheet columns and set strict job exclusion keywords.</p>
+        </div>
+        
+        <!-- Column Manager -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-slate-200">Google Sheet Columns (Editable Order)</label>
+          <div class="space-y-2 mb-3">
+            <div v-for="(col, index) in form.columns" :key="index" class="flex items-center gap-2">
+              <span class="text-slate-500 w-6 text-xs text-right">{{ index + 1 }}.</span>
+              <input v-model="form.columns[index]" type="text" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">
+              <button @click="removeColumn(index)" class="text-rose-400 hover:text-rose-300 px-2 font-bold">✕</button>
+            </div>
+          </div>
+          <button @click="addColumn" class="text-xs text-blue-400 hover:underline font-medium">+ Add New Column</button>
+        </div>
+
+        <!-- Blacklist Keywords -->
+        <div>
+          <label class="block text-sm font-medium mb-1 text-slate-200">Blacklisted Job Titles / Keywords</label>
+          <div class="flex gap-2 mb-2">
+            <input v-model="newBlacklistWord" @keyup.enter="addBlacklistWord" type="text" placeholder="e.g. Data Analyst" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white outline-none">
+            <button @click="addBlacklistWord" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm">Add</button>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span v-for="(word, idx) in form.filters.blacklistKeywords" :key="idx" class="bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-full flex items-center gap-2">
+              {{ word }}
+              <button @click="removeBlacklistWord(idx)" class="hover:text-rose-400 font-bold">✕</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Applicant Information -->
+      <div v-if="currentStep === 4" class="space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">Step 4: Applicant Details</h2>
+          <p class="text-slate-400 text-sm">These details will be used by Gemini AI to format cover letters.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1 text-slate-200">Full Name</label>
+            <input v-model="form.applicant.fullName" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1 text-slate-200">Target Language for Letters</label>
+            <select v-model="form.filters.targetLanguage" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+              <option value="German">German (Deutsch)</option>
+              <option value="English">English</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1 text-slate-200">Full Address</label>
+          <input v-model="form.applicant.address" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1 text-slate-200">Resume / CV Summary Text</label>
+          <textarea v-model="form.applicant.resumeText" rows="4" placeholder="Paste your key experience and skills here..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
+        </div>
+      </div>
+
+      <!-- STEP 5: Code Output -->
+      <div v-if="currentStep === 5" class="space-y-6">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-emerald-400">Your Customized Code.gs is Ready!</h2>
+          <button @click="copyToClipboard" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-all">
+            {{ copied ? '✓ Copied!' : '📋 Copy Code' }}
+          </button>
+        </div>
+
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 h-96 overflow-y-auto whitespace-pre select-all">{{ generatedCode }}</div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-700">
+        <button 
+          v-if="currentStep > 1" 
+          @click="currentStep--" 
+          class="bg-slate-700 hover:bg-slate-600 text-white font-medium px-5 py-2.5 rounded-xl transition-all"
+        >
+          ← Back
+        </button>
+        <div v-else></div>
+
+        <button 
+          v-if="currentStep < 5" 
+          @click="currentStep++" 
+          class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all ml-auto"
+        >
+          Next →
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Vue 3 App Logic -->
+  <script>
+    const { createApp, ref, computed } = Vue;
+
+    createApp({
+      setup() {
+        const currentStep = ref(1);
+        const activeGuide = ref('api');
+        const copied = ref(false);
+        const newBlacklistWord = ref('');
+
+        const toggleGuide = (guideName) => {
+          activeGuide.value = activeGuide.value === guideName ? null : guideName;
+        };
+
+        const form = ref({
+          geminiApiKey: '',
+          driveFolderId: '',
+          logistics: {
+            homePostcode: '60386',
+            city: 'Frankfurt am Main',
+            maxTravelMinutes: 60
+          },
+          columns: [
+            "Processing Date",
+            "Company Name",
+            "Job Title",
+            "Location",
+            "Travel Time (ÖPNV)",
+            "Salary Range",
+            "Job URL",
+            "Status",
+            "Notes"
+          ],
+          filters: {
+            blacklistKeywords: ['Data Analyst', 'Call Center Agent', 'Manual Labor', 'Warehouse Worker'],
+            targetLanguage: 'German'
+          },
+          applicant: {
+            fullName: 'Max Mustermann',
+            address: 'Musterstraße 1, 60386 Frankfurt am Main',
+            phone: '+49 123 456789',
+            email: 'max.mustermann@example.com',
+            resumeText: '5 years of experience in customer operations, QA, and administrative supervision.'
+          }
+        });
+
+        const addColumn = () => form.value.columns.push('Column ' + (form.value.columns.length + 1));
+        const removeColumn = (idx) => form.value.columns.splice(idx, 1);
+
+        const addBlacklistWord = () => {
+          if (newBlacklistWord.value.trim()) {
+            form.value.filters.blacklistKeywords.push(newBlacklistWord.value.trim());
+            newBlacklistWord.value = '';
+          }
+        };
+        const removeBlacklistWord = (idx) => form.value.filters.blacklistKeywords.splice(idx, 1);
+
+        // Safe Clean String Generation
+        const generatedCode = computed(() => {
+          const f = form.value;
+          const colsJson = JSON.stringify(f.columns, null, 2);
+          const blacklistJson = JSON.stringify(f.filters.blacklistKeywords);
+          const resumeJson = JSON.stringify(f.applicant.resumeText);
+
+          return [
+            '/**',
+            ' * AUTOMATICALLY GENERATED JOB AUTOMATION SCRIPT',
+            ' * Generated via: Job Automation Wizard',
+            ' * Generated for: ' + f.applicant.fullName,
+            ' */',
+            '',
+            'const CONFIG = {',
+            '  GEMINI_API_KEY: "' + f.geminiApiKey + '",',
+            '  DRIVE_FOLDER_ID: "' + f.driveFolderId + '",',
+            '  HOME_POSTCODE: "' + f.logistics.homePostcode + '",',
+            '  CITY: "' + f.logistics.city + '",',
+            '  MAX_TRAVEL_MINUTES: ' + f.logistics.maxTravelMinutes + ',',
+            '  TRANSPORT_MODE: "ÖPNV",',
+            '  ',
+            '  COLUMNS: ' + colsJson + ',',
+            '  BLACKLIST_KEYWORDS: ' + blacklistJson + ',',
+            '  TARGET_LANGUAGE: "' + f.filters.targetLanguage + '",',
+            '  ',
+            '  GMAIL_INBOX_LABEL: "Bew./Job-Alerts",',
+            '  GMAIL_DONE_LABEL: "Bew./Fertig",',
+            '  ',
+            '  APPLICANT: {',
+            '    NAME: "' + f.applicant.fullName + '",',
+            '    ADDRESS: "' + f.applicant.address + '",',
+            '    PHONE: "' + f.applicant.phone + '",',
+            '    EMAIL: "' + f.applicant.email + '",',
+            '    RESUME_TEXT: ' + resumeJson,
+            '  }',
+            '};',
+            '',
+            'function processJobAlerts() {',
+            '  const inboxLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_INBOX_LABEL);',
+            '  const doneLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_DONE_LABEL) || GmailApp.createLabel(CONFIG.GMAIL_DONE_LABEL);',
+            '',
+            '  if (!inboxLabel) {',
+            '    Logger.log("Inbox label not found: " + CONFIG.GMAIL_INBOX_LABEL);',
+            '    return;',
+            '  }',
+            '',
+            '  const threads = inboxLabel.getThreads();',
+            '  if (threads.length === 0) {',
+            '    Logger.log("No new job alert threads to process.");',
+            '    return;',
+            '  }',
+            '',
+            '  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();',
+            '  ensureSheetHeaders(sheet);',
+            '',
+            '  for (let thread of threads) {',
+            '    const messages = thread.getMessages();',
+            '    const lastMessage = messages[messages.length - 1];',
+            '    const emailBody = lastMessage.getPlainBody();',
+            '    const emailSubject = lastMessage.getSubject();',
+            '',
+            '    if (containsBlacklistKeywords(emailSubject + " " + emailBody)) {',
+            '      Logger.log("Job rejected due to blacklist keywords: " + emailSubject);',
+            '      thread.moveToTrash();',
+            '      continue;',
+            '    }',
+            '',
+            '    const analysis = analyzeJobWithGemini(emailSubject, emailBody);',
+            '    if (!analysis || !analysis.isSuitable) {',
+            '      Logger.log("Job filtered out by Gemini constraints: " + emailSubject);',
+            '      thread.moveToTrash();',
+            '      continue;',
+            '    }',
+            '',
+            '    const rowData = [];',
+            '    CONFIG.COLUMNS.forEach(colName => {',
+            '      const lower = colName.toLowerCase();',
+            '      if (lower.includes("date")) rowData.push(new Date());',
+            '      else if (lower.includes("company")) rowData.push(analysis.companyName || "N/A");',
+            '      else if (lower.includes("title") || lower.includes("job")) rowData.push(analysis.jobTitle || emailSubject);',
+            '      else if (lower.includes("location") || lower.includes("city")) rowData.push(analysis.location || CONFIG.CITY);',
+            '      else if (lower.includes("travel") || lower.includes("opnv")) rowData.push((analysis.travelTimeMinutes || "?") + " mins (ÖPNV)");',
+            '      else if (lower.includes("salary")) rowData.push(analysis.salary || "Not specified");',
+            '      else if (lower.includes("url") || lower.includes("link")) rowData.push(analysis.jobUrl || "From Email");',
+            '      else if (lower.includes("status")) rowData.push("Cover Letter Created");',
+            '      else rowData.push(analysis.notes || "Matches profile");',
+            '    });',
+            '    sheet.appendRow(rowData);',
+            '',
+            '    generateAndSaveCoverLetterPDF(analysis);',
+            '    thread.addLabel(doneLabel);',
+            '    thread.removeLabel(inboxLabel);',
+            '  }',
+            '}',
+            '',
+            'function containsBlacklistKeywords(text) {',
+            '  const lowerText = text.toLowerCase();',
+            '  return CONFIG.BLACKLIST_KEYWORDS.some(keyword => lowerText.includes(keyword.toLowerCase()));',
+            '}',
+            '',
+            'function ensureSheetHeaders(sheet) {',
+            '  if (sheet.getLastRow() === 0) {',
+            '    sheet.appendRow(CONFIG.COLUMNS);',
+            '    sheet.getRange(1, 1, 1, CONFIG.COLUMNS.length).setFontWeight("bold").setBackground("#f3f4f6");',
+            '  }',
+            '}',
+            '',
+            'function analyzeJobWithGemini(subject, body) {',
+            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
+            '  const prompt = "Analyze job: " + subject + "\\nBody: " + body + "\\nConstraints: max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via ÖPNV from " + CONFIG.HOME_POSTCODE + ". Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Return valid JSON with keys: isSuitable, companyName, jobTitle, location, travelTimeMinutes, salary, jobUrl, notes.";',
+            '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
+            '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
+            '  try {',
+            '    const response = UrlFetchApp.fetch(url, options);',
+            '    const json = JSON.parse(response.getContentText());',
+            '    const rawText = json.candidates[0].content.parts[0].text;',
+            '    const cleanJsonText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();',
+            '    return JSON.parse(cleanJsonText);',
+            '  } catch (e) {',
+            '    Logger.log("Gemini API Error: " + e.toString());',
+            '    return null;',
+            '  }',
+            '}',
+            '',
+            'function generateAndSaveCoverLetterPDF(jobData) {',
+            '  const folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);',
+            '  const letterText = generateLetterTextWithGemini(jobData);',
+            '  const htmlContent = "<html><head><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#333;}.sender{font-size:8pt;color:#666;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:20px;}.recipient{margin-bottom:30px;}.date{text-align:right;margin-bottom:20px;}.subject{font-weight:bold;font-size:12pt;margin-bottom:20px;}.content{text-align:justify;white-space:pre-line;}.signature{margin-top:30px;}</style></head><body><div class=\\"sender\\">" + CONFIG.APPLICANT.NAME + " • " + CONFIG.APPLICANT.ADDRESS + "</div><div class=\\"recipient\\"><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + CONFIG.CITY + ", " + new Date().toLocaleDateString("de-DE") + "</div><div class=\\"subject\\">Application as " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div><div class=\\"signature\\">Sincerely,<br><br><strong>" + CONFIG.APPLICANT.NAME + "</strong></div></body></html>";',
+            '  const blob = Utilities.newBlob(htmlContent, "text/html", "CoverLetter_" + jobData.companyName + ".html");',
+            '  const pdf = blob.getAs("application/pdf").setName("CoverLetter_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
+            '  folder.createFile(pdf);',
+            '}',
+            '',
+            'function generateLetterTextWithGemini(jobData) {',
+            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
+            '  const prompt = "Write formal cover letter in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying to " + jobData.companyName + " as " + jobData.jobTitle + ". Resume context: " + CONFIG.APPLICANT.RESUME_TEXT;',
+            '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
+            '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
+            '  try {',
+            '    const response = UrlFetchApp.fetch(url, options);',
+            '    const json = JSON.parse(response.getContentText());',
+            '    return json.candidates[0].content.parts[0].text.trim();',
+            '  } catch (e) {',
+            '    return "Dear Hiring Manager,\\n\\nI am writing to apply for the position of " + jobData.jobTitle + ".";',
+            '  }',
+            '}'
+          ].join('\n');
+        });
+
+        const copyToClipboard = () => {
+          navigator.clipboard.writeText(generatedCode.value);
+          copied.value = true;
+          setTimeout(() => copied.value = false, 2500);
+        };
+
+        return {
+          currentStep,
+          activeGuide,
+          toggleGuide,
+          form,
+          newBlacklistWord,
+          addColumn,
+          removeColumn,
+          addBlacklistWord,
+          removeBlacklistWord,
+          generatedCode,
+          copyToClipboard,
+          copied
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

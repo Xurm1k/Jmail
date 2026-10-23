@@ -61,7 +61,7 @@
     <!-- Main Content Card -->
     <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
 
-      <!-- STEP 1: Overview & Workspace Credentials -->
+      <!-- STEP 1: Credentials & Workspace Credentials -->
       <div v-if="currentStep === 1" class="space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step1Title') }}</h2>
@@ -125,6 +125,11 @@
               <input v-model="form.gmail.doneLabel" type="text" :placeholder="t('gmailDonePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
             </div>
           </div>
+
+          <!-- Gmail Label Note -->
+          <div class="bg-slate-900/80 p-3 rounded-lg border border-amber-500/30 text-xs text-amber-200/90 leading-relaxed space-y-1">
+            <p>⚠️ <strong>{{ t('labelNoteTitle') }}:</strong> {{ t('labelNoteText') }}</p>
+          </div>
         </div>
       </div>
 
@@ -138,7 +143,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('postalCodeLabel') }}</label>
-            <input v-model="form.logistics.homePostcode" type="text" placeholder="60386" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.logistics.homePostcode" type="text" :placeholder="t('postalCodePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('cityLabel') }}</label>
@@ -146,12 +151,12 @@
           </div>
         </div>
 
-        <!-- NEW: Commute Mode Selector -->
+        <!-- Commute Mode Selector -->
         <div>
           <label class="block text-sm font-medium mb-2 text-slate-200">{{ t('transportModeLabel') }}</label>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button 
-              v-for="mode in transportOptions" 
+              v-for="mode in localizedTransportOptions" 
               :key="mode.id" 
               type="button" 
               @click="form.logistics.transportMode = mode.id"
@@ -166,7 +171,7 @@
           </div>
         </div>
 
-        <!-- Max Travel Slider (Disabled if NO_LIMIT) -->
+        <!-- Max Travel Slider -->
         <div :class="{'opacity-40 pointer-events-none': form.logistics.transportMode === 'NO_LIMIT'}">
           <div class="flex justify-between items-center mb-2">
             <label class="text-sm font-medium text-slate-200">{{ t('maxTravelLabel') }}</label>
@@ -338,15 +343,22 @@
         driveFolderLabel: "Google Drive Folder Link or ID (CoverLetter_Temp)",
         driveFolderPlaceholder: "Paste full Google Drive folder link here...",
         gmailInboxLabel: "Gmail Incoming Label",
-        gmailInboxPlaceholder: "Bew./Job-Alerts",
+        gmailInboxPlaceholder: "JobAlerts/Inbox",
         gmailDoneLabel: "Gmail Processed Label",
-        gmailDonePlaceholder: "Bew./Fertig",
+        gmailDonePlaceholder: "JobAlerts/Done",
+        labelNoteTitle: "Important Note on Gmail Labels",
+        labelNoteText: "1. For nested subfolders, specify the exact full path using slashes (e.g., JobAlerts/Inbox).\n2. Label names must match 1-to-1 exactly, including upper/lower case and special characters.",
         step2Title: "Step 2: Logistics & Match Threshold",
         step2Desc: "Define transit mode, travel limit and AI match score requirement.",
-        postalCodeLabel: "Postal Code (PLZ)",
+        postalCodeLabel: "Postal Code (ZIP)",
+        postalCodePlaceholder: "10001",
         cityLabel: "City",
-        cityPlaceholder: "Frankfurt am Main",
+        cityPlaceholder: "New York",
         transportModeLabel: "Preferred Transport Mode",
+        modeTransit: "Public Transit",
+        modeCar: "Car / Driving",
+        modeBike: "Bicycle / Bike",
+        modeNoLimit: "No Limit / Remote",
         maxTravelLabel: "Max Travel Time Limit",
         noLimitText: "No Limit / Remote",
         matchScoreLabel: "Minimum AI Match Score Threshold",
@@ -355,17 +367,17 @@
         sheetColumnsLabel: "Google Sheet Columns",
         addColumnBtn: "Add Custom Column",
         blacklistLabel: "Blacklisted Job Roles (Auto-move to Trash)",
-        blacklistPlaceholder: "e.g. Data Analyst",
+        blacklistPlaceholder: "e.g. Data Analyst, Call Center Agent",
         addBtn: "Add",
         step4Title: "Step 4: Applicant Profile & Resume Background",
         step4Desc: "Provide your contact info and experience directions (QA, Support, Ops, etc.).",
         fullNameLabel: "Full Name",
-        fullNamePlaceholder: "Max Mustermann",
+        fullNamePlaceholder: "John Doe",
         targetLangLabel: "Target Language for Documents",
         addressLabel: "Full Address & Contact Info",
-        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
+        addressPlaceholder: "123 Main Street, New York, NY 10001",
         resumeLabel: "Resume / CV Experience Directions",
-        resumePlaceholder: "Describe your experience across different roles (QA, Support, Ops). Gemini will select the best match and tailor both the Cover Letter and PDF Resume specifically for each company...",
+        resumePlaceholder: "Describe your experience across different roles (QA testing background, Customer Support / Supervisor skills, Operations experience). Gemini will select the best match and tailor both the Cover Letter and PDF Resume specifically for each company...",
         step5Title: "Your Code.gs is Ready!",
         copyBtn: "Copy Code",
         copiedBtn: "Copied to Clipboard!",
@@ -398,12 +410,19 @@
         gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Gmail Verarbeitet-Label",
         gmailDonePlaceholder: "Bew./Fertig",
+        labelNoteTitle: "Wichtiger Hinweis zu Gmail-Labels",
+        labelNoteText: "1. Bei verschachtelten Ordnern geben Sie den vollständigen Pfad mit Schrägstrich an (z. B. Bew./Job-Alerts).\n2. Namen müssen exakt 1:1 übereinstimmen (Groß-/Kleinschreibung und Sonderzeichen beachten).",
         step2Title: "Schritt 2: Logistik & Match-Schwellenwert",
         step2Desc: "Transportmittel, Fahrzeitbegrenzung und KI-Übereinstimmung festlegen.",
         postalCodeLabel: "Postleitzahl (PLZ)",
+        postalCodePlaceholder: "60386",
         cityLabel: "Stadt",
         cityPlaceholder: "Frankfurt am Main",
         transportModeLabel: "Bevorzugtes Transportmittel",
+        modeTransit: "ÖPNV / Nahverkehr",
+        modeCar: "Auto / PKW",
+        modeBike: "Fahrrad",
+        modeNoLimit: "Kein Limit / Remote",
         maxTravelLabel: "Max. Fahrzeitbegrenzung",
         noLimitText: "Kein Limit / Remote",
         matchScoreLabel: "Mindest-Match-Score der KI",
@@ -412,7 +431,7 @@
         sheetColumnsLabel: "Google Tabellen Spalten",
         addColumnBtn: "Spalte hinzufügen",
         blacklistLabel: "Auszuschließende Jobrollen (Automatisch in den Papierkorb)",
-        blacklistPlaceholder: "z.B. Data Analyst",
+        blacklistPlaceholder: "z.B. Data Analyst, Call Center Agent",
         addBtn: "Hinzufügen",
         step4Title: "Schritt 4: Bewerberprofil & Lebenslauf-Erfahrung",
         step4Desc: "Kontaktdaten und Erfahrungsschwerpunkte (QA, Support, Ops) angeben.",
@@ -422,7 +441,7 @@
         addressLabel: "Adresse & Kontaktdaten",
         addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Erfahrung & Fertigkeiten aus dem Lebenslauf",
-        resumePlaceholder: "Beschreiben Sie Ihre Erfahrungen aus verschiedenen Bereichen (QA, Support, Operations). Gemini wählt die passenden Akzente für Anschreiben und Lebenslauf...",
+        resumePlaceholder: "Beschreiben Sie Ihre Erfahrungen aus verschiedenen Bereichen (QA-Testing, Kundenservice-Leitung, Operations). Gemini wählt die passenden Akzente für Anschreiben und Lebenslauf...",
         step5Title: "Ihr Code.gs ist fertig!",
         copyBtn: "Code kopieren",
         copiedBtn: "In Zwischenablage kopiert!",
@@ -452,15 +471,22 @@
         driveFolderLabel: "Посилання або ID папки Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Вставте повне посилання на папку Google Drive...",
         gmailInboxLabel: "Ярлик Gmail для вхідних",
-        gmailInboxPlaceholder: "Bew./Job-Alerts",
+        gmailInboxPlaceholder: "Вакансії/Вхідні",
         gmailDoneLabel: "Ярлик Gmail для оброблених",
-        gmailDonePlaceholder: "Bew./Fertig",
+        gmailDonePlaceholder: "Вакансії/Оброблено",
+        labelNoteTitle: "Важлива примітка щодо ярликів Gmail",
+        labelNoteText: "1. Для вкладених папок вказуйте повний шлях через слеш (наприклад, Вакансії/Вхідні).\n2. Назва має 1-в-1 збігатися за регістром букв та спецсимволами.",
         step2Title: "Крок 2: Логістика та Поріг відповідності",
         step2Desc: "Оберіть вид транспорту, ліміт часу в дорозі та Match Score.",
-        postalCodeLabel: "Поштовий індекс (PLZ)",
+        postalCodeLabel: "Поштовий індекс",
+        postalCodePlaceholder: "01001",
         cityLabel: "Місто",
-        cityPlaceholder: "Франкфурт-на-Майні",
+        cityPlaceholder: "Київ",
         transportModeLabel: "Бажаний вид транспорту",
+        modeTransit: "Громадський транспорт",
+        modeCar: "Автомобіль / Авто",
+        modeBike: "Велосипед",
+        modeNoLimit: "Без обмежень / Віддалено",
         maxTravelLabel: "Максимальний час у дорозі",
         noLimitText: "Без обмежень / Дистанційно",
         matchScoreLabel: "Мінімальний поріг відповідності ШІ",
@@ -469,17 +495,17 @@
         sheetColumnsLabel: "Колонки Google Таблиці",
         addColumnBtn: "Додати колонку",
         blacklistLabel: "Заборонені посади (Автоматично в кошик)",
-        blacklistPlaceholder: "наприклад, Data Analyst",
+        blacklistPlaceholder: "наприклад, Аналітик даних, Оператор кол-центру",
         addBtn: "Додати",
         step4Title: "Крок 4: Профіль та Досвід з резюме",
         step4Desc: "Вкажіть ваші контакти та основні напрямки досвіду (QA, Support, Ops).",
         fullNameLabel: "ПІБ / Повне ім'я",
-        fullNamePlaceholder: "Макс Мустерманн",
+        fullNamePlaceholder: "Олександр Коваленко",
         targetLangLabel: "Мова документів",
         addressLabel: "Повна адреса та контакти",
-        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
+        addressPlaceholder: "вул. Хрещатик 1, Київ, 01001",
         resumeLabel: "Опис досвіду та навичок з резюме",
-        resumePlaceholder: "Опишіть свій досвід у різних сферах (QA, Support, Ops). Gemini сам обере найкращі акценти для супровідного листа та резюме під кожну вакансію...",
+        resumePlaceholder: "Опишіть свій досвід у різних сферах (тестування QA, підтримка клієнтів, операційне управління). Gemini сам обере найкращі акценти для супровідного листа та резюме під кожну вакансію...",
         step5Title: "Ваш Code.gs готовий!",
         copyBtn: "Скопіювати код",
         copiedBtn: "Скопійовано в буфер!",
@@ -509,15 +535,22 @@
         driveFolderLabel: "Ссылка или ID папки Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Вставьте полную ссылку на папку Google Drive...",
         gmailInboxLabel: "Ярлык Gmail для входящих",
-        gmailInboxPlaceholder: "Bew./Job-Alerts",
+        gmailInboxPlaceholder: "Работа/Входящие",
         gmailDoneLabel: "Ярлык Gmail для обработанных",
-        gmailDonePlaceholder: "Bew./Fertig",
+        gmailDonePlaceholder: "Работа/Обработано",
+        labelNoteTitle: "Важное примечание по ярлыкам Gmail",
+        labelNoteText: "1. Для вложенных папок указывайте полный путь через слэш (например, Работа/Входящие).\n2. Название должно 1-в-1 совпадать по регистру букв и спецсимволам.",
         step2Title: "Шаг 2: Логистика и Порог соответствия",
         step2Desc: "Выберите вид транспорта, лимит времени в пути и Match Score.",
-        postalCodeLabel: "Почтовый индекс (PLZ)",
+        postalCodeLabel: "Почтовый индекс",
+        postalCodePlaceholder: "101000",
         cityLabel: "Город",
-        cityPlaceholder: "Франкфурт-на-Майне",
+        cityPlaceholder: "Москва",
         transportModeLabel: "Предпочитаемый вид транспорта",
+        modeTransit: "Общественный транспорт",
+        modeCar: "Автомобиль / Авто",
+        modeBike: "Велосипед",
+        modeNoLimit: "Без ограничений / Удаленка",
         maxTravelLabel: "Максимальное время в пути",
         noLimitText: "Без ограничений / Удаленка",
         matchScoreLabel: "Минимальный порог соответствия ИИ",
@@ -526,17 +559,17 @@
         sheetColumnsLabel: "Колонки Google Таблицы",
         addColumnBtn: "Добавить колонку",
         blacklistLabel: "Запрещенные должности (Автоматически в корзину)",
-        blacklistPlaceholder: "например, Data Analyst",
+        blacklistPlaceholder: "например, Аналитик данных, Оператор колл-центра",
         addBtn: "Добавить",
         step4Title: "Шаг 4: Профиль и Опыт из резюме",
         step4Desc: "Укажите ваши контакты и направления опыта (QA, Support, Ops).",
         fullNameLabel: "ФИО / Полное имя",
-        fullNamePlaceholder: "Макс Мустерманн",
+        fullNamePlaceholder: "Александр Иванов",
         targetLangLabel: "Язык документов",
         addressLabel: "Полный адрес и контакты",
-        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
+        addressPlaceholder: "ул. Тверская 1, Москва, 101000",
         resumeLabel: "Описание опыта и навыков из резюме",
-        resumePlaceholder: "Опишите свой опыт в разных сферах (QA, Support, Ops). Gemini сам выберет лучшие акценты для сопроводительного письма и резюме под каждую вакансию...",
+        resumePlaceholder: "Опишите свой опыт в разных сферах (QA тестирование, поддержка клиентов, операционный менеджмент). Gemini сам выберет лучшие акценты для сопроводительного письма и резюме под каждую вакансию...",
         step5Title: "Ваш Code.gs готов!",
         copyBtn: "Скопировать код",
         copiedBtn: "Скопировано в буфер!",
@@ -566,15 +599,22 @@
         driveFolderLabel: "Enlace o ID de carpeta Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Pega el enlace completo de la carpeta de Google Drive...",
         gmailInboxLabel: "Etiqueta Gmail Entrante",
-        gmailInboxPlaceholder: "Bew./Job-Alerts",
+        gmailInboxPlaceholder: "Empleo/Entrada",
         gmailDoneLabel: "Etiqueta Gmail Procesado",
-        gmailDonePlaceholder: "Bew./Fertig",
+        gmailDonePlaceholder: "Empleo/Procesado",
+        labelNoteTitle: "Nota importante sobre las etiquetas de Gmail",
+        labelNoteText: "1. Para carpetas anidadas, indique la ruta completa con barras (ej. Empleo/Entrada).\n2. El nombre debe coincidir exactamente 1 a 1, incluyendo mayúsculas y caracteres especiales.",
         step2Title: "Paso 2: Logística y Umbral de coincidencia",
         step2Desc: "Define el modo de transporte, límite de tiempo y coincidencia de IA.",
-        postalCodeLabel: "Código Postal (PLZ)",
+        postalCodeLabel: "Código Postal",
+        postalCodePlaceholder: "28001",
         cityLabel: "Ciudad",
-        cityPlaceholder: "Frankfurt am Main",
+        cityPlaceholder: "Madrid",
         transportModeLabel: "Modo de transporte preferido",
+        modeTransit: "Transporte público",
+        modeCar: "Automóvil / Coche",
+        modeBike: "Bicicleta",
+        modeNoLimit: "Sin límite / Remoto",
         maxTravelLabel: "Límite máx. de tiempo de viaje",
         noLimitText: "Sin límite / Remoto",
         matchScoreLabel: "Puntuación mínima de coincidencia de IA",
@@ -583,17 +623,17 @@
         sheetColumnsLabel: "Columnas de Google Sheets",
         addColumnBtn: "Añadir columna",
         blacklistLabel: "Puestos excluidos (Auto-enviar a la papelera)",
-        blacklistPlaceholder: "ej. Data Analyst",
+        blacklistPlaceholder: "ej. Analista de datos, Agente de call center",
         addBtn: "Añadir",
         step4Title: "Paso 4: Perfil y Experiencia del CV",
         step4Desc: "Indica tus datos de contacto y áreas de experiencia (QA, Support, Ops).",
         fullNameLabel: "Nombre completo",
-        fullNamePlaceholder: "Max Mustermann",
+        fullNamePlaceholder: "Carlos García",
         targetLangLabel: "Idioma de los documentos",
         addressLabel: "Dirección completa y contacto",
-        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
+        addressPlaceholder: "Calle Gran Vía 1, Madrid, 28001",
         resumeLabel: "Experiencia y habilidades del CV",
-        resumePlaceholder: "Describe tu experiencia en diferentes áreas (QA, Support, Ops). Gemini personalizará la carta y el CV para cada empresa...",
+        resumePlaceholder: "Describe tu experiencia en diferentes áreas (QA testing, atención al cliente, operaciones). Gemini personalizará la carta y el CV para cada empresa...",
         step5Title: "¡Tu Code.gs está listo!",
         copyBtn: "Copiar código",
         copiedBtn: "¡Copiado al portapapeles!",
@@ -623,15 +663,22 @@
         driveFolderLabel: "Lien ou ID du dossier Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Collez le lien complet du dossier Google Drive...",
         gmailInboxLabel: "Étiquette Gmail Entrant",
-        gmailInboxPlaceholder: "Bew./Job-Alerts",
+        gmailInboxPlaceholder: "Emploi/Inspirations",
         gmailDoneLabel: "Étiquette Gmail Traité",
-        gmailDonePlaceholder: "Bew./Fertig",
+        gmailDonePlaceholder: "Emploi/Traité",
+        labelNoteTitle: "Remarque importante sur les étiquettes Gmail",
+        labelNoteText: "1. Pour les dossiers imbriqués, indiquez le chemin complet avec des barres (ex. Emploi/Inspirations).\n2. Le nom doit correspondre exactement 1 à 1 (majuscules/minuscules et caractères spéciaux).",
         step2Title: "Étape 2 : Logistique et Seuil de correspondance",
         step2Desc: "Définissez le mode de transport, la limite de temps et le score IA.",
-        postalCodeLabel: "Code Postal (PLZ)",
+        postalCodeLabel: "Code Postal",
+        postalCodePlaceholder: "75001",
         cityLabel: "Ville",
-        cityPlaceholder: "Frankfurt am Main",
+        cityPlaceholder: "Paris",
         transportModeLabel: "Mode de transport préféré",
+        modeTransit: "Transports en commun",
+        modeCar: "Voiture / Automobile",
+        modeBike: "Vélo",
+        modeNoLimit: "Sans limite / Télétravail",
         maxTravelLabel: "Temps de trajet max",
         noLimitText: "Sans limite / Télétravail",
         matchScoreLabel: "Score de correspondance minimal de l'IA",
@@ -640,15 +687,15 @@
         sheetColumnsLabel: "Colonnes Google Sheets",
         addColumnBtn: "Ajouter une colonne",
         blacklistLabel: "Postes exclus (Suppression automatique vers la corbeille)",
-        blacklistPlaceholder: "ex. Data Analyst",
+        blacklistPlaceholder: "ex. Analyste de données, Agent de call center",
         addBtn: "Ajouter",
         step4Title: "Étape 4 : Profil et Expérience du CV",
         step4Desc: "Indiquez vos coordonnées et domaines d'expérience (QA, Support, Ops).",
         fullNameLabel: "Nom complet",
-        fullNamePlaceholder: "Max Mustermann",
+        fullNamePlaceholder: "Jean Dupont",
         targetLangLabel: "Langue des documents",
         addressLabel: "Adresse complète et contacts",
-        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
+        addressPlaceholder: "1 Rue de Rivoli, Paris, 75001",
         resumeLabel: "Expérience et compétences du CV",
         resumePlaceholder: "Décrivez votre expérience (QA, Support, Ops). Gemini adaptera la lettre et le CV spécifiquement pour chaque entreprise...",
         step5Title: "Votre Code.gs est prêt !",
@@ -680,15 +727,22 @@
         driveFolderLabel: "Link lub ID folderu Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Wklej pełny link do folderu Google Drive...",
         gmailInboxLabel: "Etykieta Gmail Przychodzące",
-        gmailInboxPlaceholder: "Bew./Job-Alerts",
+        gmailInboxPlaceholder: "Praca/Odebrane",
         gmailDoneLabel: "Etykieta Gmail Przetworzone",
-        gmailDonePlaceholder: "Bew./Fertig",
+        gmailDonePlaceholder: "Praca/Gotowe",
+        labelNoteTitle: "Ważna uwaga dotycząca etykiet Gmail",
+        labelNoteText: "1. W przypadku folderów podrzędnych podaj pełną ścieżkę ze ukośnikiem (np. Praca/Odebrane).\n2. Nazwa musi zgadzać się dokładnie 1 do 1, wliczając wielkość liter i symbole.",
         step2Title: "Krok 2: Logistyka i Próg dopasowania",
         step2Desc: "Określ środek transportu, limit czasu i wymagany wynik AI.",
-        postalCodeLabel: "Kod pocztowy (PLZ)",
+        postalCodeLabel: "Kod pocztowy",
+        postalCodePlaceholder: "00-001",
         cityLabel: "Miasto",
-        cityPlaceholder: "Frankfurt am Main",
+        cityPlaceholder: "Warszawa",
         transportModeLabel: "Preferowany środek transportu",
+        modeTransit: "Komunikacja miejska",
+        modeCar: "Samochód / Auto",
+        modeBike: "Rower",
+        modeNoLimit: "Bez limitu / Zdalnie",
         maxTravelLabel: "Maksymalny czas dojazdu",
         noLimitText: "Bez limitu / Zdalnie",
         matchScoreLabel: "Minimalny próg dopasowania AI",
@@ -697,15 +751,15 @@
         sheetColumnsLabel: "Kolumny Google Sheets",
         addColumnBtn: "Dodaj kolumnę",
         blacklistLabel: "Wykluczone stanowiska (Automatycznie do kosza)",
-        blacklistPlaceholder: "np. Data Analyst",
+        blacklistPlaceholder: "np. Analityk danych, Pracownik call center",
         addBtn: "Dodaj",
         step4Title: "Krok 4: Profil i Doświadczenie z CV",
         step4Desc: "Podaj dane kontaktowe i kierunki doświadczenia (QA, Support, Ops).",
         fullNameLabel: "Imię i nazwisko",
-        fullNamePlaceholder: "Max Mustermann",
+        fullNamePlaceholder: "Jan Kowalski",
         targetLangLabel: "Język dokumentów",
         addressLabel: "Pełny adres i kontakt",
-        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
+        addressPlaceholder: "ul. Marszałkowska 1, Warszawa, 00-001",
         resumeLabel: "Doświadczenie i umiejętności z CV",
         resumePlaceholder: "Opisz swoje doświadczenie (QA, Support, Ops). Gemini dopasuje list motywacyjny i CV indywidualnie do każdej firmy...",
         step5Title: "Twój Code.gs jest gotowy!",
@@ -722,7 +776,6 @@
       }
     };
 
-    // Clean Default Columns without hardcoded ÖPNV/Match Score
     const defaultColumnsByLang = {
       EN: ["Processing Date", "Company Name", "Job Title", "Location", "Travel Time", "Match Score (%)", "Salary Range", "Job URL", "Status"],
       DE: ["Bearbeitungsdatum", "Unternehmen", "Stellenbezeichnung", "Standort", "Fahrzeit", "Match-Score (%)", "Gehalt", "Job-URL", "Status"],
@@ -743,17 +796,17 @@
         const selectedLanguageOption = ref('German');
         const customLanguageInput = ref('');
 
-        const transportOptions = [
-          { id: 'ÖPNV', icon: '🚌', label: 'ÖPNV / Transit' },
-          { id: 'Car', icon: '🚗', label: 'Car / Auto' },
-          { id: 'Bike', icon: '🚲', label: 'Bicycle / Bike' },
-          { id: 'NO_LIMIT', icon: '🌐', label: 'No Limit / Remote' }
-        ];
-
         const t = (key) => {
           const dict = translations[currentLang.value] || translations['EN'];
           return dict[key] || translations['EN'][key] || key;
         };
+
+        const localizedTransportOptions = computed(() => [
+          { id: 'ÖPNV', icon: '🚌', label: t('modeTransit') },
+          { id: 'Car', icon: '🚗', label: t('modeCar') },
+          { id: 'Bike', icon: '🚲', label: t('modeBike') },
+          { id: 'NO_LIMIT', icon: '🌐', label: t('modeNoLimit') }
+        ]);
 
         const saveLanguage = () => {
           localStorage.setItem('jmail_lang', currentLang.value);
@@ -888,15 +941,15 @@
             '    const rowData = [];',
             '    CONFIG.COLUMNS.forEach(colName => {',
             '      const lower = colName.toLowerCase();',
-            '      if (lower.includes("date") || lower.includes("datum") || lower.includes("дата")) rowData.push(new Date());',
-            '      else if (lower.includes("company") || lower.includes("unternehmen") || lower.includes("компанія") || lower.includes("компания")) rowData.push(analysis.companyName || "N/A");',
-            '      else if (lower.includes("title") || lower.includes("stelle") || lower.includes("посада") || lower.includes("должность")) rowData.push(analysis.jobTitle || emailSubject);',
-            '      else if (lower.includes("location") || lower.includes("standort") || lower.includes("локація") || lower.includes("локация")) rowData.push(analysis.location || CONFIG.CITY);',
-            '      else if (lower.includes("travel") || lower.includes("fahrzeit") || lower.includes("дорозі") || lower.includes("пути")) rowData.push(CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "Flexible / Remote" : (analysis.travelTimeMinutes || "?") + " mins (" + CONFIG.TRANSPORT_MODE + ")");',
-            '      else if (lower.includes("score") || lower.includes("match") || lower.includes("відповідності") || lower.includes("совпадения")) rowData.push(analysis.matchScore + "%");',
-            '      else if (lower.includes("salary") || lower.includes("gehalt") || lower.includes("зарплата")) rowData.push(analysis.salary || "Not specified");',
+            '      if (lower.includes("date") || lower.includes("datum") || lower.includes("дата") || lower.includes("fecha")) rowData.push(new Date());',
+            '      else if (lower.includes("company") || lower.includes("unternehmen") || lower.includes("компанія") || lower.includes("компания") || lower.includes("empresa") || lower.includes("entreprise") || lower.includes("firma")) rowData.push(analysis.companyName || "N/A");',
+            '      else if (lower.includes("title") || lower.includes("stelle") || lower.includes("посада") || lower.includes("должность") || lower.includes("puesto") || lower.includes("poste") || lower.includes("stanowisko")) rowData.push(analysis.jobTitle || emailSubject);',
+            '      else if (lower.includes("location") || lower.includes("standort") || lower.includes("локація") || lower.includes("локация") || lower.includes("ubicación") || lower.includes("lieu") || lower.includes("lokalizacja")) rowData.push(analysis.location || CONFIG.CITY);',
+            '      else if (lower.includes("travel") || lower.includes("fahrzeit") || lower.includes("дорозі") || lower.includes("пути") || lower.includes("viaje") || lower.includes("trajet") || lower.includes("dojazdu")) rowData.push(CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "Flexible / Remote" : (analysis.travelTimeMinutes || "?") + " mins (" + CONFIG.TRANSPORT_MODE + ")");',
+            '      else if (lower.includes("score") || lower.includes("match") || lower.includes("відповідності") || lower.includes("совпадения") || lower.includes("puntuación") || lower.includes("wynik")) rowData.push(analysis.matchScore + "%");',
+            '      else if (lower.includes("salary") || lower.includes("gehalt") || lower.includes("зарплата") || lower.includes("salario") || lower.includes("salaire") || lower.includes("wynagrodzenie")) rowData.push(analysis.salary || "Not specified");',
             '      else if (lower.includes("url") || lower.includes("link") || lower.includes("посилання") || lower.includes("ссылка")) rowData.push(analysis.jobUrl || "From Email");',
-            '      else if (lower.includes("status") || lower.includes("статус")) rowData.push("Cover Letter & CV Generated");',
+            '      else if (lower.includes("status") || lower.includes("статус") || lower.includes("estado") || lower.includes("statut")) rowData.push("Cover Letter & CV Generated");',
             '      else rowData.push(analysis.notes || "Matches profile");',
             '    });',
             '    sheet.appendRow(rowData);',
@@ -974,7 +1027,7 @@
           currentStep,
           activeGuide,
           toggleGuide,
-          transportOptions,
+          localizedTransportOptions,
           form,
           parseFolderId,
           selectedLanguageOption,

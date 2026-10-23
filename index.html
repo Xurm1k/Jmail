@@ -61,7 +61,7 @@
     <!-- Main Content Card -->
     <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
 
-      <!-- STEP 1: Credentials & Workspace Credentials -->
+      <!-- STEP 1: Credentials & Workspace Setup -->
       <div v-if="currentStep === 1" class="space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step1Title') }}</h2>
@@ -118,11 +118,11 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-700/60">
             <div>
               <label class="block text-xs font-medium mb-1 text-slate-300">{{ t('gmailInboxLabel') }}</label>
-              <input v-model="form.gmail.inboxLabel" type="text" :placeholder="t('gmailInboxPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
+              <input v-model="form.gmail.inboxLabel" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
             </div>
             <div>
               <label class="block text-xs font-medium mb-1 text-slate-300">{{ t('gmailDoneLabel') }}</label>
-              <input v-model="form.gmail.doneLabel" type="text" :placeholder="t('gmailDonePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
+              <input v-model="form.gmail.doneLabel" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
             </div>
           </div>
 
@@ -143,11 +143,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('postalCodeLabel') }}</label>
-            <input v-model="form.logistics.homePostcode" type="text" :placeholder="t('postalCodePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.logistics.homePostcode" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('cityLabel') }}</label>
-            <input v-model="form.logistics.city" type="text" :placeholder="t('cityPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.logistics.city" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
         </div>
 
@@ -246,7 +246,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('fullNameLabel') }}</label>
-            <input v-model="form.applicant.fullName" type="text" :placeholder="t('fullNamePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.applicant.fullName" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
 
           <div>
@@ -266,12 +266,12 @@
 
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('addressLabel') }}</label>
-          <input v-model="form.applicant.address" type="text" :placeholder="t('addressPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+          <input v-model="form.applicant.address" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('resumeLabel') }}</label>
-          <textarea v-model="form.applicant.resumeText" rows="6" :placeholder="t('resumePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
+          <textarea v-model="form.applicant.resumeText" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
         </div>
       </div>
 
@@ -343,17 +343,13 @@
         driveFolderLabel: "Google Drive Folder Link or ID (CoverLetter_Temp)",
         driveFolderPlaceholder: "Paste full Google Drive folder link here...",
         gmailInboxLabel: "Gmail Incoming Label",
-        gmailInboxPlaceholder: "JobAlerts/Inbox",
         gmailDoneLabel: "Gmail Processed Label",
-        gmailDonePlaceholder: "JobAlerts/Done",
         labelNoteTitle: "Important Note on Gmail Labels",
         labelNoteText: "1. For nested subfolders, specify the exact full path using slashes (e.g., JobAlerts/Inbox).\n2. Label names must match 1-to-1 exactly, including upper/lower case and special characters.",
         step2Title: "Step 2: Logistics & Match Threshold",
         step2Desc: "Define transit mode, travel limit and AI match score requirement.",
         postalCodeLabel: "Postal Code (ZIP)",
-        postalCodePlaceholder: "10001",
         cityLabel: "City",
-        cityPlaceholder: "New York",
         transportModeLabel: "Preferred Transport Mode",
         modeTransit: "Public Transit",
         modeCar: "Car / Driving",
@@ -372,12 +368,9 @@
         step4Title: "Step 4: Applicant Profile & Resume Background",
         step4Desc: "Provide your contact info and experience directions (QA, Support, Ops, etc.).",
         fullNameLabel: "Full Name",
-        fullNamePlaceholder: "John Doe",
         targetLangLabel: "Target Language for Documents",
         addressLabel: "Full Address & Contact Info",
-        addressPlaceholder: "123 Main Street, New York, NY 10001",
         resumeLabel: "Resume / CV Experience Directions",
-        resumePlaceholder: "Describe your experience across different roles (QA testing background, Customer Support / Supervisor skills, Operations experience). Gemini will select the best match and tailor both the Cover Letter and PDF Resume specifically for each company...",
         step5Title: "Your Code.gs is Ready!",
         copyBtn: "Copy Code",
         copiedBtn: "Copied to Clipboard!",
@@ -407,17 +400,13 @@
         driveFolderLabel: "Google Drive Ordner-Link oder ID (CoverLetter_Temp)",
         driveFolderPlaceholder: "Vollständigen Google Drive Ordner-Link einfügen...",
         gmailInboxLabel: "Gmail Eingehend-Label",
-        gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Gmail Verarbeitet-Label",
-        gmailDonePlaceholder: "Bew./Fertig",
         labelNoteTitle: "Wichtiger Hinweis zu Gmail-Labels",
         labelNoteText: "1. Bei verschachtelten Ordnern geben Sie den vollständigen Pfad mit Schrägstrich an (z. B. Bew./Job-Alerts).\n2. Namen müssen exakt 1:1 übereinstimmen (Groß-/Kleinschreibung und Sonderzeichen beachten).",
         step2Title: "Schritt 2: Logistik & Match-Schwellenwert",
         step2Desc: "Transportmittel, Fahrzeitbegrenzung und KI-Übereinstimmung festlegen.",
         postalCodeLabel: "Postleitzahl (PLZ)",
-        postalCodePlaceholder: "60386",
         cityLabel: "Stadt",
-        cityPlaceholder: "Frankfurt am Main",
         transportModeLabel: "Bevorzugtes Transportmittel",
         modeTransit: "ÖPNV / Nahverkehr",
         modeCar: "Auto / PKW",
@@ -436,12 +425,9 @@
         step4Title: "Schritt 4: Bewerberprofil & Lebenslauf-Erfahrung",
         step4Desc: "Kontaktdaten und Erfahrungsschwerpunkte (QA, Support, Ops) angeben.",
         fullNameLabel: "Vollständiger Name",
-        fullNamePlaceholder: "Max Mustermann",
         targetLangLabel: "Zielsprache für Dokumente",
         addressLabel: "Adresse & Kontaktdaten",
-        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Erfahrung & Fertigkeiten aus dem Lebenslauf",
-        resumePlaceholder: "Beschreiben Sie Ihre Erfahrungen aus verschiedenen Bereichen (QA-Testing, Kundenservice-Leitung, Operations). Gemini wählt die passenden Akzente für Anschreiben und Lebenslauf...",
         step5Title: "Ihr Code.gs ist fertig!",
         copyBtn: "Code kopieren",
         copiedBtn: "In Zwischenablage kopiert!",
@@ -471,17 +457,13 @@
         driveFolderLabel: "Посилання або ID папки Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Вставте повне посилання на папку Google Drive...",
         gmailInboxLabel: "Ярлик Gmail для вхідних",
-        gmailInboxPlaceholder: "Вакансії/Вхідні",
         gmailDoneLabel: "Ярлик Gmail для оброблених",
-        gmailDonePlaceholder: "Вакансії/Оброблено",
         labelNoteTitle: "Важлива примітка щодо ярликів Gmail",
         labelNoteText: "1. Для вкладених папок вказуйте повний шлях через слеш (наприклад, Вакансії/Вхідні).\n2. Назва має 1-в-1 збігатися за регістром букв та спецсимволами.",
         step2Title: "Крок 2: Логістика та Поріг відповідності",
         step2Desc: "Оберіть вид транспорту, ліміт часу в дорозі та Match Score.",
         postalCodeLabel: "Поштовий індекс",
-        postalCodePlaceholder: "01001",
         cityLabel: "Місто",
-        cityPlaceholder: "Київ",
         transportModeLabel: "Бажаний вид транспорту",
         modeTransit: "Громадський транспорт",
         modeCar: "Автомобіль / Авто",
@@ -500,12 +482,9 @@
         step4Title: "Крок 4: Профіль та Досвід з резюме",
         step4Desc: "Вкажіть ваші контакти та основні напрямки досвіду (QA, Support, Ops).",
         fullNameLabel: "ПІБ / Повне ім'я",
-        fullNamePlaceholder: "Олександр Коваленко",
         targetLangLabel: "Мова документів",
         addressLabel: "Повна адреса та контакти",
-        addressPlaceholder: "вул. Хрещатик 1, Київ, 01001",
         resumeLabel: "Опис досвіду та навичок з резюме",
-        resumePlaceholder: "Опишіть свій досвід у різних сферах (тестування QA, підтримка клієнтів, операційне управління). Gemini сам обере найкращі акценти для супровідного листа та резюме під кожну вакансію...",
         step5Title: "Ваш Code.gs готовий!",
         copyBtn: "Скопіювати код",
         copiedBtn: "Скопійовано в буфер!",
@@ -535,17 +514,13 @@
         driveFolderLabel: "Ссылка или ID папки Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Вставьте полную ссылку на папку Google Drive...",
         gmailInboxLabel: "Ярлык Gmail для входящих",
-        gmailInboxPlaceholder: "Работа/Входящие",
         gmailDoneLabel: "Ярлык Gmail для обработанных",
-        gmailDonePlaceholder: "Работа/Обработано",
         labelNoteTitle: "Важное примечание по ярлыкам Gmail",
         labelNoteText: "1. Для вложенных папок указывайте полный путь через слэш (например, Работа/Входящие).\n2. Название должно 1-в-1 совпадать по регистру букв и спецсимволам.",
         step2Title: "Шаг 2: Логистика и Порог соответствия",
         step2Desc: "Выберите вид транспорта, лимит времени в пути и Match Score.",
         postalCodeLabel: "Почтовый индекс",
-        postalCodePlaceholder: "101000",
         cityLabel: "Город",
-        cityPlaceholder: "Москва",
         transportModeLabel: "Предпочитаемый вид транспорта",
         modeTransit: "Общественный транспорт",
         modeCar: "Автомобиль / Авто",
@@ -564,12 +539,9 @@
         step4Title: "Шаг 4: Профиль и Опыт из резюме",
         step4Desc: "Укажите ваши контакты и направления опыта (QA, Support, Ops).",
         fullNameLabel: "ФИО / Полное имя",
-        fullNamePlaceholder: "Александр Иванов",
         targetLangLabel: "Язык документов",
         addressLabel: "Полный адрес и контакты",
-        addressPlaceholder: "ул. Тверская 1, Москва, 101000",
         resumeLabel: "Описание опыта и навыков из резюме",
-        resumePlaceholder: "Опишите свой опыт в разных сферах (QA тестирование, поддержка клиентов, операционный менеджмент). Gemini сам выберет лучшие акценты для сопроводительного письма и резюме под каждую вакансию...",
         step5Title: "Ваш Code.gs готов!",
         copyBtn: "Скопировать код",
         copiedBtn: "Скопировано в буфер!",
@@ -599,17 +571,13 @@
         driveFolderLabel: "Enlace o ID de carpeta Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Pega el enlace completo de la carpeta de Google Drive...",
         gmailInboxLabel: "Etiqueta Gmail Entrante",
-        gmailInboxPlaceholder: "Empleo/Entrada",
         gmailDoneLabel: "Etiqueta Gmail Procesado",
-        gmailDonePlaceholder: "Empleo/Procesado",
         labelNoteTitle: "Nota importante sobre las etiquetas de Gmail",
         labelNoteText: "1. Para carpetas anidadas, indique la ruta completa con barras (ej. Empleo/Entrada).\n2. El nombre debe coincidir exactamente 1 a 1, incluyendo mayúsculas y caracteres especiales.",
         step2Title: "Paso 2: Logística y Umbral de coincidencia",
         step2Desc: "Define el modo de transporte, límite de tiempo y coincidencia de IA.",
         postalCodeLabel: "Código Postal",
-        postalCodePlaceholder: "28001",
         cityLabel: "Ciudad",
-        cityPlaceholder: "Madrid",
         transportModeLabel: "Modo de transporte preferido",
         modeTransit: "Transporte público",
         modeCar: "Automóvil / Coche",
@@ -628,12 +596,9 @@
         step4Title: "Paso 4: Perfil y Experiencia del CV",
         step4Desc: "Indica tus datos de contacto y áreas de experiencia (QA, Support, Ops).",
         fullNameLabel: "Nombre completo",
-        fullNamePlaceholder: "Carlos García",
         targetLangLabel: "Idioma de los documentos",
         addressLabel: "Dirección completa y contacto",
-        addressPlaceholder: "Calle Gran Vía 1, Madrid, 28001",
         resumeLabel: "Experiencia y habilidades del CV",
-        resumePlaceholder: "Describe tu experiencia en diferentes áreas (QA testing, atención al cliente, operaciones). Gemini personalizará la carta y el CV para cada empresa...",
         step5Title: "¡Tu Code.gs está listo!",
         copyBtn: "Copiar código",
         copiedBtn: "¡Copiado al portapapeles!",
@@ -663,17 +628,13 @@
         driveFolderLabel: "Lien ou ID du dossier Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Collez le lien complet du dossier Google Drive...",
         gmailInboxLabel: "Étiquette Gmail Entrant",
-        gmailInboxPlaceholder: "Emploi/Inspirations",
         gmailDoneLabel: "Étiquette Gmail Traité",
-        gmailDonePlaceholder: "Emploi/Traité",
         labelNoteTitle: "Remarque importante sur les étiquettes Gmail",
         labelNoteText: "1. Pour les dossiers imbriqués, indiquez le chemin complet avec des barres (ex. Emploi/Inspirations).\n2. Le nom doit correspondre exactement 1 à 1 (majuscules/minuscules et caractères spéciaux).",
         step2Title: "Étape 2 : Logistique et Seuil de correspondance",
         step2Desc: "Définissez le mode de transport, la limite de temps et le score IA.",
         postalCodeLabel: "Code Postal",
-        postalCodePlaceholder: "75001",
         cityLabel: "Ville",
-        cityPlaceholder: "Paris",
         transportModeLabel: "Mode de transport préféré",
         modeTransit: "Transports en commun",
         modeCar: "Voiture / Automobile",
@@ -692,12 +653,9 @@
         step4Title: "Étape 4 : Profil et Expérience du CV",
         step4Desc: "Indiquez vos coordonnées et domaines d'expérience (QA, Support, Ops).",
         fullNameLabel: "Nom complet",
-        fullNamePlaceholder: "Jean Dupont",
         targetLangLabel: "Langue des documents",
         addressLabel: "Adresse complète et contacts",
-        addressPlaceholder: "1 Rue de Rivoli, Paris, 75001",
         resumeLabel: "Expérience et compétences du CV",
-        resumePlaceholder: "Décrivez votre expérience (QA, Support, Ops). Gemini adaptera la lettre et le CV spécifiquement pour chaque entreprise...",
         step5Title: "Votre Code.gs est prêt !",
         copyBtn: "Copier le code",
         copiedBtn: "Copié dans le presse-papiers !",
@@ -727,17 +685,13 @@
         driveFolderLabel: "Link lub ID folderu Google Drive (CoverLetter_Temp)",
         driveFolderPlaceholder: "Wklej pełny link do folderu Google Drive...",
         gmailInboxLabel: "Etykieta Gmail Przychodzące",
-        gmailInboxPlaceholder: "Praca/Odebrane",
         gmailDoneLabel: "Etykieta Gmail Przetworzone",
-        gmailDonePlaceholder: "Praca/Gotowe",
         labelNoteTitle: "Ważna uwaga dotycząca etykiet Gmail",
         labelNoteText: "1. W przypadku folderów podrzędnych podaj pełną ścieżkę ze ukośnikiem (np. Praca/Odebrane).\n2. Nazwa musi zgadzać się dokładnie 1 do 1, wliczając wielkość liter i symbole.",
         step2Title: "Krok 2: Logistyka i Próg dopasowania",
         step2Desc: "Określ środek transportu, limit czasu i wymagany wynik AI.",
         postalCodeLabel: "Kod pocztowy",
-        postalCodePlaceholder: "00-001",
         cityLabel: "Miasto",
-        cityPlaceholder: "Warszawa",
         transportModeLabel: "Preferowany środek transportu",
         modeTransit: "Komunikacja miejska",
         modeCar: "Samochód / Auto",
@@ -756,12 +710,9 @@
         step4Title: "Krok 4: Profil i Doświadczenie z CV",
         step4Desc: "Podaj dane kontaktowe i kierunki doświadczenia (QA, Support, Ops).",
         fullNameLabel: "Imię i nazwisko",
-        fullNamePlaceholder: "Jan Kowalski",
         targetLangLabel: "Język dokumentów",
         addressLabel: "Pełny adres i kontakt",
-        addressPlaceholder: "ul. Marszałkowska 1, Warszawa, 00-001",
         resumeLabel: "Doświadczenie i umiejętności z CV",
-        resumePlaceholder: "Opisz swoje doświadczenie (QA, Support, Ops). Gemini dopasuje list motywacyjny i CV indywidualnie do każdej firmy...",
         step5Title: "Twój Code.gs jest gotowy!",
         copyBtn: "Kopiuj kod",
         copiedBtn: "Skopiowano do schowka!",
@@ -773,6 +724,80 @@
         guideStep5: "Kliknij Wyzwalacze (⏰ Zegar) ➔ Dodaj wyzwalacz ➔ Czasowy (Codziennie).",
         backBtn: "Wstecz",
         nextBtn: "Dalej"
+      }
+    };
+
+    // Cultural / Localized Preset Data
+    const localizedPresets = {
+      EN: {
+        postcode: "WC2N 5DU",
+        city: "London",
+        inbox: "JobAlerts/Inbox",
+        done: "JobAlerts/Done",
+        blacklist: ["Data Analyst", "Call Center Agent", "Manual Labor", "Warehouse Worker"],
+        fullName: "John Doe",
+        address: "10 Downing Street, London, WC2N 5DU",
+        resumeText: "5+ years of experience in QA & Quality Control testing, Customer Support supervision, and Operations management..."
+      },
+      DE: {
+        postcode: "60386",
+        city: "Frankfurt am Main",
+        inbox: "Bew./Job-Alerts",
+        done: "Bew./Fertig",
+        blacklist: ["Data Analyst", "Call Center Agent", "Körperliche Arbeit", "Lagerhelfer"],
+        fullName: "Max Mustermann",
+        address: "Musterstraße 1, 60386 Frankfurt am Main",
+        resumeText: "5 Jahre Berufserfahrung im Bereich Software-Testing (QA), Kundenservice-Leitung und operativer Administration..."
+      },
+      UA: {
+        postcode: "01001",
+        city: "Київ",
+        inbox: "Вакансії/Вхідні",
+        done: "Вакансії/Оброблено",
+        blacklist: ["Аналітик даних", "Оператор кол-центру", "Фізична праця", "Працівник складу"],
+        fullName: "Олександр Коваленко",
+        address: "вул. Хрещатик 1, Київ, 01001",
+        resumeText: "Понад 5 років досвіду у сфері тестування ПЗ (QA), керівництва службою підтримки клієнтів та операційного менеджменту..."
+      },
+      RU: {
+        postcode: "101000",
+        city: "Москва",
+        inbox: "Работа/Входящие",
+        done: "Работа/Обработано",
+        blacklist: ["Аналитик данных", "Оператор колл-центра", "Физический труд", "Рабочий на склад"],
+        fullName: "Александр Иванов",
+        address: "ул. Тверская 1, Москва, 101000",
+        resumeText: "Более 5 лет опыта в области тестирования ПО (QA), руководства поддержкой клиентов и управления операционными процессами..."
+      },
+      ES: {
+        postcode: "28001",
+        city: "Madrid",
+        inbox: "Empleo/Entrada",
+        done: "Empleo/Procesado",
+        blacklist: ["Analista de datos", "Agente de call center", "Trabajo manual", "Mozo de almacén"],
+        fullName: "Carlos García",
+        address: "Calle Gran Vía 1, Madrid, 28001",
+        resumeText: "Más de 5 años de experiencia en pruebas de calidad QA, gestión de atención al cliente y operaciones de administración..."
+      },
+      FR: {
+        postcode: "75001",
+        city: "Paris",
+        inbox: "Emploi/Inspirations",
+        done: "Emploi/Traité",
+        blacklist: ["Analyste de données", "Agent de centre d'appels", "Travail manuel", "Manutentionnaire"],
+        fullName: "Jean Dupont",
+        address: "1 Rue de Rivoli, Paris, 75001",
+        resumeText: "Plus de 5 ans d'expérience en assurance qualité (QA), gestion du service client et administration des opérations..."
+      },
+      PL: {
+        postcode: "00-001",
+        city: "Warszawa",
+        inbox: "Praca/Odebrane",
+        done: "Praca/Gotowe",
+        blacklist: ["Analityk danych", "Pracownik call center", "Praca fizyczna", "Pracownik magazynu"],
+        fullName: "Jan Kowalski",
+        address: "ul. Marszałkowska 1, Warszawa, 00-001",
+        resumeText: "Ponad 5 lat doświadczenia w testowaniu oprogramowania (QA), zarządzaniu obsługą klienta oraz operacjach..."
       }
     };
 
@@ -808,16 +833,7 @@
           { id: 'NO_LIMIT', icon: '🌐', label: t('modeNoLimit') }
         ]);
 
-        const saveLanguage = () => {
-          localStorage.setItem('jmail_lang', currentLang.value);
-          if (defaultColumnsByLang[currentLang.value]) {
-            form.value.columns = [...defaultColumnsByLang[currentLang.value]];
-          }
-        };
-
-        const toggleGuide = (guideName) => {
-          activeGuide.value = activeGuide.value === guideName ? null : guideName;
-        };
+        const preset = computed(() => localizedPresets[currentLang.value] || localizedPresets['EN']);
 
         const form = ref({
           geminiApiKey: '',
@@ -825,27 +841,47 @@
           driveFolderId: '',
           minMatchScore: 70,
           logistics: {
-            homePostcode: '60386',
-            city: 'Frankfurt am Main',
+            homePostcode: preset.value.postcode,
+            city: preset.value.city,
             transportMode: 'ÖPNV',
             maxTravelMinutes: 60
           },
-          columns: [...defaultColumnsByLang[localStorage.getItem('jmail_lang') || 'EN']],
+          columns: [...defaultColumnsByLang[currentLang.value]],
           filters: {
-            blacklistKeywords: ['Data Analyst', 'Call Center Agent', 'Manual Labor', 'Warehouse Worker']
+            blacklistKeywords: [...preset.value.blacklist]
           },
           gmail: {
-            inboxLabel: 'Bew./Job-Alerts',
-            doneLabel: 'Bew./Fertig'
+            inboxLabel: preset.value.inbox,
+            doneLabel: preset.value.done
           },
           applicant: {
-            fullName: 'Max Mustermann',
-            address: 'Musterstraße 1, 60386 Frankfurt am Main',
-            phone: '+49 123 456789',
-            email: 'max.mustermann@example.com',
-            resumeText: 'Experience in QA & Quality Control supervision, Customer Support Management, and Operations Operations...'
+            fullName: preset.value.fullName,
+            address: preset.value.address,
+            phone: '+7 999 1234567',
+            email: 'alexander@example.com',
+            resumeText: preset.value.resumeText
           }
         });
+
+        // Dynamic reactive update when user switches header language
+        const saveLanguage = () => {
+          localStorage.setItem('jmail_lang', currentLang.value);
+          const p = localizedPresets[currentLang.value] || localizedPresets['EN'];
+          
+          form.value.logistics.homePostcode = p.postcode;
+          form.value.logistics.city = p.city;
+          form.value.gmail.inboxLabel = p.inbox;
+          form.value.gmail.doneLabel = p.done;
+          form.value.filters.blacklistKeywords = [...p.blacklist];
+          form.value.applicant.fullName = p.fullName;
+          form.value.applicant.address = p.address;
+          form.value.applicant.resumeText = p.resumeText;
+          form.value.columns = [...(defaultColumnsByLang[currentLang.value] || defaultColumnsByLang['EN'])];
+        };
+
+        const toggleGuide = (guideName) => {
+          activeGuide.value = activeGuide.value === guideName ? null : guideName;
+        };
 
         const parseFolderId = () => {
           const input = form.value.driveFolderInput.trim();

@@ -106,29 +106,29 @@
         <div class="space-y-4 pt-2">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">Gemini API Key</label>
-            <input v-model="form.geminiApiKey" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
+            <input v-model="form.geminiApiKey" type="password" :placeholder="t('geminiKeyPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
           </div>
 
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('driveFolderLabel') }}</label>
-            <input v-model="form.driveFolderInput" @input="parseFolderId" type="text" placeholder="Paste full Google Drive folder link here..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
+            <input v-model="form.driveFolderInput" @input="parseFolderId" type="text" :placeholder="t('driveFolderPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
             <span v-if="form.driveFolderId" class="text-xs text-emerald-400 mt-1 block">✓ Auto-extracted Folder ID: {{ form.driveFolderId }}</span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-700/60">
             <div>
               <label class="block text-xs font-medium mb-1 text-slate-300">{{ t('gmailInboxLabel') }}</label>
-              <input v-model="form.gmail.inboxLabel" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
+              <input v-model="form.gmail.inboxLabel" type="text" :placeholder="t('gmailInboxPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
             </div>
             <div>
               <label class="block text-xs font-medium mb-1 text-slate-300">{{ t('gmailDoneLabel') }}</label>
-              <input v-model="form.gmail.doneLabel" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
+              <input v-model="form.gmail.doneLabel" type="text" :placeholder="t('gmailDonePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
             </div>
           </div>
         </div>
       </div>
 
-      <!-- STEP 2: Logistics, ÖPNV & Match Score Threshold -->
+      <!-- STEP 2: Logistics, Commute Mode & Match Score Threshold -->
       <div v-if="currentStep === 2" class="space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step2Title') }}</h2>
@@ -138,18 +138,41 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('postalCodeLabel') }}</label>
-            <input v-model="form.logistics.homePostcode" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.logistics.homePostcode" type="text" placeholder="60386" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('cityLabel') }}</label>
-            <input v-model="form.logistics.city" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.logistics.city" type="text" :placeholder="t('cityPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
         </div>
 
+        <!-- NEW: Commute Mode Selector -->
         <div>
+          <label class="block text-sm font-medium mb-2 text-slate-200">{{ t('transportModeLabel') }}</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button 
+              v-for="mode in transportOptions" 
+              :key="mode.id" 
+              type="button" 
+              @click="form.logistics.transportMode = mode.id"
+              :class="[
+                'p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all',
+                form.logistics.transportMode === mode.id ? 'bg-blue-600/30 border-blue-500 text-white ring-2 ring-blue-500/40' : 'bg-slate-900 border-slate-700 text-slate-400 hover:bg-slate-800'
+              ]"
+            >
+              <span class="text-lg">{{ mode.icon }}</span>
+              <span>{{ mode.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Max Travel Slider (Disabled if NO_LIMIT) -->
+        <div :class="{'opacity-40 pointer-events-none': form.logistics.transportMode === 'NO_LIMIT'}">
           <div class="flex justify-between items-center mb-2">
             <label class="text-sm font-medium text-slate-200">{{ t('maxTravelLabel') }}</label>
-            <span class="text-blue-400 font-bold text-lg">{{ form.logistics.maxTravelMinutes }} mins</span>
+            <span class="text-blue-400 font-bold text-lg">
+              {{ form.logistics.transportMode === 'NO_LIMIT' ? t('noLimitText') : form.logistics.maxTravelMinutes + ' mins' }}
+            </span>
           </div>
           <input v-model.number="form.logistics.maxTravelMinutes" type="range" min="15" max="90" step="5" class="w-full accent-blue-500 cursor-pointer">
           <div class="flex justify-between text-xs text-slate-500 mt-1">
@@ -196,7 +219,7 @@
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('blacklistLabel') }}</label>
           <div class="flex gap-2 mb-2">
-            <input v-model="newBlacklistWord" @keyup.enter="addBlacklistWord" type="text" placeholder="e.g. Data Analyst" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white outline-none">
+            <input v-model="newBlacklistWord" @keyup.enter="addBlacklistWord" type="text" :placeholder="t('blacklistPlaceholder')" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white outline-none">
             <button @click="addBlacklistWord" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm">{{ t('addBtn') }}</button>
           </div>
           <div class="flex flex-wrap gap-2">
@@ -218,7 +241,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('fullNameLabel') }}</label>
-            <input v-model="form.applicant.fullName" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.applicant.fullName" type="text" :placeholder="t('fullNamePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
 
           <div>
@@ -238,7 +261,7 @@
 
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('addressLabel') }}</label>
-          <input v-model="form.applicant.address" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+          <input v-model="form.applicant.address" type="text" :placeholder="t('addressPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
         </div>
 
         <div>
@@ -293,18 +316,17 @@
     </div>
   </div>
 
-  <!-- Vue 3 App Logic with i18n -->
+  <!-- Vue 3 App Logic -->
   <script>
     const { createApp, ref, computed } = Vue;
 
-    // 7-Language Dictionary with complete accordion & guide translations
     const translations = {
       EN: {
         subtitle: "Automate your job search, matching, custom Cover Letters & tailored CVs with Gemini AI",
         step1Title: "Step 1: Credentials & Drive Setup",
         step1Desc: "Connect your Google Workspace & Gemini API to automate job matching.",
         howItWorksTitle: "How Jmail Works",
-        howItWorksText: "Automatically parses incoming email job alerts (StepStone, Indeed, LinkedIn), filters by commute (ÖPNV) & match score, logs data to Google Sheets, and generates tailored Cover Letters & customized CVs in PDF format directly into your Google Drive folder.",
+        howItWorksText: "Automatically parses incoming email job alerts (StepStone, Indeed, LinkedIn), filters by commute & match score, logs clean data to Google Sheets, and generates tailored Cover Letters & customized CVs in PDF format directly into your CoverLetter_Temp folder.",
         guideApiKeyTitle: "How to get a free Gemini API Key",
         apiStep1: "Go to Google AI Studio.",
         apiStep2: "Sign in with your Google Account & click Get API key.",
@@ -312,26 +334,36 @@
         guideDriveTitle: "How to create Google Drive folder",
         driveStep1: "Go to Google Drive and create a folder named CoverLetter_Temp.",
         driveStep2: "Open the folder, copy its link from the address bar, and paste it below.",
+        geminiKeyPlaceholder: "Paste your Gemini API key (AIzaSy...)",
         driveFolderLabel: "Google Drive Folder Link or ID (CoverLetter_Temp)",
+        driveFolderPlaceholder: "Paste full Google Drive folder link here...",
         gmailInboxLabel: "Gmail Incoming Label",
+        gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Gmail Processed Label",
+        gmailDonePlaceholder: "Bew./Fertig",
         step2Title: "Step 2: Logistics & Match Threshold",
-        step2Desc: "Define public transit limit and AI match score requirement.",
+        step2Desc: "Define transit mode, travel limit and AI match score requirement.",
         postalCodeLabel: "Postal Code (PLZ)",
         cityLabel: "City",
-        maxTravelLabel: "Max Travel Time (Strictly ÖPNV / Public Transit)",
+        cityPlaceholder: "Frankfurt am Main",
+        transportModeLabel: "Preferred Transport Mode",
+        maxTravelLabel: "Max Travel Time Limit",
+        noLimitText: "No Limit / Remote",
         matchScoreLabel: "Minimum AI Match Score Threshold",
         step3Title: "Step 3: Table Layout & Blacklist",
         step3Desc: "Customize Google Sheet columns and specify roles to auto-delete.",
         sheetColumnsLabel: "Google Sheet Columns",
         addColumnBtn: "Add Custom Column",
         blacklistLabel: "Blacklisted Job Roles (Auto-move to Trash)",
+        blacklistPlaceholder: "e.g. Data Analyst",
         addBtn: "Add",
         step4Title: "Step 4: Applicant Profile & Resume Background",
         step4Desc: "Provide your contact info and experience directions (QA, Support, Ops, etc.).",
         fullNameLabel: "Full Name",
+        fullNamePlaceholder: "Max Mustermann",
         targetLangLabel: "Target Language for Documents",
         addressLabel: "Full Address & Contact Info",
+        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Resume / CV Experience Directions",
         resumePlaceholder: "Describe your experience across different roles (QA, Support, Ops). Gemini will select the best match and tailor both the Cover Letter and PDF Resume specifically for each company...",
         step5Title: "Your Code.gs is Ready!",
@@ -351,7 +383,7 @@
         step1Title: "Schritt 1: Anmeldedaten & Drive-Einrichtung",
         step1Desc: "Verbinden Sie Google Workspace & Gemini API zur Automatisierung.",
         howItWorksTitle: "Wie Jmail funktioniert",
-        howItWorksText: "Analysiert eingehende Job-Alerts (StepStone, Indeed, LinkedIn), filtert nach ÖPNV-Fahrzeit & Matching-Score, speichert Daten in Google Sheets und erstellt individuelle Anschreiben & Lebensläufe als PDF.",
+        howItWorksText: "Analysiert eingehende Job-Alerts (StepStone, Indeed, LinkedIn), filtert nach Fahrzeit & Matching-Score, speichert Daten in Google Sheets und erstellt individuelle Anschreiben & Lebensläufe als PDF im Ordner CoverLetter_Temp.",
         guideApiKeyTitle: "Kostenlosen Gemini API-Schlüssel erhalten",
         apiStep1: "Besuchen Sie Google AI Studio.",
         apiStep2: "Melden Sie sich an und klicken Sie auf Get API key.",
@@ -359,26 +391,36 @@
         guideDriveTitle: "Google Drive Ordner erstellen",
         driveStep1: "Gehen Sie zu Google Drive und erstellen Sie einen Ordner namens CoverLetter_Temp.",
         driveStep2: "Öffnen Sie den Ordner, kopieren Sie den Link und fügen Sie ihn unten ein.",
+        geminiKeyPlaceholder: "Gemini API-Schlüssel einfügen (AIzaSy...)",
         driveFolderLabel: "Google Drive Ordner-Link oder ID (CoverLetter_Temp)",
+        driveFolderPlaceholder: "Vollständigen Google Drive Ordner-Link einfügen...",
         gmailInboxLabel: "Gmail Eingehend-Label",
+        gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Gmail Verarbeitet-Label",
+        gmailDonePlaceholder: "Bew./Fertig",
         step2Title: "Schritt 2: Logistik & Match-Schwellenwert",
-        step2Desc: "ÖPNV-Fahrzeitbegrenzung und KI-Übereinstimmung festlegen.",
+        step2Desc: "Transportmittel, Fahrzeitbegrenzung und KI-Übereinstimmung festlegen.",
         postalCodeLabel: "Postleitzahl (PLZ)",
         cityLabel: "Stadt",
-        maxTravelLabel: "Max. Fahrzeit (Strikte ÖPNV-Nutzung)",
+        cityPlaceholder: "Frankfurt am Main",
+        transportModeLabel: "Bevorzugtes Transportmittel",
+        maxTravelLabel: "Max. Fahrzeitbegrenzung",
+        noLimitText: "Kein Limit / Remote",
         matchScoreLabel: "Mindest-Match-Score der KI",
         step3Title: "Schritt 3: Tabellenstruktur & Ausschlussliste",
         step3Desc: "Spalten anpassen und unerwünschte Rollen zum Papierkorb hinzufügen.",
         sheetColumnsLabel: "Google Tabellen Spalten",
         addColumnBtn: "Spalte hinzufügen",
         blacklistLabel: "Auszuschließende Jobrollen (Automatisch in den Papierkorb)",
+        blacklistPlaceholder: "z.B. Data Analyst",
         addBtn: "Hinzufügen",
         step4Title: "Schritt 4: Bewerberprofil & Lebenslauf-Erfahrung",
         step4Desc: "Kontaktdaten und Erfahrungsschwerpunkte (QA, Support, Ops) angeben.",
         fullNameLabel: "Vollständiger Name",
+        fullNamePlaceholder: "Max Mustermann",
         targetLangLabel: "Zielsprache für Dokumente",
         addressLabel: "Adresse & Kontaktdaten",
+        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Erfahrung & Fertigkeiten aus dem Lebenslauf",
         resumePlaceholder: "Beschreiben Sie Ihre Erfahrungen aus verschiedenen Bereichen (QA, Support, Operations). Gemini wählt die passenden Akzente für Anschreiben und Lebenslauf...",
         step5Title: "Ihr Code.gs ist fertig!",
@@ -398,7 +440,7 @@
         step1Title: "Крок 1: Облікові дані та Налаштування Drive",
         step1Desc: "Підключіть Google Workspace та Gemini API для автопошуку.",
         howItWorksTitle: "Як працює Jmail",
-        howItWorksText: "Автоматично аналізує сповіщення (StepStone, Indeed, LinkedIn), фільтрує за часом ÖPNV та Match Score, записує дані в Google Sheets і створює адаптовані PDF супровідні листи та резюме.",
+        howItWorksText: "Автоматично аналізує сповіщення (StepStone, Indeed, LinkedIn), фільтрує за часом у дорозі та Match Score, записує дані в Google Sheets і створює адаптовані PDF супровідні листи та резюме в папку CoverLetter_Temp.",
         guideApiKeyTitle: "Як отримати безкоштовний Gemini API Key",
         apiStep1: "Перейдіть до Google AI Studio.",
         apiStep2: "Увійдіть та натисніть Get API key.",
@@ -406,26 +448,36 @@
         guideDriveTitle: "Як створити папку в Google Drive",
         driveStep1: "Відкрийте Google Drive та створіть папку з назвою CoverLetter_Temp.",
         driveStep2: "Відкрийте папку, скопіюйте її посилання з адресного рядка та вставте нижче.",
+        geminiKeyPlaceholder: "Вставте ключ Gemini API (AIzaSy...)",
         driveFolderLabel: "Посилання або ID папки Google Drive (CoverLetter_Temp)",
+        driveFolderPlaceholder: "Вставте повне посилання на папку Google Drive...",
         gmailInboxLabel: "Ярлик Gmail для вхідних",
+        gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Ярлик Gmail для оброблених",
+        gmailDonePlaceholder: "Bew./Fertig",
         step2Title: "Крок 2: Логістика та Поріг відповідності",
-        step2Desc: "Вкажіть ліміт часу на громадському транспорті (ÖPNV) та Match Score.",
+        step2Desc: "Оберіть вид транспорту, ліміт часу в дорозі та Match Score.",
         postalCodeLabel: "Поштовий індекс (PLZ)",
         cityLabel: "Місто",
-        maxTravelLabel: "Макс. час у дорозі (Виключно ÖPNV)",
+        cityPlaceholder: "Франкфурт-на-Майні",
+        transportModeLabel: "Бажаний вид транспорту",
+        maxTravelLabel: "Максимальний час у дорозі",
+        noLimitText: "Без обмежень / Дистанційно",
         matchScoreLabel: "Мінімальний поріг відповідності ШІ",
         step3Title: "Крок 3: Структура таблиці та Чорний список",
         step3Desc: "Налаштуйте колонки Google Таблиці та списки заборонених ролей.",
         sheetColumnsLabel: "Колонки Google Таблиці",
         addColumnBtn: "Додати колонку",
         blacklistLabel: "Заборонені посади (Автоматично в кошик)",
+        blacklistPlaceholder: "наприклад, Data Analyst",
         addBtn: "Додати",
         step4Title: "Крок 4: Профіль та Досвід з резюме",
         step4Desc: "Вкажіть ваші контакти та основні напрямки досвіду (QA, Support, Ops).",
         fullNameLabel: "ПІБ / Повне ім'я",
+        fullNamePlaceholder: "Макс Мустерманн",
         targetLangLabel: "Мова документів",
         addressLabel: "Повна адреса та контакти",
+        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Опис досвіду та навичок з резюме",
         resumePlaceholder: "Опишіть свій досвід у різних сферах (QA, Support, Ops). Gemini сам обере найкращі акценти для супровідного листа та резюме під кожну вакансію...",
         step5Title: "Ваш Code.gs готовий!",
@@ -445,7 +497,7 @@
         step1Title: "Шаг 1: Учетные данные и Настройка Drive",
         step1Desc: "Подключите Google Workspace и Gemini API для автопоиска.",
         howItWorksTitle: "Как работает Jmail",
-        howItWorksText: "Автоматически разбирает письма-алерты (StepStone, Indeed, LinkedIn), фильтрует по ÖPNV и Match Score, заносит данные в Google Sheets и формирует уникальные PDF письма и резюме.",
+        howItWorksText: "Автоматически разбирает письма-алерты (StepStone, Indeed, LinkedIn), фильтрует по времени в пути и Match Score, заносит данные в Google Sheets и формирует уникальные PDF письма и резюме в папку CoverLetter_Temp.",
         guideApiKeyTitle: "Как получить бесплатный Gemini API Key",
         apiStep1: "Перейдите в Google AI Studio.",
         apiStep2: "Войдите аккаунтом и нажмите Get API key.",
@@ -453,26 +505,36 @@
         guideDriveTitle: "Как создать папку на Google Диске",
         driveStep1: "Откройте Google Drive и создайте папку с именем CoverLetter_Temp.",
         driveStep2: "Откройте папку, скопируйте ссылку из адресной строки и вставьте ниже.",
+        geminiKeyPlaceholder: "Вставьте ключ Gemini API (AIzaSy...)",
         driveFolderLabel: "Ссылка или ID папки Google Drive (CoverLetter_Temp)",
+        driveFolderPlaceholder: "Вставьте полную ссылку на папку Google Drive...",
         gmailInboxLabel: "Ярлык Gmail для входящих",
+        gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Ярлык Gmail для обработанных",
+        gmailDonePlaceholder: "Bew./Fertig",
         step2Title: "Шаг 2: Логистика и Порог соответствия",
-        step2Desc: "Укажите лимит времени на транспорте (ÖPNV) и Match Score.",
+        step2Desc: "Выберите вид транспорта, лимит времени в пути и Match Score.",
         postalCodeLabel: "Почтовый индекс (PLZ)",
         cityLabel: "Город",
-        maxTravelLabel: "Макс. время в пути (Строго ÖPNV)",
+        cityPlaceholder: "Франкфурт-на-Майне",
+        transportModeLabel: "Предпочитаемый вид транспорта",
+        maxTravelLabel: "Максимальное время в пути",
+        noLimitText: "Без ограничений / Удаленка",
         matchScoreLabel: "Минимальный порог соответствия ИИ",
         step3Title: "Шаг 3: Структура таблицы и Черный список",
         step3Desc: "Настройте колонки Google Таблицы и запрещенные роли.",
         sheetColumnsLabel: "Колонки Google Таблицы",
         addColumnBtn: "Добавить колонку",
         blacklistLabel: "Запрещенные должности (Автоматически в корзину)",
+        blacklistPlaceholder: "например, Data Analyst",
         addBtn: "Добавить",
         step4Title: "Шаг 4: Профиль и Опыт из резюме",
         step4Desc: "Укажите ваши контакты и направления опыта (QA, Support, Ops).",
         fullNameLabel: "ФИО / Полное имя",
+        fullNamePlaceholder: "Макс Мустерманн",
         targetLangLabel: "Язык документов",
         addressLabel: "Полный адрес и контакты",
+        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Описание опыта и навыков из резюме",
         resumePlaceholder: "Опишите свой опыт в разных сферах (QA, Support, Ops). Gemini сам выберет лучшие акценты для сопроводительного письма и резюме под каждую вакансию...",
         step5Title: "Ваш Code.gs готов!",
@@ -492,7 +554,7 @@
         step1Title: "Paso 1: Credenciales y Configuración de Drive",
         step1Desc: "Conecta Google Workspace y Gemini API para automatizar el proceso.",
         howItWorksTitle: "Cómo funciona Jmail",
-        howItWorksText: "Analiza automáticamente las alertas por correo, filtra por transporte público (ÖPNV) y puntuación de coincidencia, registra datos en Google Sheets y genera cartas y CVs en PDF.",
+        howItWorksText: "Analiza automáticamente las alertas por correo, filtra por transporte y puntuación de coincidencia, registra datos en Google Sheets y genera cartas y CVs en PDF.",
         guideApiKeyTitle: "Cómo obtener una Gemini API Key gratis",
         apiStep1: "Ve a Google AI Studio.",
         apiStep2: "Inicia sesión y haz clic en Get API key.",
@@ -500,26 +562,36 @@
         guideDriveTitle: "Cómo crear una carpeta en Google Drive",
         driveStep1: "Ve a Google Drive y crea una carpeta llamada CoverLetter_Temp.",
         driveStep2: "Abre la carpeta, copia su enlace de la barra de direcciones y pégalo abajo.",
+        geminiKeyPlaceholder: "Pega tu Gemini API key (AIzaSy...)",
         driveFolderLabel: "Enlace o ID de carpeta Google Drive (CoverLetter_Temp)",
+        driveFolderPlaceholder: "Pega el enlace completo de la carpeta de Google Drive...",
         gmailInboxLabel: "Etiqueta Gmail Entrante",
+        gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Etiqueta Gmail Procesado",
+        gmailDonePlaceholder: "Bew./Fertig",
         step2Title: "Paso 2: Logística y Umbral de coincidencia",
-        step2Desc: "Define el límite de transporte público y coincidencia de IA.",
+        step2Desc: "Define el modo de transporte, límite de tiempo y coincidencia de IA.",
         postalCodeLabel: "Código Postal (PLZ)",
         cityLabel: "Ciudad",
-        maxTravelLabel: "Tiempo máx. de viaje (Estrictamente ÖPNV)",
+        cityPlaceholder: "Frankfurt am Main",
+        transportModeLabel: "Modo de transporte preferido",
+        maxTravelLabel: "Límite máx. de tiempo de viaje",
+        noLimitText: "Sin límite / Remoto",
         matchScoreLabel: "Puntuación mínima de coincidencia de IA",
         step3Title: "Paso 3: Estructura de tabla y Lista negra",
         step3Desc: "Personaliza columnas de Google Sheets y roles no deseados.",
         sheetColumnsLabel: "Columnas de Google Sheets",
         addColumnBtn: "Añadir columna",
         blacklistLabel: "Puestos excluidos (Auto-enviar a la papelera)",
+        blacklistPlaceholder: "ej. Data Analyst",
         addBtn: "Añadir",
         step4Title: "Paso 4: Perfil y Experiencia del CV",
         step4Desc: "Indica tus datos de contacto y áreas de experiencia (QA, Support, Ops).",
         fullNameLabel: "Nombre completo",
+        fullNamePlaceholder: "Max Mustermann",
         targetLangLabel: "Idioma de los documentos",
         addressLabel: "Dirección completa y contacto",
+        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Experiencia y habilidades del CV",
         resumePlaceholder: "Describe tu experiencia en diferentes áreas (QA, Support, Ops). Gemini personalizará la carta y el CV para cada empresa...",
         step5Title: "¡Tu Code.gs está listo!",
@@ -539,7 +611,7 @@
         step1Title: "Étape 1 : Identifiants et Configuration Drive",
         step1Desc: "Connectez Google Workspace & Gemini API pour automatiser la recherche.",
         howItWorksTitle: "Comment fonctionne Jmail",
-        howItWorksText: "Analyse automatiquement les alertes courriels, filtre par temps de transport (ÖPNV), enregistre dans Google Sheets et génère des lettres de motivation et CV personnalisés en PDF.",
+        howItWorksText: "Analyse automatiquement les alertes courriels, filtre par temps de transport, enregistre dans Google Sheets et génère des lettres de motivation et CV personnalisés en PDF.",
         guideApiKeyTitle: "Comment obtenir une clé API Gemini gratuite",
         apiStep1: "Allez sur Google AI Studio.",
         apiStep2: "Connectez-vous et cliquez sur Get API key.",
@@ -547,26 +619,36 @@
         guideDriveTitle: "Comment créer un dossier Google Drive",
         driveStep1: "Allez sur Google Drive et créez un dossier nommé CoverLetter_Temp.",
         driveStep2: "Ouvrez le dossier, copiez son lien depuis la barre d'adresse et collez-le ci-dessous.",
+        geminiKeyPlaceholder: "Collez votre clé API Gemini (AIzaSy...)",
         driveFolderLabel: "Lien ou ID du dossier Google Drive (CoverLetter_Temp)",
+        driveFolderPlaceholder: "Collez le lien complet du dossier Google Drive...",
         gmailInboxLabel: "Étiquette Gmail Entrant",
+        gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Étiquette Gmail Traité",
+        gmailDonePlaceholder: "Bew./Fertig",
         step2Title: "Étape 2 : Logistique et Seuil de correspondance",
-        step2Desc: "Définissez la limite de transport public et le score IA requise.",
+        step2Desc: "Définissez le mode de transport, la limite de temps et le score IA.",
         postalCodeLabel: "Code Postal (PLZ)",
         cityLabel: "Ville",
-        maxTravelLabel: "Temps de trajet max (Strictement ÖPNV)",
+        cityPlaceholder: "Frankfurt am Main",
+        transportModeLabel: "Mode de transport préféré",
+        maxTravelLabel: "Temps de trajet max",
+        noLimitText: "Sans limite / Télétravail",
         matchScoreLabel: "Score de correspondance minimal de l'IA",
         step3Title: "Étape 3 : Structure du tableau et Liste noire",
         step3Desc: "Personnalisez les colonnes Google Sheets et les rôles à ignorer.",
         sheetColumnsLabel: "Colonnes Google Sheets",
         addColumnBtn: "Ajouter une colonne",
         blacklistLabel: "Postes exclus (Suppression automatique vers la corbeille)",
+        blacklistPlaceholder: "ex. Data Analyst",
         addBtn: "Ajouter",
         step4Title: "Étape 4 : Profil et Expérience du CV",
         step4Desc: "Indiquez vos coordonnées et domaines d'expérience (QA, Support, Ops).",
         fullNameLabel: "Nom complet",
+        fullNamePlaceholder: "Max Mustermann",
         targetLangLabel: "Langue des documents",
         addressLabel: "Adresse complète et contacts",
+        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Expérience et compétences du CV",
         resumePlaceholder: "Décrivez votre expérience (QA, Support, Ops). Gemini adaptera la lettre et le CV spécifiquement pour chaque entreprise...",
         step5Title: "Votre Code.gs est prêt !",
@@ -586,7 +668,7 @@
         step1Title: "Krok 1: Dane dostępowe i Konfiguracja Drive",
         step1Desc: "Połącz Google Workspace i Gemini API, aby zautomatyzować proces.",
         howItWorksTitle: "Jak działa Jmail",
-        howItWorksText: "Automatycznie analizuje powiadomienia e-mail, filtruje według dojazdu (ÖPNV) i wskaźnika dopasowania, zapisuje dane w Google Sheets oraz generuje dopasowane listy i CV w PDF.",
+        howItWorksText: "Automatycznie analizuje powiadomienia e-mail, filtruje według dojazdu i wskaźnika dopasowania, zapisuje dane w Google Sheets oraz generuje dopasowane listy i CV w PDF.",
         guideApiKeyTitle: "Jak uzyskać darmowy klucz Gemini API Key",
         apiStep1: "Przejdź do Google AI Studio.",
         apiStep2: "Zaloguj się i kliknij Get API key.",
@@ -594,26 +676,36 @@
         guideDriveTitle: "Jak utworzyć folder w Google Drive",
         driveStep1: "Przejdź do Google Drive i utwórz folder o nazwie CoverLetter_Temp.",
         driveStep2: "Otwórz folder, skopiuj jego link z paska adresu i wklej poniżej.",
+        geminiKeyPlaceholder: "Wklej swój klucz Gemini API (AIzaSy...)",
         driveFolderLabel: "Link lub ID folderu Google Drive (CoverLetter_Temp)",
+        driveFolderPlaceholder: "Wklej pełny link do folderu Google Drive...",
         gmailInboxLabel: "Etykieta Gmail Przychodzące",
+        gmailInboxPlaceholder: "Bew./Job-Alerts",
         gmailDoneLabel: "Etykieta Gmail Przetworzone",
+        gmailDonePlaceholder: "Bew./Fertig",
         step2Title: "Krok 2: Logistyka i Próg dopasowania",
-        step2Desc: "Określ limit dojazdu komunikacją miejską i wymagany wynik AI.",
+        step2Desc: "Określ środek transportu, limit czasu i wymagany wynik AI.",
         postalCodeLabel: "Kod pocztowy (PLZ)",
         cityLabel: "Miasto",
-        maxTravelLabel: "Maks. czas dojazdu (Wyłącznie ÖPNV)",
+        cityPlaceholder: "Frankfurt am Main",
+        transportModeLabel: "Preferowany środek transportu",
+        maxTravelLabel: "Maksymalny czas dojazdu",
+        noLimitText: "Bez limitu / Zdalnie",
         matchScoreLabel: "Minimalny próg dopasowania AI",
         step3Title: "Krok 3: Struktura tabeli i Czarna lista",
         step3Desc: "Dostosuj kolumny Google Sheets i wykluczone stanowiska.",
         sheetColumnsLabel: "Kolumny Google Sheets",
         addColumnBtn: "Dodaj kolumnę",
         blacklistLabel: "Wykluczone stanowiska (Automatycznie do kosza)",
+        blacklistPlaceholder: "np. Data Analyst",
         addBtn: "Dodaj",
         step4Title: "Krok 4: Profil i Doświadczenie z CV",
         step4Desc: "Podaj dane kontaktowe i kierunki doświadczenia (QA, Support, Ops).",
         fullNameLabel: "Imię i nazwisko",
+        fullNamePlaceholder: "Max Mustermann",
         targetLangLabel: "Język dokumentów",
         addressLabel: "Pełny adres i kontakt",
+        addressPlaceholder: "Musterstraße 1, 60386 Frankfurt am Main",
         resumeLabel: "Doświadczenie i umiejętności z CV",
         resumePlaceholder: "Opisz swoje doświadczenie (QA, Support, Ops). Gemini dopasuje list motywacyjny i CV indywidualnie do każdej firmy...",
         step5Title: "Twój Code.gs jest gotowy!",
@@ -630,15 +722,15 @@
       }
     };
 
-    // Default column templates per language
+    // Clean Default Columns without hardcoded ÖPNV/Match Score
     const defaultColumnsByLang = {
-      EN: ["Processing Date", "Company Name", "Job Title", "Location", "Travel Time (ÖPNV)", "Match Score", "Salary Range", "Job URL", "Status"],
-      DE: ["Bearbeitungsdatum", "Unternehmen", "Stellenbezeichnung", "Standort", "Fahrzeit (ÖPNV)", "Match-Score", "Gehalt", "Job-URL", "Status"],
-      UA: ["Дата обробки", "Компанія", "Посада", "Локація", "Час у дорозі (ÖPNV)", "Match Score", "Зарплата", "Посилання", "Статус"],
-      RU: ["Дата обработки", "Компания", "Должность", "Локация", "Время в пути (ÖPNV)", "Match Score", "Зарплата", "Ссылка", "Статус"],
-      ES: ["Fecha de proceso", "Empresa", "Puesto", "Ubicación", "Tiempo de viaje (ÖPNV)", "Puntuación", "Salario", "URL del empleo", "Estado"],
-      FR: ["Date de traitement", "Entreprise", "Intitulé du poste", "Lieu", "Temps de trajet (ÖPNV)", "Score de match", "Salaire", "URL de l'offre", "Statut"],
-      PL: ["Data przetworzenia", "Firma", "Stanowisko", "Lokalizacja", "Czas dojazdu (ÖPNV)", "Wynik dopasowania", "Wynagrodzenie", "Link do oferty", "Status"]
+      EN: ["Processing Date", "Company Name", "Job Title", "Location", "Travel Time", "Match Score (%)", "Salary Range", "Job URL", "Status"],
+      DE: ["Bearbeitungsdatum", "Unternehmen", "Stellenbezeichnung", "Standort", "Fahrzeit", "Match-Score (%)", "Gehalt", "Job-URL", "Status"],
+      UA: ["Дата обробки", "Компанія", "Посада", "Локація", "Час у дорозі", "Відсоток відповідності", "Зарплата", "Посилання", "Статус"],
+      RU: ["Дата обработки", "Компания", "Должность", "Локация", "Время в пути", "Процент совпадения", "Зарплата", "Ссылка", "Статус"],
+      ES: ["Fecha de proceso", "Empresa", "Puesto", "Ubicación", "Tiempo de viaje", "Puntuación de coincidencia", "Salario", "URL del empleo", "Estado"],
+      FR: ["Date de traitement", "Entreprise", "Intitulé du poste", "Lieu", "Temps de trajet", "Score de correspondance", "Salaire", "URL de l'offre", "Statut"],
+      PL: ["Data przetworzenia", "Firma", "Stanowisko", "Lokalizacja", "Czas dojazdu", "Wynik dopasowania", "Wynagrodzenie", "Link do oferty", "Status"]
     };
 
     createApp({
@@ -650,6 +742,13 @@
         const newBlacklistWord = ref('');
         const selectedLanguageOption = ref('German');
         const customLanguageInput = ref('');
+
+        const transportOptions = [
+          { id: 'ÖPNV', icon: '🚌', label: 'ÖPNV / Transit' },
+          { id: 'Car', icon: '🚗', label: 'Car / Auto' },
+          { id: 'Bike', icon: '🚲', label: 'Bicycle / Bike' },
+          { id: 'NO_LIMIT', icon: '🌐', label: 'No Limit / Remote' }
+        ];
 
         const t = (key) => {
           const dict = translations[currentLang.value] || translations['EN'];
@@ -675,6 +774,7 @@
           logistics: {
             homePostcode: '60386',
             city: 'Frankfurt am Main',
+            transportMode: 'ÖPNV',
             maxTravelMinutes: 60
           },
           columns: [...defaultColumnsByLang[localStorage.getItem('jmail_lang') || 'EN']],
@@ -733,9 +833,9 @@
             '  DRIVE_FOLDER_ID: "' + f.driveFolderId + '",',
             '  HOME_POSTCODE: "' + f.logistics.homePostcode + '",',
             '  CITY: "' + f.logistics.city + '",',
-            '  MAX_TRAVEL_MINUTES: ' + f.logistics.maxTravelMinutes + ',',
+            '  TRANSPORT_MODE: "' + f.logistics.transportMode + '",',
+            '  MAX_TRAVEL_MINUTES: ' + (f.logistics.transportMode === 'NO_LIMIT' ? 999 : f.logistics.maxTravelMinutes) + ',',
             '  MIN_MATCH_SCORE: ' + f.minMatchScore + ',',
-            '  TRANSPORT_MODE: "ÖPNV",',
             '  ',
             '  COLUMNS: ' + colsJson + ',',
             '  BLACKLIST_KEYWORDS: ' + blacklistJson + ',',
@@ -788,15 +888,15 @@
             '    const rowData = [];',
             '    CONFIG.COLUMNS.forEach(colName => {',
             '      const lower = colName.toLowerCase();',
-            '      if (lower.includes("date")) rowData.push(new Date());',
-            '      else if (lower.includes("company")) rowData.push(analysis.companyName || "N/A");',
-            '      else if (lower.includes("title") || lower.includes("job")) rowData.push(analysis.jobTitle || emailSubject);',
-            '      else if (lower.includes("location") || lower.includes("city")) rowData.push(analysis.location || CONFIG.CITY);',
-            '      else if (lower.includes("travel") || lower.includes("opnv")) rowData.push((analysis.travelTimeMinutes || "?") + " mins (ÖPNV)");',
-            '      else if (lower.includes("score") || lower.includes("match")) rowData.push(analysis.matchScore + "%");',
-            '      else if (lower.includes("salary")) rowData.push(analysis.salary || "Not specified");',
-            '      else if (lower.includes("url") || lower.includes("link")) rowData.push(analysis.jobUrl || "From Email");',
-            '      else if (lower.includes("status")) rowData.push("Cover Letter & CV Generated");',
+            '      if (lower.includes("date") || lower.includes("datum") || lower.includes("дата")) rowData.push(new Date());',
+            '      else if (lower.includes("company") || lower.includes("unternehmen") || lower.includes("компанія") || lower.includes("компания")) rowData.push(analysis.companyName || "N/A");',
+            '      else if (lower.includes("title") || lower.includes("stelle") || lower.includes("посада") || lower.includes("должность")) rowData.push(analysis.jobTitle || emailSubject);',
+            '      else if (lower.includes("location") || lower.includes("standort") || lower.includes("локація") || lower.includes("локация")) rowData.push(analysis.location || CONFIG.CITY);',
+            '      else if (lower.includes("travel") || lower.includes("fahrzeit") || lower.includes("дорозі") || lower.includes("пути")) rowData.push(CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "Flexible / Remote" : (analysis.travelTimeMinutes || "?") + " mins (" + CONFIG.TRANSPORT_MODE + ")");',
+            '      else if (lower.includes("score") || lower.includes("match") || lower.includes("відповідності") || lower.includes("совпадения")) rowData.push(analysis.matchScore + "%");',
+            '      else if (lower.includes("salary") || lower.includes("gehalt") || lower.includes("зарплата")) rowData.push(analysis.salary || "Not specified");',
+            '      else if (lower.includes("url") || lower.includes("link") || lower.includes("посилання") || lower.includes("ссылка")) rowData.push(analysis.jobUrl || "From Email");',
+            '      else if (lower.includes("status") || lower.includes("статус")) rowData.push("Cover Letter & CV Generated");',
             '      else rowData.push(analysis.notes || "Matches profile");',
             '    });',
             '    sheet.appendRow(rowData);',
@@ -821,7 +921,8 @@
             '',
             'function analyzeJobWithGemini(subject, body) {',
             '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
-            '  const prompt = "Analyze job: " + subject + "\\nBody: " + body + "\\nConstraints: max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via ÖPNV from " + CONFIG.HOME_POSTCODE + ". Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON with keys: isSuitable (bool), matchScore (number), companyName, jobTitle, location, travelTimeMinutes, salary, jobUrl, notes.";',
+            '  const modeConstraint = CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "No location restrictions." : "Max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via " + CONFIG.TRANSPORT_MODE + " from " + CONFIG.HOME_POSTCODE + ".";',
+            '  const prompt = "Analyze job: " + subject + "\\nBody: " + body + "\\nConstraints: " + modeConstraint + " Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON with keys: isSuitable (bool), matchScore (number), companyName, jobTitle, location, travelTimeMinutes, salary, jobUrl, notes.";',
             '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
             '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
@@ -873,6 +974,7 @@
           currentStep,
           activeGuide,
           toggleGuide,
+          transportOptions,
           form,
           parseFolderId,
           selectedLanguageOption,

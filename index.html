@@ -81,9 +81,9 @@
             </button>
             <div v-if="activeGuide === 'api'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-2">
               <ol class="list-decimal list-inside space-y-1">
-                <li>Visit <a href="https://aistudio.google.com/" target="_blank" class="text-blue-400 underline">Google AI Studio</a>.</li>
-                <li>Click <strong>"Get API key"</strong> and then <strong>"Create API key"</strong>.</li>
-                <li>Copy and paste the API key into the field below.</li>
+                <li>{{ t('apiStep1') }} (<a href="https://aistudio.google.com/" target="_blank" class="text-blue-400 underline">Google AI Studio</a>).</li>
+                <li>{{ t('apiStep2') }}</li>
+                <li>{{ t('apiStep3') }}</li>
               </ol>
             </div>
           </div>
@@ -95,8 +95,8 @@
             </button>
             <div v-if="activeGuide === 'drive'" class="p-4 border-t border-slate-700 text-sm text-slate-300 space-y-2">
               <ol class="list-decimal list-inside space-y-1">
-                <li>Go to <a href="https://drive.google.com/" target="_blank" class="text-blue-400 underline">Google Drive</a> and create a folder named <code class="text-emerald-400 bg-slate-800 px-1 py-0.5 rounded">CoverLetter_Temp</code>.</li>
-                <li>Copy the folder link or ID and paste it below.</li>
+                <li>{{ t('driveStep1') }} (<a href="https://drive.google.com/" target="_blank" class="text-blue-400 underline">Google Drive</a>).</li>
+                <li>{{ t('driveStep2') }}</li>
               </ol>
             </div>
           </div>
@@ -297,7 +297,7 @@
   <script>
     const { createApp, ref, computed } = Vue;
 
-    // 7-Language Dictionary
+    // 7-Language Dictionary with complete accordion & guide translations
     const translations = {
       EN: {
         subtitle: "Automate your job search, matching, custom Cover Letters & tailored CVs with Gemini AI",
@@ -305,8 +305,13 @@
         step1Desc: "Connect your Google Workspace & Gemini API to automate job matching.",
         howItWorksTitle: "How Jmail Works",
         howItWorksText: "Automatically parses incoming email job alerts (StepStone, Indeed, LinkedIn), filters by commute (ÖPNV) & match score, logs data to Google Sheets, and generates tailored Cover Letters & customized CVs in PDF format directly into your Google Drive folder.",
-        guideApiKeyTitle: "1. How to get a free Gemini API Key",
-        guideDriveTitle: "2. How to create Google Drive folder",
+        guideApiKeyTitle: "How to get a free Gemini API Key",
+        apiStep1: "Go to Google AI Studio.",
+        apiStep2: "Sign in with your Google Account & click Get API key.",
+        apiStep3: "Copy the generated key and paste it below.",
+        guideDriveTitle: "How to create Google Drive folder",
+        driveStep1: "Go to Google Drive and create a folder named CoverLetter_Temp.",
+        driveStep2: "Open the folder, copy its link from the address bar, and paste it below.",
         driveFolderLabel: "Google Drive Folder Link or ID (CoverLetter_Temp)",
         gmailInboxLabel: "Gmail Incoming Label",
         gmailDoneLabel: "Gmail Processed Label",
@@ -347,8 +352,13 @@
         step1Desc: "Verbinden Sie Google Workspace & Gemini API zur Automatisierung.",
         howItWorksTitle: "Wie Jmail funktioniert",
         howItWorksText: "Analysiert eingehende Job-Alerts (StepStone, Indeed, LinkedIn), filtert nach ÖPNV-Fahrzeit & Matching-Score, speichert Daten in Google Sheets und erstellt individuelle Anschreiben & Lebensläufe als PDF.",
-        guideApiKeyTitle: "1. Kostenlosen Gemini API-Schlüssel erhalten",
-        guideDriveTitle: "2. Google Drive Ordner erstellen",
+        guideApiKeyTitle: "Kostenlosen Gemini API-Schlüssel erhalten",
+        apiStep1: "Besuchen Sie Google AI Studio.",
+        apiStep2: "Melden Sie sich an und klicken Sie auf Get API key.",
+        apiStep3: "Kopieren Sie den Schlüssel und fügen Sie ihn unten ein.",
+        guideDriveTitle: "Google Drive Ordner erstellen",
+        driveStep1: "Gehen Sie zu Google Drive und erstellen Sie einen Ordner namens CoverLetter_Temp.",
+        driveStep2: "Öffnen Sie den Ordner, kopieren Sie den Link und fügen Sie ihn unten ein.",
         driveFolderLabel: "Google Drive Ordner-Link oder ID (CoverLetter_Temp)",
         gmailInboxLabel: "Gmail Eingehend-Label",
         gmailDoneLabel: "Gmail Verarbeitet-Label",
@@ -389,8 +399,13 @@
         step1Desc: "Підключіть Google Workspace та Gemini API для автопошуку.",
         howItWorksTitle: "Як працює Jmail",
         howItWorksText: "Автоматично аналізує сповіщення (StepStone, Indeed, LinkedIn), фільтрує за часом ÖPNV та Match Score, записує дані в Google Sheets і створює адаптовані PDF супровідні листи та резюме.",
-        guideApiKeyTitle: "1. Як отримати безкоштовний Gemini API Key",
-        guideDriveTitle: "2. Як створити папку в Google Drive",
+        guideApiKeyTitle: "Як отримати безкоштовний Gemini API Key",
+        apiStep1: "Перейдіть до Google AI Studio.",
+        apiStep2: "Увійдіть та натисніть Get API key.",
+        apiStep3: "Скопіюйте ключ та вставте його нижче.",
+        guideDriveTitle: "Як створити папку в Google Drive",
+        driveStep1: "Відкрийте Google Drive та створіть папку з назвою CoverLetter_Temp.",
+        driveStep2: "Відкрийте папку, скопіюйте її посилання з адресного рядка та вставте нижче.",
         driveFolderLabel: "Посилання або ID папки Google Drive (CoverLetter_Temp)",
         gmailInboxLabel: "Ярлик Gmail для вхідних",
         gmailDoneLabel: "Ярлик Gmail для оброблених",
@@ -431,8 +446,13 @@
         step1Desc: "Подключите Google Workspace и Gemini API для автопоиска.",
         howItWorksTitle: "Как работает Jmail",
         howItWorksText: "Автоматически разбирает письма-алерты (StepStone, Indeed, LinkedIn), фильтрует по ÖPNV и Match Score, заносит данные в Google Sheets и формирует уникальные PDF письма и резюме.",
-        guideApiKeyTitle: "1. Как получить бесплатный Gemini API Key",
-        guideDriveTitle: "2. Как создать папку на Google Диске",
+        guideApiKeyTitle: "Как получить бесплатный Gemini API Key",
+        apiStep1: "Перейдите в Google AI Studio.",
+        apiStep2: "Войдите аккаунтом и нажмите Get API key.",
+        apiStep3: "Скопируйте ключ и вставьте его ниже.",
+        guideDriveTitle: "Как создать папку на Google Диске",
+        driveStep1: "Откройте Google Drive и создайте папку с именем CoverLetter_Temp.",
+        driveStep2: "Откройте папку, скопируйте ссылку из адресной строки и вставьте ниже.",
         driveFolderLabel: "Ссылка или ID папки Google Drive (CoverLetter_Temp)",
         gmailInboxLabel: "Ярлык Gmail для входящих",
         gmailDoneLabel: "Ярлык Gmail для обработанных",
@@ -473,8 +493,13 @@
         step1Desc: "Conecta Google Workspace y Gemini API para automatizar el proceso.",
         howItWorksTitle: "Cómo funciona Jmail",
         howItWorksText: "Analiza automáticamente las alertas por correo, filtra por transporte público (ÖPNV) y puntuación de coincidencia, registra datos en Google Sheets y genera cartas y CVs en PDF.",
-        guideApiKeyTitle: "1. Cómo obtener una Gemini API Key gratis",
-        guideDriveTitle: "2. Cómo crear una carpeta en Google Drive",
+        guideApiKeyTitle: "Cómo obtener una Gemini API Key gratis",
+        apiStep1: "Ve a Google AI Studio.",
+        apiStep2: "Inicia sesión y haz clic en Get API key.",
+        apiStep3: "Copia la clave generada y pégala abajo.",
+        guideDriveTitle: "Cómo crear una carpeta en Google Drive",
+        driveStep1: "Ve a Google Drive y crea una carpeta llamada CoverLetter_Temp.",
+        driveStep2: "Abre la carpeta, copia su enlace de la barra de direcciones y pégalo abajo.",
         driveFolderLabel: "Enlace o ID de carpeta Google Drive (CoverLetter_Temp)",
         gmailInboxLabel: "Etiqueta Gmail Entrante",
         gmailDoneLabel: "Etiqueta Gmail Procesado",
@@ -515,8 +540,13 @@
         step1Desc: "Connectez Google Workspace & Gemini API pour automatiser la recherche.",
         howItWorksTitle: "Comment fonctionne Jmail",
         howItWorksText: "Analyse automatiquement les alertes courriels, filtre par temps de transport (ÖPNV), enregistre dans Google Sheets et génère des lettres de motivation et CV personnalisés en PDF.",
-        guideApiKeyTitle: "1. Comment obtenir une clé API Gemini gratuite",
-        guideDriveTitle: "2. Comment créer un dossier Google Drive",
+        guideApiKeyTitle: "Comment obtenir une clé API Gemini gratuite",
+        apiStep1: "Allez sur Google AI Studio.",
+        apiStep2: "Connectez-vous et cliquez sur Get API key.",
+        apiStep3: "Copiez la clé générée et collez-la ci-dessous.",
+        guideDriveTitle: "Comment créer un dossier Google Drive",
+        driveStep1: "Allez sur Google Drive et créez un dossier nommé CoverLetter_Temp.",
+        driveStep2: "Ouvrez le dossier, copiez son lien depuis la barre d'adresse et collez-le ci-dessous.",
         driveFolderLabel: "Lien ou ID du dossier Google Drive (CoverLetter_Temp)",
         gmailInboxLabel: "Étiquette Gmail Entrant",
         gmailDoneLabel: "Étiquette Gmail Traité",
@@ -557,8 +587,13 @@
         step1Desc: "Połącz Google Workspace i Gemini API, aby zautomatyzować proces.",
         howItWorksTitle: "Jak działa Jmail",
         howItWorksText: "Automatycznie analizuje powiadomienia e-mail, filtruje według dojazdu (ÖPNV) i wskaźnika dopasowania, zapisuje dane w Google Sheets oraz generuje dopasowane listy i CV w PDF.",
-        guideApiKeyTitle: "1. Jak uzyskać darmowy klucz Gemini API Key",
-        guideDriveTitle: "2. Jak utworzyć folder w Google Drive",
+        guideApiKeyTitle: "Jak uzyskać darmowy klucz Gemini API Key",
+        apiStep1: "Przejdź do Google AI Studio.",
+        apiStep2: "Zaloguj się i kliknij Get API key.",
+        apiStep3: "Skopiuj wygenerowany klucz i wklej go poniżej.",
+        guideDriveTitle: "Jak utworzyć folder w Google Drive",
+        driveStep1: "Przejdź do Google Drive i utwórz folder o nazwie CoverLetter_Temp.",
+        driveStep2: "Otwórz folder, skopiuj jego link z paska adresu i wklej poniżej.",
         driveFolderLabel: "Link lub ID folderu Google Drive (CoverLetter_Temp)",
         gmailInboxLabel: "Etykieta Gmail Przychodzące",
         gmailDoneLabel: "Etykieta Gmail Przetworzone",
@@ -595,6 +630,17 @@
       }
     };
 
+    // Default column templates per language
+    const defaultColumnsByLang = {
+      EN: ["Processing Date", "Company Name", "Job Title", "Location", "Travel Time (ÖPNV)", "Match Score", "Salary Range", "Job URL", "Status"],
+      DE: ["Bearbeitungsdatum", "Unternehmen", "Stellenbezeichnung", "Standort", "Fahrzeit (ÖPNV)", "Match-Score", "Gehalt", "Job-URL", "Status"],
+      UA: ["Дата обробки", "Компанія", "Посада", "Локація", "Час у дорозі (ÖPNV)", "Match Score", "Зарплата", "Посилання", "Статус"],
+      RU: ["Дата обработки", "Компания", "Должность", "Локация", "Время в пути (ÖPNV)", "Match Score", "Зарплата", "Ссылка", "Статус"],
+      ES: ["Fecha de proceso", "Empresa", "Puesto", "Ubicación", "Tiempo de viaje (ÖPNV)", "Puntuación", "Salario", "URL del empleo", "Estado"],
+      FR: ["Date de traitement", "Entreprise", "Intitulé du poste", "Lieu", "Temps de trajet (ÖPNV)", "Score de match", "Salaire", "URL de l'offre", "Statut"],
+      PL: ["Data przetworzenia", "Firma", "Stanowisko", "Lokalizacja", "Czas dojazdu (ÖPNV)", "Wynik dopasowania", "Wynagrodzenie", "Link do oferty", "Status"]
+    };
+
     createApp({
       setup() {
         const currentLang = ref(localStorage.getItem('jmail_lang') || 'EN');
@@ -612,6 +658,9 @@
 
         const saveLanguage = () => {
           localStorage.setItem('jmail_lang', currentLang.value);
+          if (defaultColumnsByLang[currentLang.value]) {
+            form.value.columns = [...defaultColumnsByLang[currentLang.value]];
+          }
         };
 
         const toggleGuide = (guideName) => {
@@ -628,17 +677,7 @@
             city: 'Frankfurt am Main',
             maxTravelMinutes: 60
           },
-          columns: [
-            "Processing Date",
-            "Company Name",
-            "Job Title",
-            "Location",
-            "Travel Time (ÖPNV)",
-            "Match Score",
-            "Salary Range",
-            "Job URL",
-            "Status"
-          ],
+          columns: [...defaultColumnsByLang[localStorage.getItem('jmail_lang') || 'EN']],
           filters: {
             blacklistKeywords: ['Data Analyst', 'Call Center Agent', 'Manual Labor', 'Warehouse Worker']
           },

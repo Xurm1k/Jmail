@@ -77,7 +77,6 @@
           <div class="overflow-hidden rounded-lg border border-slate-800 shadow-md">
             <video autoplay loop muted playsinline class="w-full">
               <source src="./assets/videos/Job_Market.mp4" type="video/mp4">
-              Your browser does not support video playback.
             </video>
           </div>
         </div>
@@ -91,7 +90,6 @@
           <div class="overflow-hidden rounded-lg border border-slate-800 shadow-md">
             <video autoplay loop muted playsinline class="w-full">
               <source src="./assets/videos/Gmail_Label_N_Filter.mp4" type="video/mp4">
-              Your browser does not support video playback.
             </video>
           </div>
         </div>
@@ -256,6 +254,11 @@
           <p class="text-slate-400 text-sm">{{ t('step5Desc') }}</p>
         </div>
         
+        <!-- Gemini Role Note Box -->
+        <div class="bg-blue-950/40 border border-blue-800/60 rounded-xl p-4 text-xs text-blue-200 leading-relaxed space-y-1">
+          <p>🤖 <strong>{{ t('geminiRoleTitle') }}:</strong> {{ t('geminiRoleText') }}</p>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('fullNameLabel') }}</label>
@@ -312,7 +315,7 @@
           </div>
         </div>
 
-        <!-- Video 6: Time Trigger -->
+        <!-- Video 6: Time Trigger & First Run Authorization Note -->
         <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-3">
           <h3 class="text-sm font-bold text-blue-400 flex items-center gap-2">
             <span>⏰</span> 2. {{ t('v6Title') }}
@@ -322,6 +325,11 @@
             <video autoplay loop muted playsinline class="w-full">
               <source src="./assets/videos/Trigger.mp4" type="video/mp4">
             </video>
+          </div>
+
+          <!-- Authorization Warning Box -->
+          <div class="mt-3 bg-amber-950/40 border border-amber-800/60 rounded-xl p-3 text-xs text-amber-200 leading-relaxed">
+            ⚠️ <strong>{{ t('authNoteTitle') }}:</strong> {{ t('authNoteText') }}
           </div>
         </div>
       </div>
@@ -393,6 +401,8 @@
         addBtn: "Добавить",
         step5Title: "Шаг 5: Профиль и Опыт из резюме",
         step5Desc: "Укажите ваши контакты и направления опыта для генерации уникальных PDF.",
+        geminiRoleTitle: "Роль Gemini AI при анализе",
+        geminiRoleText: "В генерируемом скрипте Gemini выступает в роли экспертного Старшего технического рекрутера и карьерного агента. Он анализирует текст каждой вакансии, сверяет её с вашим опытом и навыками из резюме ниже, рассчитывает точный процент соответствия (Match Score) и проверяет логистические ограничения.",
         fullNameLabel: "ФИО / Полное имя",
         targetLangLabel: "Язык документов",
         addressLabel: "Полный адрес и контакты",
@@ -402,6 +412,8 @@
         v5Text: "В созданной ранее таблице выберите Расширения и App Scripts. Сюда необходимо вставить сгенерированный код и сохранить.",
         v6Title: "Настройка расписания запуска (Триггер)",
         v6Text: "Теперь, когда скрипт сохранен, настройте когда ИИ будет выполнять задачу. Для этого создайте триггер по времени (сама функция для вызова должна подставиться автоматически), укажите по неделям и нужный день недели. Если хотите, чтобы задача выполнялась 2 раза в неделю - создайте 2 триггера на этой странице.",
+        authNoteTitle: "Обязательная разовая авторизация:",
+        authNoteText: "Перед началом работы обязательно нажмите кнопку «Выполнить» (Run) в редакторе Apps Script вручную 1 раз. Google запросит разрешение на доступ к Gmail и Drive (появится предупреждение: нажмите «Дополнительно» ➔ «Перейти...» ➔ «Разрешить»). Это нужно сделать ровно один раз, после чего скрипт будет работать автоматически по расписанию.",
         copyBtn: "Скопировать код",
         copiedBtn: "Скопировано в буфер!",
         backBtn: "Назад",
@@ -446,6 +458,8 @@
         addBtn: "Додати",
         step5Title: "Крок 5: Профіль та Досвід з резюме",
         step5Desc: "Вкажіть контакти та напрямки досвіду для генерації унікальних PDF.",
+        geminiRoleTitle: "Роль Gemini AI при аналізі",
+        geminiRoleText: "У генерованому скрипті Gemini виступає в ролі експертного Старшого технічного рекрутера та кар'єрного агента. Він аналізує текст кожної вакансії, звіряє її з вашим досвідом та навичками з резюме нижче, розраховує точний відсоток відповідності (Match Score) та перевіряє логістичні обмеження.",
         fullNameLabel: "ПІБ / Повне ім'я",
         targetLangLabel: "Мова документів",
         addressLabel: "Повна адреса та контакти",
@@ -455,6 +469,8 @@
         v5Text: "У створеній раніше таблиці оберіть Розширення та App Scripts. Сюди необхідно вставити згенерований код та зберегти.",
         v6Title: "Налаштування розкладу запуску (Тригер)",
         v6Text: "Тепер, коли скрипт збережено, налаштуйте коли ШІ виконуватиме завдання. Для цього створіть тригер за часом, вкажіть за тижнями та потрібний день тижня. Якщо хочете виконання 2 рази на тиждень - створіть 2 тригери.",
+        authNoteTitle: "Обов'язкова разова авторизація:",
+        authNoteText: "Перед початком роботи обов'язково натисніть кнопку «Виконати» (Run) в редакторі Apps Script вручну 1 раз. Google запрасить дозвіл на доступ до Gmail та Drive (з'явиться попередження: натисніть «Додатково» ➔ «Перейти...» ➔ «Дозволити»). Це потрібно зробити рівно один раз, після чого скрипт працюватиме автоматично за розкладом.",
         copyBtn: "Скопіювати код",
         copiedBtn: "Скопійовано в буфер!",
         backBtn: "Назад",
@@ -499,6 +515,8 @@
         addBtn: "Add",
         step5Title: "Step 5: Applicant Profile & Resume Background",
         step5Desc: "Provide your contact info and background experience for tailored PDFs.",
+        geminiRoleTitle: "Gemini AI Matching Persona",
+        geminiRoleText: "In the generated script, Gemini acts as an expert Senior Technical Recruiter and Career Agent. It analyzes each job vacancy, cross-references it with your resume background below, calculates an exact Match Score, and verifies logistical constraints.",
         fullNameLabel: "Full Name",
         targetLangLabel: "Target Language for Documents",
         addressLabel: "Full Address & Contact Info",
@@ -508,6 +526,8 @@
         v5Text: "In your created Google Sheet, select Extensions ➔ Apps Script. Paste the generated code here and click Save.",
         v6Title: "Configuring Execution Schedule (Trigger)",
         v6Text: "Once saved, configure when AI should run. Create a time-driven trigger, select weekly frequency and your preferred day. For twice-a-week runs, simply add 2 triggers on this page.",
+        authNoteTitle: "Mandatory One-Time Authorization:",
+        authNoteText: "Before running automatically, click the 'Run' button in the Apps Script editor manually once. Google will ask for Gmail & Drive permissions (click 'Advanced' ➔ 'Go to...' ➔ 'Allow' on the security popup). You only need to do this once; afterwards, it will run automatically on schedule.",
         copyBtn: "Copy Code",
         copiedBtn: "Copied to Clipboard!",
         backBtn: "Back",
@@ -552,6 +572,8 @@
         addBtn: "Hinzufügen",
         step5Title: "Schritt 5: Bewerberprofil & Lebenslauf-Erfahrung",
         step5Desc: "Geben Sie Ihre Kontaktdaten und Erfahrungen für maßgeschneiderte PDFs an.",
+        geminiRoleTitle: "Gemini KI-Matching-Rolle",
+        geminiRoleText: "Im generierten Skript agiert Gemini als erfahrener Senior Technical Recruiter und Karriereagent. Es analysiert jede Stellenanzeige, gleicht sie mit Ihrem Lebenslauf unten ab, berechnet einen Match-Score und prüft logistische Kriterien.",
         fullNameLabel: "Vollständiger Name",
         targetLangLabel: "Zielsprache für Dokumente",
         addressLabel: "Adresse & Kontaktdaten",
@@ -561,6 +583,8 @@
         v5Text: "Klicken Sie in Ihrer Google Tabelle auf Erweiterungen ➔ Apps Script. Fügen Sie den Code ein und speichern Sie.",
         v6Title: "Ausführungsplan (Trigger) einrichten",
         v6Text: "Richten Sie einen zeitgesteuerten Trigger ein, um festzulegen, wann die KI laufen soll (z. B. wöchentlich). Für 2 Durchläufe pro Woche erstellen Sie einfach 2 Trigger.",
+        authNoteTitle: "Einmalige Autorisierung erforderlich:",
+        authNoteText: "Klicken Sie vor dem automatischen Betrieb einmalig manuell auf die Schaltfläche „Ausführen“ (Run) im Apps Script-Editor. Google fragt nach Gmail- und Drive-Berechtigungen (Sicherheitswarnung: klicken Sie auf „Erweitert“ ➔ „Zu... wechseln“ ➔ „Zulassen“). Dies ist nur einmalig nötig.",
         copyBtn: "Code kopieren",
         copiedBtn: "In Zwischenablage kopiert!",
         backBtn: "Zurück",
@@ -605,6 +629,8 @@
         addBtn: "Añadir",
         step5Title: "Paso 5: Perfil y Experiencia del CV",
         step5Desc: "Indica tus datos para la generación de cartas y CVs adaptados en PDF.",
+        geminiRoleTitle: "Rol de Gemini AI en el análisis",
+        geminiRoleText: "En el script generado, Gemini actúa como un Reclutador Técnico Senior y Agente de Carreras. Analiza cada oferta de empleo, la contrasta con tu experiencia y calcula la puntuación de coincidencia (Match Score).",
         fullNameLabel: "Nombre completo",
         targetLangLabel: "Idioma de los documentos",
         addressLabel: "Dirección completa y contacto",
@@ -614,6 +640,8 @@
         v5Text: "En tu Google Sheet, ve a Extensiones ➔ Apps Script. Pega el código generado y haz clic en Guardar.",
         v6Title: "Configuración de horarios (Activador)",
         v6Text: "Crea un activador según el tiempo para definir cuándo debe ejecutarse la IA (por ejemplo, semanalmente).",
+        authNoteTitle: "Autorización única obligatoria:",
+        authNoteText: "Haz clic en el botón 'Ejecutar' (Run) en el editor de Apps Script manualmente una vez antes de que funcione de forma autónoma. Google te pedirá permisos de Gmail y Drive (haz clic en 'Avanzado' ➔ 'Ir a...' ➔ 'Permitir'). Solo necesitas hacerlo una vez.",
         copyBtn: "Copiar código",
         copiedBtn: "¡Copiado al portapapeles!",
         backBtn: "Atrás",
@@ -658,6 +686,8 @@
         addBtn: "Ajouter",
         step5Title: "Étape 5 : Profil et Expérience du CV",
         step5Desc: "Renseignez vos coordonnées pour la génération des PDF sur mesure.",
+        geminiRoleTitle: "Rôle de Gemini AI dans l'analyse",
+        geminiRoleText: "Dans le script généré, Gemini agit en tant que Recruteur Technique Senior et Agent de Carrière. Il analyse chaque offre d'emploi, la compare à votre expérience ci-dessous, calcule le score de correspondance et vérifie les contraintes logistiques.",
         fullNameLabel: "Nom complet",
         targetLangLabel: "Langue des documents",
         addressLabel: "Adresse complète et contacts",
@@ -667,6 +697,8 @@
         v5Text: "Dans Google Sheets, cliquez sur Extensions ➔ Apps Script. Collez le code et enregistrez.",
         v6Title: "Planification de l'exécution (Déclencheur)",
         v6Text: "Créez un déclencheur basé sur le temps pour planifier l'exécution automatique de l'IA.",
+        authNoteTitle: "Autorisation unique obligatoire :",
+        authNoteText: "Cliquez manuellement sur le bouton « Exécuter » (Run) dans l'éditeur Apps Script une seule fois. Google demandera l'accès à Gmail et Drive (cliquez sur « Paramètres avancés » ➔ « Accéder à... » ➔ « Autoriser »). Cela ne se fait qu'une seule fois.",
         copyBtn: "Copier le code",
         copiedBtn: "Copié dans le presse-papiers !",
         backBtn: "Retour",
@@ -711,6 +743,8 @@
         addBtn: "Dodaj",
         step5Title: "Krok 5: Profil i Doświadczenie z CV",
         step5Desc: "Podaj dane kontaktowe i opis doświadczenia do generowania PDF.",
+        geminiRoleTitle: "Rola Gemini AI w dopasowaniu",
+        geminiRoleText: "W wygenerowanym skrypcie Gemini działa jako Starszy Rekruter Techniczny i Agent Kariery. Analizuje każdą ofertę pracy, porównuje ją z Twoim doświadчением w CV poniżej, oblicza wynik dopasowania oraz sprawdza kryteria logistyczne.",
         fullNameLabel: "Imię i nazwisko",
         targetLangLabel: "Język dokumentów",
         addressLabel: "Pełny adres i kontakt",
@@ -720,6 +754,8 @@
         v5Text: "W swoim arkuszu Google Sheets wybierz Rozszerzenia ➔ Apps Script. Wklej wygenerowany kod i kliknij Zapisz.",
         v6Title: "Ustawianie harmonogramu (Wyzwalacz)",
         v6Text: "Ustaw wyzwalacz czasowy, aby określić, jak często AI ma przetwarzać oferty pracy.",
+        authNoteTitle: "Obowiązkowa jednorazowa autoryzacja:",
+        authNoteText: "Kliknij przycisk 'Uruchom' (Run) w edytorze Apps Script ręcznie raz przed uruchomieniem automatycznym. Google poprosi o uprawnienia do Gmail i Drive (kliknij 'Zaawansowane' ➔ 'Przejdź do...' ➔ 'Zezwól' w wyskakującym okienku). Musisz to zrobić tylko raz.",
         copyBtn: "Kopiuj kod",
         copiedBtn: "Skopiowano do schowka!",
         backBtn: "Wstecz",
@@ -941,7 +977,7 @@
             'function analyzeJobWithGemini(subject, body) {',
             '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
             '  const modeConstraint = CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "No location restrictions." : "Max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via " + CONFIG.TRANSPORT_MODE + " from " + CONFIG.HOME_POSTCODE + ".";',
-            '  const prompt = "Analyze job: " + subject + "\\nBody: " + body + "\\nConstraints: " + modeConstraint + " Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON with keys: isSuitable (bool), matchScore (number), companyName, jobTitle, location, travelTimeMinutes, salary, jobUrl, notes.";',
+            '  const prompt = "You are an expert Senior Technical Recruiter and Career Agent. Your task is to rigorously evaluate if the following job vacancy matches the applicant profile.\\n\\nApplicant Resume Background:\\n" + CONFIG.APPLICANT.RESUME_TEXT + "\\n\\nJob Subject: " + subject + "\\nJob Body: " + body + "\\n\\nConstraints: " + modeConstraint + " Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100) based on skill and experience relevance. Return valid JSON with keys: isSuitable (bool), matchScore (number), companyName, jobTitle, location, travelTimeMinutes, salary, jobUrl, notes.";',
             '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
             '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',

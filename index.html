@@ -61,7 +61,7 @@
     <!-- Main Content Card -->
     <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
 
-      <!-- QUICK EDIT MODE VIEW -->
+      <!-- QUICK EDIT MODE VIEW (Independent Independent Logic) -->
       <div v-if="quickEditMode" class="space-y-6">
         <div class="flex justify-between items-center border-b border-slate-700 pb-4">
           <div>
@@ -75,7 +75,13 @@
 
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('existingCodeLabel') }}</label>
-          <textarea v-model="existingCodeInput" rows="6" :placeholder="t('existingCodePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white font-mono text-xs outline-none"></textarea>
+          <textarea v-model="existingCodeInput" @input="extractApiKeyFromPastedCode" rows="8" :placeholder="t('existingCodePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white font-mono text-xs outline-none"></textarea>
+          
+          <!-- Extraction status badge -->
+          <div class="mt-2 flex items-center gap-2">
+            <span v-if="extractedApiKey" class="text-xs text-emerald-400 font-semibold">✓ API-ключ успешно обнаружен в коде!</span>
+            <span v-else class="text-xs text-amber-400">⚠️ Вставьте скрипт, содержащий CONFIG.GEMINI_API_KEY</span>
+          </div>
         </div>
 
         <div>
@@ -85,7 +91,7 @@
 
         <button 
           @click="processQuickEdit" 
-          :disabled="isModifyingCode"
+          :disabled="isModifyingCode || !extractedApiKey"
           class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2"
         >
           <span v-if="isModifyingCode" class="animate-spin">🔄</span>
@@ -405,11 +411,11 @@
         subtitle: "Автоматизируйте поиск работы, фильтрацию, письма и резюме с Gemini AI",
         quickEditBtn: "Редактировать готовый код",
         quickEditTitle: "Быстрая доработка существующего кода",
-        quickEditDesc: "Вставьте ваш текущий Code.gs и напишите текстом, что необходимо добавить или изменить.",
-        existingCodeLabel: "Ваш текущий скрипт Code.gs (необязательно)",
-        existingCodePlaceholder: "Вставьте сюда имеющийся код Apps Script...",
+        quickEditDesc: "Вставьте ваш текущий Code.gs. Ключ API извлечется автоматически из текста.",
+        existingCodeLabel: "Ваш текущий скрипт Code.gs",
+        existingCodePlaceholder: "Вставьте сюда имеющийся код Apps Script, содержащий CONFIG...",
         editPromptLabel: "Что нужно изменить или добавить?",
-        editPromptPlaceholder: "например, Добавь отправку отчета о работе скрипта мне на почту раз в месяц или измей время очистки...",
+        editPromptPlaceholder: "например, Добавь отправку отчета о работе скрипта мне на почту раз в месяц...",
         generateRefactoredBtn: "Сгенерировать обновленный код",
         modifyingBtn: "ИИ обновляет ваш код...",
         cancelBtn: "Отмена",
@@ -461,7 +467,7 @@
         v5Text: "В созданной ранее таблице выберите Расширения и App Scripts. Сюда необходимо вставить сгенерированный код и сохранить.",
         v6Title: "Настройка расписания запуска (Триггер)",
         v6Text: "Теперь, когда скрипт сохранен, настройте когда ИИ будет выполнять задачу. Для этого создайте триггер по времени (сама функция для вызова должна подставиться автоматически), укажите по неделям и нужный день недели. Если хотите, чтобы задача выполнялась 2 раза в неделю - создайте 2 триггера на этой странице.",
-        authNoteTitle: "Обязательная разовая авторизация:",
+        authNoteTitle: "Обязательная разова авторизация:",
         authNoteText: "Перед началом работы обязательно нажмите кнопку «Выполнить» (Run) в редакторе Apps Script вручную 1 раз. Google запросит разрешение на доступ к Gmail и Drive (появится предупреждение: нажмите «Дополнительно» ➔ «Перейти...» ➔ «Разрешить»). Это нужно сделать ровно один раз, после чего скрипт будет работать автоматически по расписанию.",
         copyBtn: "Скопировать код",
         copiedBtn: "Скопировано в буфер!",
@@ -472,9 +478,9 @@
         subtitle: "Автоматизуйте пошук роботи, фільтрацію, супровідні листи та резюме з Gemini AI",
         quickEditBtn: "Редагувати готовий код",
         quickEditTitle: "Швидка доробка існуючого коду",
-        quickEditDesc: "Вставте ваш поточний Code.gs та напишіть текстом, що потрібно додати або змінити.",
-        existingCodeLabel: "Ваш поточний скрипт Code.gs (необов'язково)",
-        existingCodePlaceholder: "Вставте сюди наявний код Apps Script...",
+        quickEditDesc: "Вставте ваш поточний Code.gs. Ключ API витягнеться автоматично з тексту.",
+        existingCodeLabel: "Ваш поточний скрипт Code.gs",
+        existingCodePlaceholder: "Вставте сюди наявний код Apps Script, що містить CONFIG...",
         editPromptLabel: "Що потрібно змінити або додати?",
         editPromptPlaceholder: "наприклад, Додай надсилання звіту про роботу скрипта мені на пошту раз на місяць...",
         generateRefactoredBtn: "Згенерувати оновлений код",
@@ -539,9 +545,9 @@
         subtitle: "Automate your job search, matching, custom Cover Letters & tailored CVs with Gemini AI",
         quickEditBtn: "Edit Existing Code",
         quickEditTitle: "Quick Refactoring of Existing Code",
-        quickEditDesc: "Paste your existing Code.gs and type your desired updates or modifications.",
-        existingCodeLabel: "Your Current Code.gs Script (Optional)",
-        existingCodePlaceholder: "Paste existing Apps Script code here...",
+        quickEditDesc: "Paste your existing Code.gs. The API key will be extracted automatically from the text.",
+        existingCodeLabel: "Your Current Code.gs Script",
+        existingCodePlaceholder: "Paste existing Apps Script code containing CONFIG here...",
         editPromptLabel: "What modifications or features would you like to add?",
         editPromptPlaceholder: "e.g., Add a monthly summary email sent to me or change auto-trash rules...",
         generateRefactoredBtn: "Generate Refactored Code",
@@ -606,9 +612,9 @@
         subtitle: "Automatisieren Sie Ihre Jobsuche, Abgleiche, Anschreiben & Lebensläufe mit Gemini AI",
         quickEditBtn: "Bestehenden Code bearbeiten",
         quickEditTitle: "Schnellanpassung des bestehenden Codes",
-        quickEditDesc: "Fügen Sie Ihren aktuellen Code.gs ein und geben Sie Ihre Wünsche ein.",
-        existingCodeLabel: "Ihr aktueller Code.gs-Skript (Optional)",
-        existingCodePlaceholder: "Bestehenden Apps Script Code hier einfügen...",
+        quickEditDesc: "Fügen Sie Ihren aktuellen Code.gs ein. Der API-Schlüssel wird automatisch erkannt.",
+        existingCodeLabel: "Ihr aktuelles Code.gs-Skript",
+        existingCodePlaceholder: "Fügen Sie hier Ihren Apps Script Code mit CONFIG ein...",
         editPromptLabel: "Was soll geändert oder hinzugefügt werden?",
         editPromptPlaceholder: "z.B. Füge einen monatlichen Bericht per E-Mail hinzu...",
         generateRefactoredBtn: "Aktualisierten Code generieren",
@@ -673,10 +679,10 @@
         subtitle: "Automatiza tu búsqueda de empleo, cartas de presentación y CVs con Gemini AI",
         quickEditBtn: "Editar código existente",
         quickEditTitle: "Modificación rápida de código",
-        quickEditDesc: "Pega tu Code.gs actual y escribe lo que deseas cambiar o añadir.",
-        existingCodeLabel: "Tu script Code.gs actual (Opcional)",
-        existingCodePlaceholder: "Pega el código Apps Script aquí...",
-        editPromptLabel: "Что deseas cambiar?",
+        quickEditDesc: "Pega tu Code.gs actual. La clave API se detectará automáticamente.",
+        existingCodeLabel: "Tu script Code.gs actual",
+        existingCodePlaceholder: "Pega el código Apps Script con CONFIG aquí...",
+        editPromptLabel: "¿Qué deseas cambiar o añadir?",
         editPromptPlaceholder: "ej. Añade un resumen mensual por correo...",
         generateRefactoredBtn: "Generar código actualizado",
         modifyingBtn: "La IA está actualizando el código...",
@@ -740,10 +746,10 @@
         subtitle: "Automatisez votre recherche d'emploi, lettres de motivation et CV avec Gemini AI",
         quickEditBtn: "Modifier le code existant",
         quickEditTitle: "Modification rapide du code existant",
-        quickEditDesc: "Collez votre Code.gs actuel et saisissez vos modifications souhaitées.",
-        existingCodeLabel: "Votre script Code.gs actuel (Optionnel)",
-        existingCodePlaceholder: "Collez le code Apps Script ici...",
-        editPromptLabel: "Que souhaitez-vous modifier ?",
+        quickEditDesc: "Collez votre Code.gs actuel. La clé API sera détectée automatiquement.",
+        existingCodeLabel: "Votre script Code.gs actuel",
+        existingCodePlaceholder: "Collez le code Apps Script contenant CONFIG ici...",
+        editPromptLabel: "Que souhaitez-vous modifier ou ajouter ?",
         editPromptPlaceholder: "ex. Ajoutez un rapport mensuel envoyé par e-mail...",
         generateRefactoredBtn: "Générer le code mis à jour",
         modifyingBtn: "L'IA met à jour votre code...",
@@ -807,9 +813,9 @@
         subtitle: "Automatyzuj szukanie pracy, dopasowania, listy motywacyjne i CV z Gemini AI",
         quickEditBtn: "Edytuj istniejący kod",
         quickEditTitle: "Szybka edycja istniejącego kodu",
-        quickEditDesc: "Wklej swój obecny Code.gs i wpisz tekstowo zmiany, które chcesz wprowadzić.",
-        existingCodeLabel: "Twój obecny skrypt Code.gs (Opcjonalnie)",
-        existingCodePlaceholder: "Wklej kod Apps Script tutaj...",
+        quickEditDesc: "Wklej swój obecny Code.gs. Klucz API zostanie wykryty automatycznie.",
+        existingCodeLabel: "Twój obecny skrypt Code.gs",
+        existingCodePlaceholder: "Wklej tutaj kod Apps Script zawierający CONFIG...",
         editPromptLabel: "Co chcesz zmienić lub dodać?",
         editPromptPlaceholder: "np. Dodaj comiesięczny raport wysyłany na e-mail...",
         generateRefactoredBtn: "Wygeneruj zaktualizowany kod",
@@ -904,6 +910,7 @@
         // Quick Edit Mode States
         const quickEditMode = ref(false);
         const existingCodeInput = ref('');
+        const extractedApiKey = ref('');
         const quickEditPrompt = ref('');
         const isModifyingCode = ref(false);
         const customRefactoredCode = ref(null);
@@ -1020,6 +1027,17 @@
         const removeBlacklistWord = (idx) => {
           form.value.filters.blacklistKeywords.splice(idx, 1);
           saveFormData();
+        };
+
+        // Extract GEMINI_API_KEY from pasted code via Regular Expression
+        const extractApiKeyFromPastedCode = () => {
+          const code = existingCodeInput.value;
+          const match = code.match(/GEMINI_API_KEY\s*:\s*["']([^"']+)["']/);
+          if (match && match[1]) {
+            extractedApiKey.value = match[1];
+          } else {
+            extractedApiKey.value = '';
+          }
         };
 
         const standardGeneratedCode = computed(() => {
@@ -1172,19 +1190,23 @@
           return customRefactoredCode.value || standardGeneratedCode.value;
         });
 
-        // Quick Edit Refactoring Logic via Gemini API
+        // Independent Quick Edit Refactoring Logic via Gemini API using extracted key
         const processQuickEdit = async () => {
-          if (!form.value.geminiApiKey) {
-            alert("Please enter a valid Gemini API Key on Step 2 first!");
+          if (!extractedApiKey.value) {
+            alert("API Key not found in the pasted script. Please make sure CONFIG.GEMINI_API_KEY is present!");
             return;
           }
           if (!quickEditPrompt.value.trim()) {
             alert("Please describe what changes you want to make!");
             return;
           }
+          if (!existingCodeInput.value.trim()) {
+            alert("Please paste your existing Code.gs script!");
+            return;
+          }
 
           isModifyingCode.value = true;
-          const sourceCode = existingCodeInput.value.trim() || standardGeneratedCode.value;
+          const sourceCode = existingCodeInput.value.trim();
           
           const prompt = `You are an expert Google Apps Script developer. 
 Refactor and modify the following Apps Script code according to user requirements.
@@ -1195,7 +1217,7 @@ ${sourceCode}
 
 Return ONLY the complete modified Apps Script code in JavaScript without Markdown formatting codeblocks or explanations.`;
 
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${form.value.geminiApiKey}`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${extractedApiKey.value}`;
           try {
             const res = await fetch(url, {
               method: 'POST',
@@ -1203,13 +1225,17 @@ Return ONLY the complete modified Apps Script code in JavaScript without Markdow
               body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             const data = await res.json();
-            const rawText = data.candidates[0].content.parts[0].text;
-            customRefactoredCode.value = rawText.replace(/```javascript/g, "").replace(/```javascript/g, "").replace(/```/g, "").trim();
-            
-            quickEditMode.value = false;
-            currentStep.value = 6;
+            if (data.candidates && data.candidates[0]) {
+              const rawText = data.candidates[0].content.parts[0].text;
+              customRefactoredCode.value = rawText.replace(/```javascript/g, "").replace(/```js/g, "").replace(/```/g, "").trim();
+              
+              quickEditMode.value = false;
+              currentStep.value = 6;
+            } else {
+              alert("Gemini API error. Please check your API key or prompt.");
+            }
           } catch (e) {
-            alert("Failed to modify code via Gemini API. Please check your API key.");
+            alert("Failed to modify code via Gemini API. Network or API error.");
           } finally {
             isModifyingCode.value = false;
           }
@@ -1240,6 +1266,8 @@ Return ONLY the complete modified Apps Script code in JavaScript without Markdow
           removeBlacklistWord,
           quickEditMode,
           existingCodeInput,
+          extractedApiKey,
+          extractApiKeyFromPastedCode,
           quickEditPrompt,
           isModifyingCode,
           processQuickEdit,

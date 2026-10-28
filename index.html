@@ -61,7 +61,7 @@
     <!-- Main Content Card -->
     <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
 
-      <!-- QUICK EDIT MODE VIEW (Independent Independent Logic) -->
+      <!-- QUICK EDIT MODE VIEW (Independent Logic) -->
       <div v-if="quickEditMode" class="space-y-6">
         <div class="flex justify-between items-center border-b border-slate-700 pb-4">
           <div>
@@ -77,11 +77,16 @@
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('existingCodeLabel') }}</label>
           <textarea v-model="existingCodeInput" @input="extractApiKeyFromPastedCode" rows="8" :placeholder="t('existingCodePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white font-mono text-xs outline-none"></textarea>
           
-          <!-- Extraction status badge -->
           <div class="mt-2 flex items-center gap-2">
-            <span v-if="extractedApiKey" class="text-xs text-emerald-400 font-semibold">✓ API-ключ успешно обнаружен в коде!</span>
-            <span v-else class="text-xs text-amber-400">⚠️ Вставьте скрипт, содержащий CONFIG.GEMINI_API_KEY</span>
+            <span v-if="extractedApiKey" class="text-xs text-emerald-400 font-semibold">✓ API-ключ автоматически извлечен из вашего кода!</span>
+            <span v-else class="text-xs text-slate-400">ℹ️ Введите или вставьте код, содержащий ваш API-ключ, либо укажите его ниже в поле.</span>
           </div>
+        </div>
+
+        <!-- Manual API Key Fallback / Override -->
+        <div>
+          <label class="block text-sm font-medium mb-1 text-slate-200">🔑 Gemini API Key (Авто или Вручную)</label>
+          <input v-model="form.geminiApiKey" @input="saveFormData" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
         </div>
 
         <div>
@@ -91,8 +96,8 @@
 
         <button 
           @click="processQuickEdit" 
-          :disabled="isModifyingCode || !extractedApiKey"
-          class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2"
+          :disabled="isModifyingCode || !activeApiKey"
+          class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           <span v-if="isModifyingCode" class="animate-spin">🔄</span>
           <span>{{ isModifyingCode ? t('modifyingBtn') : t('generateRefactoredBtn') }}</span>
@@ -340,7 +345,7 @@
       <div v-else-if="currentStep === 6" class="space-y-6">
         <div class="flex justify-between items-center">
           <h2 class="text-2xl font-bold text-emerald-400">{{ t('step6Title') }}</h2>
-          <button @click="copyToClipboard" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-all">
+          <button @click="copyToClipboard" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-all cursor-pointer">
             {{ copied ? '✓ ' + t('copiedBtn') : '📋 ' + t('copyBtn') }}
           </button>
         </div>
@@ -384,7 +389,7 @@
         <button 
           v-if="currentStep > 1" 
           @click="currentStep--" 
-          class="bg-slate-700 hover:bg-slate-600 text-white font-medium px-5 py-2.5 rounded-xl transition-all"
+          class="bg-slate-700 hover:bg-slate-600 text-white font-medium px-5 py-2.5 rounded-xl transition-all cursor-pointer"
         >
           ← {{ t('backBtn') }}
         </button>
@@ -393,7 +398,7 @@
         <button 
           v-if="currentStep < 6" 
           @click="currentStep++" 
-          class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all ml-auto"
+          class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all ml-auto cursor-pointer"
         >
           {{ t('nextBtn') }} →
         </button>
@@ -411,7 +416,7 @@
         subtitle: "Автоматизируйте поиск работы, фильтрацию, письма и резюме с Gemini AI",
         quickEditBtn: "Редактировать готовый код",
         quickEditTitle: "Быстрая доработка существующего кода",
-        quickEditDesc: "Вставьте ваш текущий Code.gs. Ключ API извлечется автоматически из текста.",
+        quickEditDesc: "Вставьте ваш текущий Code.gs. Ключ API извлечется автоматически или подставится из памяти.",
         existingCodeLabel: "Ваш текущий скрипт Code.gs",
         existingCodePlaceholder: "Вставьте сюда имеющийся код Apps Script, содержащий CONFIG...",
         editPromptLabel: "Что нужно изменить или добавить?",
@@ -459,7 +464,7 @@
         geminiRoleTitle: "Роль Gemini AI при анализе",
         geminiRoleText: "В генерируемом скрипте Gemini выступает в роли экспертного Старшего технического рекрутера и карьерного агента. Он анализирует текст каждой вакансии, сверяет её с вашим опытом и навыками из резюме ниже, рассчитывает точный процент соответствия (Match Score) и проверяет логистические ограничения.",
         fullNameLabel: "ФИО / Полное имя",
-        targetLangLabel: "Язык документов",
+        targetLangLabel: "Язк документов",
         addressLabel: "Полный адрес и контакты",
         resumeLabel: "Описание опыта и навыков из резюме",
         step6Title: "Шаг 6: Ваш Code.gs готов!",
@@ -478,7 +483,7 @@
         subtitle: "Автоматизуйте пошук роботи, фільтрацію, супровідні листи та резюме з Gemini AI",
         quickEditBtn: "Редагувати готовий код",
         quickEditTitle: "Швидка доробка існуючого коду",
-        quickEditDesc: "Вставте ваш поточний Code.gs. Ключ API витягнеться автоматично з тексту.",
+        quickEditDesc: "Вставте ваш поточний Code.gs. Ключ API витягнеться автоматично або з пам'яті.",
         existingCodeLabel: "Ваш поточний скрипт Code.gs",
         existingCodePlaceholder: "Вставте сюди наявний код Apps Script, що містить CONFIG...",
         editPromptLabel: "Що потрібно змінити або додати?",
@@ -545,7 +550,7 @@
         subtitle: "Automate your job search, matching, custom Cover Letters & tailored CVs with Gemini AI",
         quickEditBtn: "Edit Existing Code",
         quickEditTitle: "Quick Refactoring of Existing Code",
-        quickEditDesc: "Paste your existing Code.gs. The API key will be extracted automatically from the text.",
+        quickEditDesc: "Paste your existing Code.gs. The API key is extracted automatically or loaded from memory.",
         existingCodeLabel: "Your Current Code.gs Script",
         existingCodePlaceholder: "Paste existing Apps Script code containing CONFIG here...",
         editPromptLabel: "What modifications or features would you like to add?",
@@ -612,7 +617,7 @@
         subtitle: "Automatisieren Sie Ihre Jobsuche, Abgleiche, Anschreiben & Lebensläufe mit Gemini AI",
         quickEditBtn: "Bestehenden Code bearbeiten",
         quickEditTitle: "Schnellanpassung des bestehenden Codes",
-        quickEditDesc: "Fügen Sie Ihren aktuellen Code.gs ein. Der API-Schlüssel wird automatisch erkannt.",
+        quickEditDesc: "Fügen Sie Ihren aktuellen Code.gs ein. Der API-Schlüssel wird automatisch oder aus dem Speicher erkannt.",
         existingCodeLabel: "Ihr aktuelles Code.gs-Skript",
         existingCodePlaceholder: "Fügen Sie hier Ihren Apps Script Code mit CONFIG ein...",
         editPromptLabel: "Was soll geändert oder hinzugefügt werden?",
@@ -679,7 +684,7 @@
         subtitle: "Automatiza tu búsqueda de empleo, cartas de presentación y CVs con Gemini AI",
         quickEditBtn: "Editar código existente",
         quickEditTitle: "Modificación rápida de código",
-        quickEditDesc: "Pega tu Code.gs actual. La clave API se detectará automáticamente.",
+        quickEditDesc: "Pega tu Code.gs actual. La clave API se detectará automáticamente o desde la memoria.",
         existingCodeLabel: "Tu script Code.gs actual",
         existingCodePlaceholder: "Pega el código Apps Script con CONFIG aquí...",
         editPromptLabel: "¿Qué deseas cambiar o añadir?",
@@ -746,7 +751,7 @@
         subtitle: "Automatisez votre recherche d'emploi, lettres de motivation et CV avec Gemini AI",
         quickEditBtn: "Modifier le code existant",
         quickEditTitle: "Modification rapide du code existant",
-        quickEditDesc: "Collez votre Code.gs actuel. La clé API sera détectée automatiquement.",
+        quickEditDesc: "Collez votre Code.gs actuel. La clé API sera détectée automatiquement ou depuis la mémoire.",
         existingCodeLabel: "Votre script Code.gs actuel",
         existingCodePlaceholder: "Collez le code Apps Script contenant CONFIG ici...",
         editPromptLabel: "Que souhaitez-vous modifier ou ajouter ?",
@@ -813,7 +818,7 @@
         subtitle: "Automatyzuj szukanie pracy, dopasowania, listy motywacyjne i CV z Gemini AI",
         quickEditBtn: "Edytuj istniejący kod",
         quickEditTitle: "Szybka edycja istniejącego kodu",
-        quickEditDesc: "Wklej swój obecny Code.gs. Klucz API zostanie wykryty automatycznie.",
+        quickEditDesc: "Wklej swój obecny Code.gs. Klucz API zostanie wykryty automatycznie lub z pamięci.",
         existingCodeLabel: "Twój obecny skrypt Code.gs",
         existingCodePlaceholder: "Wklej tutaj kod Apps Script zawierający CONFIG...",
         editPromptLabel: "Co chcesz zmienić lub dodać?",
@@ -1029,16 +1034,22 @@
           saveFormData();
         };
 
-        // Extract GEMINI_API_KEY from pasted code via Regular Expression
+        // Extract GEMINI_API_KEY from pasted code via Regular Expression & auto-fill form key
         const extractApiKeyFromPastedCode = () => {
           const code = existingCodeInput.value;
-          const match = code.match(/GEMINI_API_KEY\s*:\s*["']([^"']+)["']/);
+          const match = code.match(/GEMINI_API_KEY\s*:\s*["']([^"']+)["']/i);
           if (match && match[1]) {
             extractedApiKey.value = match[1];
+            form.value.geminiApiKey = match[1]; // Sync with form api key
           } else {
             extractedApiKey.value = '';
           }
         };
+
+        // Active API key for button check (either extracted or manually entered in form)
+        const activeApiKey = computed(() => {
+          return extractedApiKey.value || form.value.geminiApiKey;
+        });
 
         const standardGeneratedCode = computed(() => {
           const f = form.value;
@@ -1190,10 +1201,11 @@
           return customRefactoredCode.value || standardGeneratedCode.value;
         });
 
-        // Independent Quick Edit Refactoring Logic via Gemini API using extracted key
+        // Independent Quick Edit Refactoring Logic via Gemini API using activeApiKey
         const processQuickEdit = async () => {
-          if (!extractedApiKey.value) {
-            alert("API Key not found in the pasted script. Please make sure CONFIG.GEMINI_API_KEY is present!");
+          const apiKey = activeApiKey.value;
+          if (!apiKey) {
+            alert("API Key not found. Please paste a script containing CONFIG.GEMINI_API_KEY or enter your key manually below!");
             return;
           }
           if (!quickEditPrompt.value.trim()) {
@@ -1217,7 +1229,7 @@ ${sourceCode}
 
 Return ONLY the complete modified Apps Script code in JavaScript without Markdown formatting codeblocks or explanations.`;
 
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${extractedApiKey.value}`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
           try {
             const res = await fetch(url, {
               method: 'POST',
@@ -1268,6 +1280,7 @@ Return ONLY the complete modified Apps Script code in JavaScript without Markdow
           existingCodeInput,
           extractedApiKey,
           extractApiKeyFromPastedCode,
+          activeApiKey,
           quickEditPrompt,
           isModifyingCode,
           processQuickEdit,

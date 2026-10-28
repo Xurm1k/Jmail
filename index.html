@@ -83,9 +83,9 @@
           </div>
         </div>
 
-        <!-- Manual API Key Fallback / Override -->
+        <!-- Manual API Key / Token Fallback -->
         <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">🔑 Gemini API Key (Авто или Вручную)</label>
+          <label class="block text-sm font-medium mb-1 text-slate-200">🔑 Gemini API Key / Token (AQ... или AIzaSy...)</label>
           <input v-model="form.geminiApiKey" @input="saveFormData" type="password" placeholder="AQ... или AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
         </div>
 
@@ -416,7 +416,7 @@
         subtitle: "Автоматизируйте поиск работы, фильтрацию, письма и резюме с Gemini AI",
         quickEditBtn: "Редактировать готовый код",
         quickEditTitle: "Быстрая доработка существующего кода",
-        quickEditDesc: "Вставьте ваш текущий Code.gs. Ключ API извлечется автоматически или подставится из памяти.",
+        quickEditDesc: "Вставьте ваш текущий Code.gs. Ключ/токен API извлечется автоматически или подставится из памяти.",
         existingCodeLabel: "Ваш текущий скрипт Code.gs",
         existingCodePlaceholder: "Вставьте сюда имеющийся код Apps Script, содержащий CONFIG...",
         editPromptLabel: "Что нужно изменить или добавить?",
@@ -438,7 +438,7 @@
         v3Text: "Перейдите по ссылке aistudio.google.com, создайте ключ API и вставьте его ниже.",
         v4Title: "Настройка папки Anschreiben_Temp на Google Диске",
         v4Text: "В Google Sheets создайте новую таблицу, скопируйте ссылку и вставьте ниже.",
-        geminiKeyPlaceholder: "Вставьте ключ Gemini API (AQ... или AIzaSy...)",
+        geminiKeyPlaceholder: "Вставьте ключ API или токен (AQ... или AIzaSy...)",
         driveFolderPlaceholder: "Вставьте ссылку на папку Google Drive...",
         step3Title: "Шаг 3: Логистика, Транспорт и Match Score",
         step3Desc: "Выберите тип транспорта, лимит времени в пути и порог подходящих вакансий.",
@@ -472,7 +472,7 @@
         v5Text: "В Google Таблице выберите Расширения ➔ Apps Script. Вставьте сгенерированный код и сохраните.",
         v6Title: "Настройка расписания запуска (Триггер)",
         v6Text: "Настройте триггер по времени для автоматического выполнения скрипта.",
-        authNoteTitle: "Обязательная разовая авторизация:",
+        authNoteTitle: "Обязательная разова авторизация:",
         authNoteText: "Нажмите 'Выполнить' (Run) в редакторе Apps Script вручную 1 раз, чтобы подтвердить права доступа.",
         copyBtn: "Скопировать код",
         copiedBtn: "Скопировано в буфер!",
@@ -502,10 +502,10 @@
         step2Title: "Крок 2: Сервіси Google (Gemini API & Drive)",
         step2Desc: "Підключіть штучний інтелект та папку для збереження документів.",
         v3Title: "Отримання ключа Gemini API",
-        v3Text: "Отримайте ключ API на aistudio.google.com та вставте його нижче.",
+        v3Text: "Отримайте ключ API та вставте його нижче.",
         v4Title: "Налаштування папки Anschreiben_Temp в Google Drive",
         v4Text: "Вставте посилання на таблицю Google Sheets нижче.",
-        geminiKeyPlaceholder: "Вставте ключ Gemini API (AQ... або AIzaSy...)",
+        geminiKeyPlaceholder: "Вставте ключ API або токен (AQ... або AIzaSy...)",
         driveFolderPlaceholder: "Вставте посилання на папку Google Drive...",
         step3Title: "Крок 3: Логістика, Транспорт та Match Score",
         step3Desc: "Оберіть вид транспорту, ліміт часу в дорозі та поріг відповідних вакансій.",
@@ -569,10 +569,10 @@
         step2Title: "Step 2: Google Workspace (Gemini API & Drive)",
         step2Desc: "Connect AI capabilities and your Google Drive destination folder.",
         v3Title: "Getting a Gemini API Key",
-        v3Text: "Get an API Key from aistudio.google.com and paste it below.",
+        v3Text: "Get an API Key and paste it below.",
         v4Title: "Setting Up Google Drive Anschreiben_Temp Folder",
         v4Text: "Paste your Google Spreadsheet link below.",
-        geminiKeyPlaceholder: "Paste your Gemini API key (AQ... or AIzaSy...)",
+        geminiKeyPlaceholder: "Paste API key or token (AQ... or AIzaSy...)",
         driveFolderPlaceholder: "Paste full Google Drive folder link here...",
         step3Title: "Step 3: Logistics, Commute Mode & Match Score",
         step3Desc: "Specify transport preference, max travel limit, and match threshold.",
@@ -636,10 +636,10 @@
         step2Title: "Schritt 2: Google Workspace (Gemini API & Drive)",
         step2Desc: "Verbinden Sie die KI und Ihren Anschreiben_Temp Zielordner.",
         v3Title: "Gemini API-Schlüssel erhalten",
-        v3Text: "Erstellen Sie einen Schlüssel auf aistudio.google.com und fügen Sie ihn ein.",
+        v3Text: "Fügen Sie Ihren API-Schlüssel oder Token unten ein.",
         v4Title: "Google Drive Ordner einrichten",
         v4Text: "Fügen Sie den Freigabelink Ihrer Google Tabelle unten ein.",
-        geminiKeyPlaceholder: "Gemini API-Schlüssel einfügen (AQ... oder AIzaSy...)",
+        geminiKeyPlaceholder: "API-Schlüssel oder Token einfügen (AQ... oder AIzaSy...)",
         driveFolderPlaceholder: "Vollständigen Google Drive Link einfügen...",
         step3Title: "Schritt 3: Logistik, Transport & Match-Score",
         step3Desc: "Legen Sie Transportmittel (ÖPNV <60 Min ab 60386) und Mindest-Score fest.",
@@ -703,10 +703,10 @@
         step2Title: "Paso 2: Servicios de Google (Gemini API y Drive)",
         step2Desc: "Conecta la IA y la carpeta de destino Anschreiben_Temp.",
         v3Title: "Obtención de Gemini API Key",
-        v3Text: "Consigue la clave en aistudio.google.com y pégala abajo.",
+        v3Text: "Pega tu clave o token de API abajo.",
         v4Title: "Configuración de carpeta en Google Drive",
         v4Text: "Pega el enlace de Google Sheets abajo.",
-        geminiKeyPlaceholder: "Pega tu Gemini API key (AQ... o AIzaSy...)",
+        geminiKeyPlaceholder: "Pega clave o token (AQ... o AIzaSy...)",
         driveFolderPlaceholder: "Pega el enlace de Google Drive...",
         step3Title: "Paso 3: Logística, Transporte y Coincidencia",
         step3Desc: "Define transporte (ÖPNV <60 min), tiempo máx y umbral de coincidencia.",
@@ -770,10 +770,10 @@
         step2Title: "Étape 2 : Services Google (Gemini API & Drive)",
         step2Desc: "Connectez l'IA et le dossier Anschreiben_Temp sur Google Drive.",
         v3Title: "Obtention d'une clé API Gemini",
-        v3Text: "Créez une clé sur aistudio.google.com et collez-la ci-dessous.",
+        v3Text: "Collez votre clé ou jeton d'API ci-dessous.",
         v4Title: "Configuration du dossier Google Drive",
         v4Text: "Collez le lien Google Sheets ci-dessous.",
-        geminiKeyPlaceholder: "Collez votre clé API Gemini (AQ... ou AIzaSy...)",
+        geminiKeyPlaceholder: "Collez clé ou token (AQ... ou AIzaSy...)",
         driveFolderPlaceholder: "Collez le lien Google Drive...",
         step3Title: "Étape 3 : Logistique, Transport & Score de correspondance",
         step3Desc: "Définissez le mode de transport (ÖPNV <60 min), le temps max et le score IA.",
@@ -792,7 +792,7 @@
         sheetColumnsLabel: "Colonnes Google Sheets",
         addColumnBtn: "Ajouter une colonne",
         blacklistLabel: "Postes exclus (Suppression automatique)",
-        blacklistPlaceholder: "ex. Data Analyst, Call Center Agent",
+        blacklistPlaceholder: "ex. Analyste de données, Agent de call center",
         addBtn: "Ajouter",
         step5Title: "Étape 5 : Profil et Expérience du CV",
         step5Desc: "Renseignez vos coordonnées pour la génération des PDF selon DIN 5008.",
@@ -837,10 +837,10 @@
         step2Title: "Krok 2: Usługi Google (Gemini API & Drive)",
         step2Desc: "Połącz sztuczną inteligencję i folder Anschreiben_Temp na Google Drive.",
         v3Title: "Uzyskanie klucza Gemini API Key",
-        v3Text: "Wygeneruj klucz na aistudio.google.com i wklej poniżej.",
+        v3Text: "Wklej swój klucz lub token API poniżej.",
         v4Title: "Konfiguracja folderu na Google Drive",
         v4Text: "Wklej link do arkusza Google Sheets poniżej.",
-        geminiKeyPlaceholder: "Wklej swój klucz Gemini API (AQ... lub AIzaSy...)",
+        geminiKeyPlaceholder: "Wklej klucz lub token (AQ... lub AIzaSy...)",
         driveFolderPlaceholder: "Wklej pełny link do Google Drive...",
         step3Title: "Krok 3: Logistyka, Transport i Próg dopasowania",
         step3Desc: "Określ środek transportu (ÖPNV <60 min), limit czasu dojazdu i wynik AI.",
@@ -859,7 +859,7 @@
         sheetColumnsLabel: "Kolumny Google Sheets",
         addColumnBtn: "Dodaj kolumnę",
         blacklistLabel: "Wykluczone stanowiska (Automatycznie do kosza)",
-        blacklistPlaceholder: "np. Data Analyst, Call Center Agent",
+        blacklistPlaceholder: "np. Analityk danych, Pracownik call center",
         addBtn: "Dodaj",
         step5Title: "Krok 5: Profil i Doświadczenie z CV",
         step5Desc: "Podaj dane Absender wg DIN 5008 do generowania PDF w Anschreiben_Temp.",
@@ -893,7 +893,6 @@
       PL: { postcode: "60386", city: "Frankfurt nad Menem", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analityk danych", "Pracownik call center", "Praca fizyczna", "Pracownik magazynu"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt nad Menem", resumeText: "Doświadczenie w Customer Experience, optymalizacji procesów, testowaniu QA i automatyzacji AI..." }
     };
 
-    // Exactly 9 Clean Sheet Columns Required by System Specifications
     const defaultColumnsByLang = {
       EN: ["Processing Date", "Company Name", "Job Title", "Location", "Travel Time", "Match Score (%)", "Salary Range", "Job URL", "Status"],
       DE: ["Bearbeitungsdatum", "Unternehmen", "Stellenbezeichnung", "Standort", "Fahrzeit", "Match-Score (%)", "Gehalt", "Job-URL", "Status"],
@@ -913,7 +912,6 @@
         const selectedLanguageOption = ref('German');
         const customLanguageInput = ref('');
 
-        // Quick Edit Mode States
         const quickEditMode = ref(false);
         const existingCodeInput = ref('');
         const extractedApiKey = ref('');
@@ -963,7 +961,6 @@
           }
         });
 
-        // Save & Load Form State with LocalStorage
         const saveFormData = () => {
           localStorage.setItem('jmail_form_data', JSON.stringify(form.value));
         };
@@ -1035,7 +1032,6 @@
           saveFormData();
         };
 
-        // Extract GEMINI_API_KEY from pasted code via Regular Expression & auto-fill form key
         const extractApiKeyFromPastedCode = () => {
           const code = existingCodeInput.value;
           const match = code.match(/GEMINI_API_KEY\s*:\s*["']([^"']+)["']/i);
@@ -1047,7 +1043,6 @@
           }
         };
 
-        // Active API key for button check (either extracted or manually entered in form)
         const activeApiKey = computed(() => {
           return extractedApiKey.value || form.value.geminiApiKey;
         });
@@ -1123,7 +1118,6 @@
             '      continue;',
             '    }',
             '',
-            '    // Append strictly 9 clean columns without raw Anschreiben text or PDF URLs',
             '    const rowData = [',
             '      new Date(),',
             '      analysis.companyName || "N/A",',
@@ -1156,11 +1150,18 @@
             '}',
             '',
             'function analyzeJobWithGemini(subject, body) {',
-            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
+            '  const isBearer = CONFIG.GEMINI_API_KEY.startsWith("AQ.") || CONFIG.GEMINI_API_KEY.startsWith("ya29.");',
+            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
+            '  ',
             '  const modeConstraint = CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "No location restrictions." : "Max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via " + CONFIG.TRANSPORT_MODE + " from " + CONFIG.HOME_POSTCODE + ".";',
             '  const prompt = "You are an expert Senior Technical Recruiter and Career Agent. Evaluate if this vacancy fits the profile.\\n\\nApplicant Background:\\n" + CONFIG.APPLICANT.RESUME_TEXT + "\\n\\nSubject: " + subject + "\\nBody: " + body + "\\n\\nConstraints: " + modeConstraint + " Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON: {isSuitable: bool, matchScore: number, companyName: string, jobTitle: string, location: string, travelTimeMinutes: number, salary: string, jobUrl: string, notes: string}.";',
             '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
-            '  const options = { method: "post", contentType: "application/json", headers: { "x-goog-api-key": CONFIG.GEMINI_API_KEY }, payload: JSON.stringify(payload), muteHttpExceptions: true };',
+            '  ',
+            '  const headers = { "Content-Type": "application/json" };',
+            '  if (isBearer) { headers["Authorization"] = "Bearer " + CONFIG.GEMINI_API_KEY; }',
+            '  else { headers["x-goog-api-key"] = CONFIG.GEMINI_API_KEY; }',
+            '',
+            '  const options = { method: "post", contentType: "application/json", headers: headers, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
             '    const response = UrlFetchApp.fetch(url, options);',
             '    const json = JSON.parse(response.getContentText());',
@@ -1183,7 +1184,6 @@
             '  const folder = getOrCreateTargetFolder();',
             '  const letterText = generateWithGemini("Write a DIN 5008 compliant Cover Letter (Anschreiben) in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying for " + jobData.jobTitle + " at " + jobData.companyName + ". Avoid AI clichés. Background: " + CONFIG.APPLICANT.RESUME_TEXT);',
             '  ',
-            '  // DIN 5008 Compliant HTML Layout',
             '  const htmlContent = "<html><head><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#111;}.sender{font-size:8pt;color:#555;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:25px;}.recipient{margin-bottom:30px;}.date{text-align:right;margin-bottom:25px;}.subject{font-weight:bold;font-size:12pt;margin-bottom:20px;}.content{text-align:justify;white-space:pre-line;}.signature{margin-top:35px;}</style></head><body><div class=\\"sender\\">" + CONFIG.APPLICANT.NAME + " • " + CONFIG.APPLICANT.ADDRESS + "</div><div class=\\"recipient\\"><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + CONFIG.CITY + ", " + new Date().toLocaleDateString("de-DE") + "</div><div class=\\"subject\\">Bewerbung als " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div><div class=\\"signature\\">Mit freundlichen Grüßen,<br><br><strong>" + CONFIG.APPLICANT.NAME + "</strong></div></body></html>";',
             '  ',
             '  const pdfBlob = Utilities.newBlob(htmlContent, "text/html").getAs("application/pdf").setName("Anschreiben_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
@@ -1191,9 +1191,15 @@
             '}',
             '',
             'function generateWithGemini(promptText) {',
-            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
+            '  const isBearer = CONFIG.GEMINI_API_KEY.startsWith("AQ.") || CONFIG.GEMINI_API_KEY.startsWith("ya29.");',
+            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
+            '  ',
             '  const payload = { contents: [{ parts: [{ text: promptText }] }] };',
-            '  const options = { method: "post", contentType: "application/json", headers: { "x-goog-api-key": CONFIG.GEMINI_API_KEY }, payload: JSON.stringify(payload), muteHttpExceptions: true };',
+            '  const headers = { "Content-Type": "application/json" };',
+            '  if (isBearer) { headers["Authorization"] = "Bearer " + CONFIG.GEMINI_API_KEY; }',
+            '  else { headers["x-goog-api-key"] = CONFIG.GEMINI_API_KEY; }',
+            '',
+            '  const options = { method: "post", contentType: "application/json", headers: headers, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
             '    const response = UrlFetchApp.fetch(url, options);',
             '    const json = JSON.parse(response.getContentText());',
@@ -1207,11 +1213,11 @@
           return customRefactoredCode.value || standardGeneratedCode.value;
         });
 
-        // Quick Edit Refactoring Logic supporting AQ... and AIzaSy... keys + Target Language Context
+        // Smart Quick Edit supporting Bearer tokens (AQ...) and standard keys (AIzaSy...)
         const processQuickEdit = async () => {
           const apiKey = activeApiKey.value ? activeApiKey.value.trim() : '';
           if (!apiKey) {
-            alert("API Key not found. Please paste a script containing CONFIG.GEMINI_API_KEY or enter your key manually!");
+            alert("API Key / Token not found. Please paste a script containing CONFIG.GEMINI_API_KEY or enter your token!");
             return;
           }
           if (!quickEditPrompt.value.trim()) {
@@ -1237,15 +1243,22 @@ ${sourceCode}
 
 Return ONLY the complete modified Apps Script code in JavaScript without Markdown formatting codeblocks or explanations.`;
 
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const isBearer = apiKey.startsWith("AQ.") || apiKey.startsWith("ya29.");
+          const url = isBearer 
+            ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+            : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
           
+          const headers = { 'Content-Type': 'application/json' };
+          if (isBearer) {
+            headers['Authorization'] = `Bearer ${apiKey}`;
+          } else {
+            headers['x-goog-api-key'] = apiKey;
+          }
+
           try {
             const res = await fetch(url, {
               method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'x-goog-api-key': apiKey // Dual auth header support for AQ... keys
-              },
+              headers: headers,
               body: JSON.stringify({ 
                 contents: [{ parts: [{ text: prompt }] }] 
               })

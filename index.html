@@ -40,8 +40,8 @@
       </div>
     </header>
 
-    <!-- Stepper Navigation (6 Steps) -->
-    <div class="flex items-center justify-between mb-8 bg-slate-800 p-4 rounded-xl border border-slate-700 overflow-x-auto">
+    <!-- Stepper Navigation (6 Steps) - Hidden in Quick Edit Mode -->
+    <div v-if="!quickEditMode" class="flex items-center justify-between mb-8 bg-slate-800 p-4 rounded-xl border border-slate-700 overflow-x-auto">
       <div v-for="stepNum in 6" :key="stepNum" class="flex items-center">
         <div 
           :class="[
@@ -61,11 +61,50 @@
     <!-- Main Content Card -->
     <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
 
-      <!-- STEP 1: Job Portals & Gmail Setup -->
-      <div v-if="currentStep === 1" class="space-y-6">
+      <!-- QUICK EDIT MODE VIEW -->
+      <div v-if="quickEditMode" class="space-y-6">
+        <div class="flex justify-between items-center border-b border-slate-700 pb-4">
+          <div>
+            <h2 class="text-2xl font-bold text-amber-400 mb-1">✏️ {{ t('quickEditTitle') }}</h2>
+            <p class="text-slate-400 text-sm">{{ t('quickEditDesc') }}</p>
+          </div>
+          <button @click="quickEditMode = false" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg">
+            ✕ {{ t('cancelBtn') }}
+          </button>
+        </div>
+
         <div>
-          <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step1Title') }}</h2>
-          <p class="text-slate-400 text-sm">{{ t('step1Desc') }}</p>
+          <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('existingCodeLabel') }}</label>
+          <textarea v-model="existingCodeInput" rows="6" :placeholder="t('existingCodePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white font-mono text-xs outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('editPromptLabel') }}</label>
+          <textarea v-model="quickEditPrompt" rows="4" :placeholder="t('editPromptPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
+        </div>
+
+        <button 
+          @click="processQuickEdit" 
+          :disabled="isModifyingCode"
+          class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2"
+        >
+          <span v-if="isModifyingCode" class="animate-spin">🔄</span>
+          <span>{{ isModifyingCode ? t('modifyingBtn') : t('generateRefactoredBtn') }}</span>
+        </button>
+      </div>
+
+      <!-- STEP 1: Job Portals & Gmail Setup -->
+      <div v-else-if="currentStep === 1" class="space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step1Title') }}</h2>
+            <p class="text-slate-400 text-sm">{{ t('step1Desc') }}</p>
+          </div>
+          
+          <!-- Quick Edit Switcher Button -->
+          <button @click="quickEditMode = true" class="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-all shrink-0">
+            <span>✏️</span> {{ t('quickEditBtn') }}
+          </button>
         </div>
 
         <!-- Video 1: Job Portals -->
@@ -98,17 +137,17 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-700/60">
           <div>
             <label class="block text-xs font-medium mb-1 text-slate-300">{{ t('gmailInboxLabel') }}</label>
-            <input v-model="form.gmail.inboxLabel" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
+            <input v-model="form.gmail.inboxLabel" @input="saveFormData" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
           </div>
           <div>
             <label class="block text-xs font-medium mb-1 text-slate-300">{{ t('gmailDoneLabel') }}</label>
-            <input v-model="form.gmail.doneLabel" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
+            <input v-model="form.gmail.doneLabel" @input="saveFormData" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none">
           </div>
         </div>
       </div>
 
       <!-- STEP 2: Gemini API & Google Drive Folder -->
-      <div v-if="currentStep === 2" class="space-y-6">
+      <div v-else-if="currentStep === 2" class="space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step2Title') }}</h2>
           <p class="text-slate-400 text-sm">{{ t('step2Desc') }}</p>
@@ -125,7 +164,7 @@
               <source src="./assets/videos/Api_Key.mp4" type="video/mp4">
             </video>
           </div>
-          <input v-model="form.geminiApiKey" type="password" :placeholder="t('geminiKeyPlaceholder')" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
+          <input v-model="form.geminiApiKey" @input="saveFormData" type="password" :placeholder="t('geminiKeyPlaceholder')" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
         </div>
 
         <!-- Video 4: Drive Folder -->
@@ -139,13 +178,13 @@
               <source src="./assets/videos/Tab_Link.mp4" type="video/mp4">
             </video>
           </div>
-          <input v-model="form.driveFolderInput" @input="parseFolderId" type="text" :placeholder="t('driveFolderPlaceholder')" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
+          <input v-model="form.driveFolderInput" @input="handleFolderInput" type="text" :placeholder="t('driveFolderPlaceholder')" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
           <span v-if="form.driveFolderId" class="text-xs text-emerald-400 block">✓ Auto-extracted Folder ID: {{ form.driveFolderId }}</span>
         </div>
       </div>
 
       <!-- STEP 3: Logistics, Commute Mode & Match Score -->
-      <div v-if="currentStep === 3" class="space-y-6">
+      <div v-else-if="currentStep === 3" class="space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step3Title') }}</h2>
           <p class="text-slate-400 text-sm">{{ t('step3Desc') }}</p>
@@ -154,11 +193,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('postalCodeLabel') }}</label>
-            <input v-model="form.logistics.homePostcode" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.logistics.homePostcode" @input="saveFormData" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('cityLabel') }}</label>
-            <input v-model="form.logistics.city" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.logistics.city" @input="saveFormData" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
         </div>
 
@@ -170,7 +209,7 @@
               v-for="mode in localizedTransportOptions" 
               :key="mode.id" 
               type="button" 
-              @click="form.logistics.transportMode = mode.id"
+              @click="setTransportMode(mode.id)"
               :class="[
                 'p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all',
                 form.logistics.transportMode === mode.id ? 'bg-blue-600/30 border-blue-500 text-white ring-2 ring-blue-500/40' : 'bg-slate-900 border-slate-700 text-slate-400 hover:bg-slate-800'
@@ -190,7 +229,7 @@
               {{ form.logistics.transportMode === 'NO_LIMIT' ? t('noLimitText') : form.logistics.maxTravelMinutes + ' mins' }}
             </span>
           </div>
-          <input v-model.number="form.logistics.maxTravelMinutes" type="range" min="15" max="90" step="5" class="w-full accent-blue-500 cursor-pointer">
+          <input v-model.number="form.logistics.maxTravelMinutes" @change="saveFormData" type="range" min="15" max="90" step="5" class="w-full accent-blue-500 cursor-pointer">
           <div class="flex justify-between text-xs text-slate-500 mt-1">
             <span>15 mins</span>
             <span>45 mins</span>
@@ -204,7 +243,7 @@
             <label class="text-sm font-medium text-slate-200">{{ t('matchScoreLabel') }}</label>
             <span class="text-emerald-400 font-bold text-lg">{{ form.minMatchScore }}%</span>
           </div>
-          <input v-model.number="form.minMatchScore" type="range" min="50" max="95" step="5" class="w-full accent-emerald-500 cursor-pointer">
+          <input v-model.number="form.minMatchScore" @change="saveFormData" type="range" min="50" max="95" step="5" class="w-full accent-emerald-500 cursor-pointer">
           <div class="flex justify-between text-xs text-slate-500 mt-1">
             <span>50% (Flexible)</span>
             <span>70% (Balanced)</span>
@@ -214,7 +253,7 @@
       </div>
 
       <!-- STEP 4: Sheet Columns & Blacklist -->
-      <div v-if="currentStep === 4" class="space-y-6">
+      <div v-else-if="currentStep === 4" class="space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step4Title') }}</h2>
           <p class="text-slate-400 text-sm">{{ t('step4Desc') }}</p>
@@ -225,7 +264,7 @@
           <div class="space-y-2 mb-3">
             <div v-for="(col, index) in form.columns" :key="index" class="flex items-center gap-2">
               <span class="text-slate-500 w-6 text-xs text-right">{{ index + 1 }}.</span>
-              <input v-model="form.columns[index]" type="text" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">
+              <input v-model="form.columns[index]" @input="saveFormData" type="text" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">
               <button @click="removeColumn(index)" class="text-rose-400 hover:text-rose-300 px-2 font-bold">✕</button>
             </div>
           </div>
@@ -248,7 +287,7 @@
       </div>
 
       <!-- STEP 5: Applicant Profile & Resume Background -->
-      <div v-if="currentStep === 5" class="space-y-6">
+      <div v-else-if="currentStep === 5" class="space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step5Title') }}</h2>
           <p class="text-slate-400 text-sm">{{ t('step5Desc') }}</p>
@@ -262,12 +301,12 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('fullNameLabel') }}</label>
-            <input v-model="form.applicant.fullName" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <input v-model="form.applicant.fullName" @input="saveFormData" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
           </div>
 
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('targetLangLabel') }}</label>
-            <select v-model="selectedLanguageOption" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <select v-model="selectedLanguageOption" @change="saveFormData" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
               <option value="German">German (Deutsch)</option>
               <option value="English">English</option>
               <option value="Ukrainian">Ukrainian (Українська)</option>
@@ -276,23 +315,23 @@
               <option value="Polish">Polish (Polski)</option>
               <option value="CUSTOM">Custom / Manual Input...</option>
             </select>
-            <input v-if="selectedLanguageOption === 'CUSTOM'" v-model="customLanguageInput" type="text" placeholder="Enter language" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 mt-2 text-sm text-white outline-none">
+            <input v-if="selectedLanguageOption === 'CUSTOM'" v-model="customLanguageInput" @input="saveFormData" type="text" placeholder="Enter language" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 mt-2 text-sm text-white outline-none">
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('addressLabel') }}</label>
-          <input v-model="form.applicant.address" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+          <input v-model="form.applicant.address" @input="saveFormData" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('resumeLabel') }}</label>
-          <textarea v-model="form.applicant.resumeText" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
+          <textarea v-model="form.applicant.resumeText" @input="saveFormData" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
         </div>
       </div>
 
       <!-- STEP 6: Code Generation & Execution Guide -->
-      <div v-if="currentStep === 6" class="space-y-6">
+      <div v-else-if="currentStep === 6" class="space-y-6">
         <div class="flex justify-between items-center">
           <h2 class="text-2xl font-bold text-emerald-400">{{ t('step6Title') }}</h2>
           <button @click="copyToClipboard" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-all">
@@ -300,7 +339,7 @@
           </button>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 h-80 overflow-y-auto whitespace-pre select-all">{{ generatedCode }}</div>
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 h-80 overflow-y-auto whitespace-pre select-all">{{ activeOutputCode }}</div>
 
         <!-- Video 5: Apps Script Paste -->
         <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-3">
@@ -334,8 +373,8 @@
         </div>
       </div>
 
-      <!-- Navigation Buttons -->
-      <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-700">
+      <!-- Navigation Buttons (Hidden in Quick Edit Mode) -->
+      <div v-if="!quickEditMode" class="flex justify-between items-center mt-8 pt-6 border-t border-slate-700">
         <button 
           v-if="currentStep > 1" 
           @click="currentStep--" 
@@ -359,11 +398,21 @@
 
   <!-- Vue 3 App Logic -->
   <script>
-    const { createApp, ref, computed } = Vue;
+    const { createApp, ref, computed, onMounted } = Vue;
 
     const translations = {
       RU: {
         subtitle: "Автоматизируйте поиск работы, фильтрацию, письма и резюме с Gemini AI",
+        quickEditBtn: "Редактировать готовый код",
+        quickEditTitle: "Быстрая доработка существующего кода",
+        quickEditDesc: "Вставьте ваш текущий Code.gs и напишите текстом, что необходимо добавить или изменить.",
+        existingCodeLabel: "Ваш текущий скрипт Code.gs (необязательно)",
+        existingCodePlaceholder: "Вставьте сюда имеющийся код Apps Script...",
+        editPromptLabel: "Что нужно изменить или добавить?",
+        editPromptPlaceholder: "например, Добавь отправку отчета о работе скрипта мне на почту раз в месяц или измей время очистки...",
+        generateRefactoredBtn: "Сгенерировать обновленный код",
+        modifyingBtn: "ИИ обновляет ваш код...",
+        cancelBtn: "Отмена",
         step1Title: "Шаг 1: Почтовые алерты и Ярлыки Gmail",
         step1Desc: "Настройте автоматическое получение и фильтрацию писем с вакансиями.",
         v1Title: "Настройка рассылок на сайтах поиска работы",
@@ -421,6 +470,16 @@
       },
       UA: {
         subtitle: "Автоматизуйте пошук роботи, фільтрацію, супровідні листи та резюме з Gemini AI",
+        quickEditBtn: "Редагувати готовий код",
+        quickEditTitle: "Швидка доробка існуючого коду",
+        quickEditDesc: "Вставте ваш поточний Code.gs та напишіть текстом, що потрібно додати або змінити.",
+        existingCodeLabel: "Ваш поточний скрипт Code.gs (необов'язково)",
+        existingCodePlaceholder: "Вставте сюди наявний код Apps Script...",
+        editPromptLabel: "Що потрібно змінити або додати?",
+        editPromptPlaceholder: "наприклад, Додай надсилання звіту про роботу скрипта мені на пошту раз на місяць...",
+        generateRefactoredBtn: "Згенерувати оновлений код",
+        modifyingBtn: "ШІ оновлює ваш код...",
+        cancelBtn: "Скасувати",
         step1Title: "Крок 1: Поштові сповіщення та Ярлики Gmail",
         step1Desc: "Налаштуйте автоматичне отримання та фільтрацію листів з вакансіями.",
         v1Title: "Налаштування розсилок на сайтах пошуку роботи",
@@ -478,6 +537,16 @@
       },
       EN: {
         subtitle: "Automate your job search, matching, custom Cover Letters & tailored CVs with Gemini AI",
+        quickEditBtn: "Edit Existing Code",
+        quickEditTitle: "Quick Refactoring of Existing Code",
+        quickEditDesc: "Paste your existing Code.gs and type your desired updates or modifications.",
+        existingCodeLabel: "Your Current Code.gs Script (Optional)",
+        existingCodePlaceholder: "Paste existing Apps Script code here...",
+        editPromptLabel: "What modifications or features would you like to add?",
+        editPromptPlaceholder: "e.g., Add a monthly summary email sent to me or change auto-trash rules...",
+        generateRefactoredBtn: "Generate Refactored Code",
+        modifyingBtn: "AI is refactoring your code...",
+        cancelBtn: "Cancel",
         step1Title: "Step 1: Job Portals & Gmail Setup",
         step1Desc: "Configure email job alerts and auto-filtering rules.",
         v1Title: "Configuring Job Alerts on Job Search Engines",
@@ -535,6 +604,16 @@
       },
       DE: {
         subtitle: "Automatisieren Sie Ihre Jobsuche, Abgleiche, Anschreiben & Lebensläufe mit Gemini AI",
+        quickEditBtn: "Bestehenden Code bearbeiten",
+        quickEditTitle: "Schnellanpassung des bestehenden Codes",
+        quickEditDesc: "Fügen Sie Ihren aktuellen Code.gs ein und geben Sie Ihre Wünsche ein.",
+        existingCodeLabel: "Ihr aktueller Code.gs-Skript (Optional)",
+        existingCodePlaceholder: "Bestehenden Apps Script Code hier einfügen...",
+        editPromptLabel: "Was soll geändert oder hinzugefügt werden?",
+        editPromptPlaceholder: "z.B. Füge einen monatlichen Bericht per E-Mail hinzu...",
+        generateRefactoredBtn: "Aktualisierten Code generieren",
+        modifyingBtn: "KI aktualisiert Ihren Code...",
+        cancelBtn: "Abbrechen",
         step1Title: "Schritt 1: Jobbörsen & Gmail-Einrichtung",
         step1Desc: "Richten Sie automatische E-Mail-Benachrichtigungen und Filterregeln ein.",
         v1Title: "Einrichtung von Job-Alerts auf Jobportalen",
@@ -592,6 +671,16 @@
       },
       ES: {
         subtitle: "Automatiza tu búsqueda de empleo, cartas de presentación y CVs con Gemini AI",
+        quickEditBtn: "Editar código existente",
+        quickEditTitle: "Modificación rápida de código",
+        quickEditDesc: "Pega tu Code.gs actual y escribe lo que deseas cambiar o añadir.",
+        existingCodeLabel: "Tu script Code.gs actual (Opcional)",
+        existingCodePlaceholder: "Pega el código Apps Script aquí...",
+        editPromptLabel: "Что deseas cambiar?",
+        editPromptPlaceholder: "ej. Añade un resumen mensual por correo...",
+        generateRefactoredBtn: "Generar código actualizado",
+        modifyingBtn: "La IA está actualizando el código...",
+        cancelBtn: "Cancelar",
         step1Title: "Paso 1: Alertas y Etiquetas de Gmail",
         step1Desc: "Configura la recepción automática y filtrado de ofertas de empleo.",
         v1Title: "Configuración de alertas en portales de empleo",
@@ -649,6 +738,16 @@
       },
       FR: {
         subtitle: "Automatisez votre recherche d'emploi, lettres de motivation et CV avec Gemini AI",
+        quickEditBtn: "Modifier le code existant",
+        quickEditTitle: "Modification rapide du code existant",
+        quickEditDesc: "Collez votre Code.gs actuel et saisissez vos modifications souhaitées.",
+        existingCodeLabel: "Votre script Code.gs actuel (Optionnel)",
+        existingCodePlaceholder: "Collez le code Apps Script ici...",
+        editPromptLabel: "Que souhaitez-vous modifier ?",
+        editPromptPlaceholder: "ex. Ajoutez un rapport mensuel envoyé par e-mail...",
+        generateRefactoredBtn: "Générer le code mis à jour",
+        modifyingBtn: "L'IA met à jour votre code...",
+        cancelBtn: "Annuler",
         step1Title: "Étape 1 : Alertes e-mail & Étiquettes Gmail",
         step1Desc: "Configurez la réception automatique et le filtrage des offres d'emploi.",
         v1Title: "Configuration des alertes sur les sites d'emploi",
@@ -706,6 +805,16 @@
       },
       PL: {
         subtitle: "Automatyzuj szukanie pracy, dopasowania, listy motywacyjne i CV z Gemini AI",
+        quickEditBtn: "Edytuj istniejący kod",
+        quickEditTitle: "Szybka edycja istniejącego kodu",
+        quickEditDesc: "Wklej swój obecny Code.gs i wpisz tekstowo zmiany, które chcesz wprowadzić.",
+        existingCodeLabel: "Twój obecny skrypt Code.gs (Opcjonalnie)",
+        existingCodePlaceholder: "Wklej kod Apps Script tutaj...",
+        editPromptLabel: "Co chcesz zmienić lub dodać?",
+        editPromptPlaceholder: "np. Dodaj comiesięczny raport wysyłany na e-mail...",
+        generateRefactoredBtn: "Wygeneruj zaktualizowany kod",
+        modifyingBtn: "AI aktualizuje Twój kod...",
+        cancelBtn: "Anuluj",
         step1Title: "Krok 1: Powiadomienia e-mail i Etykiety Gmail",
         step1Desc: "Skonfiguruj automatyczne odbieranie i filtrowanie ofert pracy.",
         v1Title: "Konfiguracja powiadomień na portalach pracy",
@@ -792,6 +901,13 @@
         const selectedLanguageOption = ref('German');
         const customLanguageInput = ref('');
 
+        // Quick Edit Mode States
+        const quickEditMode = ref(false);
+        const existingCodeInput = ref('');
+        const quickEditPrompt = ref('');
+        const isModifyingCode = ref(false);
+        const customRefactoredCode = ref(null);
+
         const t = (key) => {
           const dict = translations[currentLang.value] || translations['RU'];
           return dict[key] || translations['RU'][key] || key;
@@ -834,43 +950,79 @@
           }
         });
 
+        // Save & Load Form State with LocalStorage
+        const saveFormData = () => {
+          localStorage.setItem('jmail_form_data', JSON.stringify(form.value));
+        };
+
+        const loadSavedFormData = () => {
+          const saved = localStorage.getItem('jmail_form_data');
+          if (saved) {
+            try {
+              form.value = { ...form.value, ...JSON.parse(saved) };
+            } catch(e) {}
+          }
+        };
+
+        onMounted(() => {
+          loadSavedFormData();
+        });
+
         const saveLanguage = () => {
           localStorage.setItem('jmail_lang', currentLang.value);
           const p = localizedPresets[currentLang.value] || localizedPresets['RU'];
           
-          form.value.logistics.homePostcode = p.postcode;
-          form.value.logistics.city = p.city;
-          form.value.gmail.inboxLabel = p.inbox;
-          form.value.gmail.doneLabel = p.done;
-          form.value.filters.blacklistKeywords = [...p.blacklist];
-          form.value.applicant.fullName = p.fullName;
-          form.value.applicant.address = p.address;
-          form.value.applicant.resumeText = p.resumeText;
-          form.value.columns = [...(defaultColumnsByLang[currentLang.value] || defaultColumnsByLang['RU'])];
+          if (!localStorage.getItem('jmail_form_data')) {
+            form.value.logistics.homePostcode = p.postcode;
+            form.value.logistics.city = p.city;
+            form.value.gmail.inboxLabel = p.inbox;
+            form.value.gmail.doneLabel = p.done;
+            form.value.filters.blacklistKeywords = [...p.blacklist];
+            form.value.applicant.fullName = p.fullName;
+            form.value.applicant.address = p.address;
+            form.value.applicant.resumeText = p.resumeText;
+            form.value.columns = [...(defaultColumnsByLang[currentLang.value] || defaultColumnsByLang['RU'])];
+          }
         };
 
-        const parseFolderId = () => {
+        const setTransportMode = (modeId) => {
+          form.value.logistics.transportMode = modeId;
+          saveFormData();
+        };
+
+        const handleFolderInput = () => {
           const input = form.value.driveFolderInput.trim();
           const match = input.match(/[-\w]{25,}/);
           form.value.driveFolderId = match ? match[0] : input;
+          saveFormData();
         };
 
         const targetLanguage = computed(() => {
           return selectedLanguageOption.value === 'CUSTOM' ? (customLanguageInput.value || 'German') : selectedLanguageOption.value;
         });
 
-        const addColumn = () => form.value.columns.push('Column ' + (form.value.columns.length + 1));
-        const removeColumn = (idx) => form.value.columns.splice(idx, 1);
+        const addColumn = () => {
+          form.value.columns.push('Column ' + (form.value.columns.length + 1));
+          saveFormData();
+        };
+        const removeColumn = (idx) => {
+          form.value.columns.splice(idx, 1);
+          saveFormData();
+        };
 
         const addBlacklistWord = () => {
           if (newBlacklistWord.value.trim()) {
             form.value.filters.blacklistKeywords.push(newBlacklistWord.value.trim());
             newBlacklistWord.value = '';
+            saveFormData();
           }
         };
-        const removeBlacklistWord = (idx) => form.value.filters.blacklistKeywords.splice(idx, 1);
+        const removeBlacklistWord = (idx) => {
+          form.value.filters.blacklistKeywords.splice(idx, 1);
+          saveFormData();
+        };
 
-        const generatedCode = computed(() => {
+        const standardGeneratedCode = computed(() => {
           const f = form.value;
           const colsJson = JSON.stringify(f.columns, null, 2);
           const blacklistJson = JSON.stringify(f.filters.blacklistKeywords);
@@ -1016,8 +1168,55 @@
           ].join('\n');
         });
 
+        const activeOutputCode = computed(() => {
+          return customRefactoredCode.value || standardGeneratedCode.value;
+        });
+
+        // Quick Edit Refactoring Logic via Gemini API
+        const processQuickEdit = async () => {
+          if (!form.value.geminiApiKey) {
+            alert("Please enter a valid Gemini API Key on Step 2 first!");
+            return;
+          }
+          if (!quickEditPrompt.value.trim()) {
+            alert("Please describe what changes you want to make!");
+            return;
+          }
+
+          isModifyingCode.value = true;
+          const sourceCode = existingCodeInput.value.trim() || standardGeneratedCode.value;
+          
+          const prompt = `You are an expert Google Apps Script developer. 
+Refactor and modify the following Apps Script code according to user requirements.
+User Instructions: ${quickEditPrompt.value}
+
+Source Code:
+${sourceCode}
+
+Return ONLY the complete modified Apps Script code in JavaScript without Markdown formatting codeblocks or explanations.`;
+
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${form.value.geminiApiKey}`;
+          try {
+            const res = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            const rawText = data.candidates[0].content.parts[0].text;
+            customRefactoredCode.value = rawText.replace(/```javascript/g, "").replace(/```javascript/g, "").replace(/```/g, "").trim();
+            
+            quickEditMode.value = false;
+            currentStep.value = 6;
+          } catch (e) {
+            alert("Failed to modify code via Gemini API. Please check your API key.");
+          } finally {
+            isModifyingCode.value = false;
+          }
+        };
+
         const copyToClipboard = () => {
-          navigator.clipboard.writeText(generatedCode.value);
+          navigator.clipboard.writeText(activeOutputCode.value);
           copied.value = true;
           setTimeout(() => copied.value = false, 2500);
         };
@@ -1029,7 +1228,9 @@
           currentStep,
           localizedTransportOptions,
           form,
-          parseFolderId,
+          saveFormData,
+          setTransportMode,
+          handleFolderInput,
           selectedLanguageOption,
           customLanguageInput,
           newBlacklistWord,
@@ -1037,7 +1238,12 @@
           removeColumn,
           addBlacklistWord,
           removeBlacklistWord,
-          generatedCode,
+          quickEditMode,
+          existingCodeInput,
+          quickEditPrompt,
+          isModifyingCode,
+          processQuickEdit,
+          activeOutputCode,
           copyToClipboard,
           copied
         };

@@ -40,8 +40,8 @@
       </div>
     </header>
 
-    <!-- Stepper Navigation (6 Steps) - Hidden in Quick Edit Mode -->
-    <div v-if="!quickEditMode" class="flex items-center justify-between mb-8 bg-slate-800 p-4 rounded-xl border border-slate-700 overflow-x-auto">
+    <!-- Stepper Navigation (6 Steps) -->
+    <div class="flex items-center justify-between mb-8 bg-slate-800 p-4 rounded-xl border border-slate-700 overflow-x-auto">
       <div v-for="stepNum in 6" :key="stepNum" class="flex items-center">
         <div 
           :class="[
@@ -61,61 +61,11 @@
     <!-- Main Content Card -->
     <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
 
-      <!-- QUICK EDIT MODE VIEW -->
-      <div v-if="quickEditMode" class="space-y-6">
-        <div class="flex justify-between items-center border-b border-slate-700 pb-4">
-          <div>
-            <h2 class="text-2xl font-bold text-amber-400 mb-1">✏️ {{ t('quickEditTitle') }}</h2>
-            <p class="text-slate-400 text-sm">{{ t('quickEditDesc') }}</p>
-          </div>
-          <button @click="quickEditMode = false" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg cursor-pointer">
-            ✕ {{ t('cancelBtn') }}
-          </button>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('existingCodeLabel') }}</label>
-          <textarea v-model="existingCodeInput" @input="extractApiKeyFromPastedCode" rows="8" :placeholder="t('existingCodePlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white font-mono text-xs outline-none"></textarea>
-          
-          <div class="mt-2 flex items-center gap-2">
-            <span v-if="extractedApiKey" class="text-xs text-emerald-400 font-semibold">✓ API-ключ автоматически извлечен из вашего кода!</span>
-            <span v-else class="text-xs text-slate-400">ℹ️ Вставьте код, содержащий ваш API-ключ, либо укажите его в поле ниже.</span>
-          </div>
-        </div>
-
-        <!-- Manual API Key / Token Fallback -->
-        <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">🔑 Gemini API Key / Token (AQ... или AIzaSy...)</label>
-          <input v-model="form.geminiApiKey" @input="saveFormData" type="password" placeholder="AQ... или AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('editPromptLabel') }}</label>
-          <textarea v-model="quickEditPrompt" rows="4" :placeholder="t('editPromptPlaceholder')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
-        </div>
-
-        <button 
-          @click="processQuickEdit" 
-          :disabled="isModifyingCode || !activeApiKey"
-          class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
-        >
-          <span v-if="isModifyingCode" class="animate-spin">🔄</span>
-          <span>{{ isModifyingCode ? t('modifyingBtn') : t('generateRefactoredBtn') }}</span>
-        </button>
-      </div>
-
       <!-- STEP 1: Job Portals & Gmail Setup -->
-      <div v-else-if="currentStep === 1" class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step1Title') }}</h2>
-            <p class="text-slate-400 text-sm">{{ t('step1Desc') }}</p>
-          </div>
-          
-          <!-- Quick Edit Switcher Button -->
-          <button @click="quickEditMode = true" class="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-all shrink-0 cursor-pointer">
-            <span>✏️</span> {{ t('quickEditBtn') }}
-          </button>
+      <div v-if="currentStep === 1" class="space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-blue-400 mb-1">{{ t('step1Title') }}</h2>
+          <p class="text-slate-400 text-sm">{{ t('step1Desc') }}</p>
         </div>
 
         <!-- Video 1: Job Portals -->
@@ -350,7 +300,7 @@
           </button>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 h-80 overflow-y-auto whitespace-pre select-all">{{ activeOutputCode }}</div>
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 h-80 overflow-y-auto whitespace-pre select-all">{{ standardGeneratedCode }}</div>
 
         <!-- Video 5: Apps Script Paste -->
         <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-3">
@@ -365,7 +315,7 @@
           </div>
         </div>
 
-        <!-- Video 6: Time Trigger & First Run Authorization Note -->
+        <!-- Video 6: Time Trigger & Self-Refactoring Mention -->
         <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-3">
           <h3 class="text-sm font-bold text-blue-400 flex items-center gap-2">
             <span>⏰</span> 2. {{ t('v6Title') }}
@@ -377,15 +327,21 @@
             </video>
           </div>
 
+          <!-- Feature Highlight Box: Self-Refactoring Inside Google Sheets -->
+          <div class="mt-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl p-4 text-xs text-emerald-200 leading-relaxed space-y-1">
+            <p>💡 <strong>Встроена функция ИИ-настройки прямо в вашей Таблице:</strong></p>
+            <p>При открытии вашей Google Таблицы вверху появится кнопка <strong>«🚀 Jmail Помощник» ➔ «✏️ Изменить настройки (ИИ)»</strong>. Вы сможете менять блэклист, транспотные лимиты или язык простым сообщением прямо внутри Таблицы без повторного захода на этот сайт!</p>
+          </div>
+
           <!-- Authorization Warning Box -->
-          <div class="mt-3 bg-amber-950/40 border border-amber-800/60 rounded-xl p-3 text-xs text-amber-200 leading-relaxed">
+          <div class="mt-2 bg-amber-950/40 border border-amber-800/60 rounded-xl p-3 text-xs text-amber-200 leading-relaxed">
             ⚠️ <strong>{{ t('authNoteTitle') }}:</strong> {{ t('authNoteText') }}
           </div>
         </div>
       </div>
 
-      <!-- Navigation Buttons (Hidden in Quick Edit Mode) -->
-      <div v-if="!quickEditMode" class="flex justify-between items-center mt-8 pt-6 border-t border-slate-700">
+      <!-- Navigation Buttons -->
+      <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-700">
         <button 
           v-if="currentStep > 1" 
           @click="currentStep--" 
@@ -414,22 +370,12 @@
     const translations = {
       RU: {
         subtitle: "Автоматизируйте поиск работы, фильтрацию, письма и резюме с Gemini AI",
-        quickEditBtn: "Редактировать готовый код",
-        quickEditTitle: "Быстрая доработка существующего кода",
-        quickEditDesc: "Вставьте ваш текущий Code.gs. Ключ/токен API извлечется автоматически или подставится из памяти.",
-        existingCodeLabel: "Ваш текущий скрипт Code.gs",
-        existingCodePlaceholder: "Вставьте сюда имеющийся код Apps Script, содержащий CONFIG...",
-        editPromptLabel: "Что нужно изменить или добавить?",
-        editPromptPlaceholder: "например, Добавь отправку отчета о работе скрипта мне на почту раз в месяц...",
-        generateRefactoredBtn: "Сгенерировать обновленный код",
-        modifyingBtn: "ИИ обновляет ваш код...",
-        cancelBtn: "Отмена",
         step1Title: "Шаг 1: Почтовые алерты и Ярлыки Gmail",
         step1Desc: "Настройте автоматическое получение и фильтрацию писем с вакансиями.",
         v1Title: "Настройка рассылок на сайтах поиска работы",
         v1Text: "На сайте поиска работы настройте рассылки, чтобы на Вашу почту поступали письма с предположительно подходящими вакансиями. Создайте максимальное количество нужных Вам писем, ИИ отсеет лишнее.",
         v2Title: "Создание ярлыков и авто-фильтрации в Gmail",
-        v2Text: "В Gmail создайте ярлык 'Bew./Job-Alerts' для входящих вакансий и 'Bew./Fertig' для готовых результатов. Настройте фильтры архиврования.",
+        v2Text: "В Gmail создайте ярлык 'Bew./Job-Alerts' для входящих вакансий и 'Bew./Fertig' для готовых результатов. Настройте фильтры архивации.",
         gmailInboxLabel: "Ярлык Gmail для входящих",
         gmailDoneLabel: "Ярлык Gmail для обработанных",
         step2Title: "Шаг 2: Сервисы Google (Gemini API & Drive)",
@@ -438,7 +384,7 @@
         v3Text: "Перейдите по ссылке aistudio.google.com, создайте ключ API и вставьте его ниже.",
         v4Title: "Настройка папки Anschreiben_Temp на Google Диске",
         v4Text: "В Google Sheets создайте новую таблицу, скопируйте ссылку и вставьте ниже.",
-        geminiKeyPlaceholder: "Вставьте ключ API или токен (AQ... или AIzaSy...)",
+        geminiKeyPlaceholder: "Вставьте ваш Gemini API key (AQ... или AIzaSy...)",
         driveFolderPlaceholder: "Вставьте ссылку на папку Google Drive...",
         step3Title: "Шаг 3: Логистика, Транспорт и Match Score",
         step3Desc: "Выберите тип транспорта, лимит времени в пути и порог подходящих вакансий.",
@@ -472,7 +418,7 @@
         v5Text: "В Google Таблице выберите Расширения ➔ Apps Script. Вставьте сгенерированный код и сохраните.",
         v6Title: "Настройка расписания запуска (Триггер)",
         v6Text: "Настройте триггер по времени для автоматического выполнения скрипта.",
-        authNoteTitle: "Обязательная разова авторизация:",
+        authNoteTitle: "Обязательная разовая авторизация:",
         authNoteText: "Нажмите 'Выполнить' (Run) в редакторе Apps Script вручную 1 раз, чтобы подтвердить права доступа.",
         copyBtn: "Скопировать код",
         copiedBtn: "Скопировано в буфер!",
@@ -481,16 +427,6 @@
       },
       UA: {
         subtitle: "Автоматизуйте пошук роботи, фільтрацію, супровідні листи та резюме з Gemini AI",
-        quickEditBtn: "Редагувати готовий код",
-        quickEditTitle: "Швидка доробка існуючого коду",
-        quickEditDesc: "Вставте ваш поточний Code.gs. Ключ API витягнеться автоматично або з пам'яті.",
-        existingCodeLabel: "Ваш поточний скрипт Code.gs",
-        existingCodePlaceholder: "Вставте сюди наявний код Apps Script, що містить CONFIG...",
-        editPromptLabel: "Що потрібно змінити або додати?",
-        editPromptPlaceholder: "наприклад, Додай надсилання звіту про роботу скрипта мені на пошту раз на місяць...",
-        generateRefactoredBtn: "Згенерувати оновлений код",
-        modifyingBtn: "ШІ оновлює ваш код...",
-        cancelBtn: "Скасувати",
         step1Title: "Крок 1: Поштові сповіщення та Ярлики Gmail",
         step1Desc: "Налаштуйте автоматичне отримання та фільтрацію листів з вакансіями.",
         v1Title: "Налаштування розсилок на сайтах пошуку роботи",
@@ -502,10 +438,10 @@
         step2Title: "Крок 2: Сервіси Google (Gemini API & Drive)",
         step2Desc: "Підключіть штучний інтелект та папку для збереження документів.",
         v3Title: "Отримання ключа Gemini API",
-        v3Text: "Отримайте ключ API та вставте його нижче.",
+        v3Text: "Отримайте ключ API на aistudio.google.com та вставте його нижче.",
         v4Title: "Налаштування папки Anschreiben_Temp в Google Drive",
         v4Text: "Вставте посилання на таблицю Google Sheets нижче.",
-        geminiKeyPlaceholder: "Вставте ключ API або токен (AQ... або AIzaSy...)",
+        geminiKeyPlaceholder: "Вставте ключ Gemini API (AQ... або AIzaSy...)",
         driveFolderPlaceholder: "Вставте посилання на папку Google Drive...",
         step3Title: "Крок 3: Логістика, Транспорт та Match Score",
         step3Desc: "Оберіть вид транспорту, ліміт часу в дорозі та поріг відповідних вакансій.",
@@ -548,16 +484,6 @@
       },
       EN: {
         subtitle: "Automate your job search, matching, custom Cover Letters & tailored CVs with Gemini AI",
-        quickEditBtn: "Edit Existing Code",
-        quickEditTitle: "Quick Refactoring of Existing Code",
-        quickEditDesc: "Paste your existing Code.gs. The API key is extracted automatically or loaded from memory.",
-        existingCodeLabel: "Your Current Code.gs Script",
-        existingCodePlaceholder: "Paste existing Apps Script code containing CONFIG here...",
-        editPromptLabel: "What modifications or features would you like to add?",
-        editPromptPlaceholder: "e.g., Add a monthly summary email sent to me...",
-        generateRefactoredBtn: "Generate Refactored Code",
-        modifyingBtn: "AI is refactoring your code...",
-        cancelBtn: "Cancel",
         step1Title: "Step 1: Job Portals & Gmail Setup",
         step1Desc: "Configure email job alerts and auto-filtering rules.",
         v1Title: "Configuring Job Alerts on Job Search Engines",
@@ -569,10 +495,10 @@
         step2Title: "Step 2: Google Workspace (Gemini API & Drive)",
         step2Desc: "Connect AI capabilities and your Google Drive destination folder.",
         v3Title: "Getting a Gemini API Key",
-        v3Text: "Get an API Key and paste it below.",
+        v3Text: "Get an API Key from aistudio.google.com and paste it below.",
         v4Title: "Setting Up Google Drive Anschreiben_Temp Folder",
         v4Text: "Paste your Google Spreadsheet link below.",
-        geminiKeyPlaceholder: "Paste API key or token (AQ... or AIzaSy...)",
+        geminiKeyPlaceholder: "Paste your Gemini API key (AQ... or AIzaSy...)",
         driveFolderPlaceholder: "Paste full Google Drive folder link here...",
         step3Title: "Step 3: Logistics, Commute Mode & Match Score",
         step3Desc: "Specify transport preference, max travel limit, and match threshold.",
@@ -615,16 +541,6 @@
       },
       DE: {
         subtitle: "Automatisieren Sie Ihre Jobsuche, Abgleiche, Anschreiben & Lebensläufe mit Gemini AI",
-        quickEditBtn: "Bestehenden Code bearbeiten",
-        quickEditTitle: "Schnellanpassung des bestehenden Codes",
-        quickEditDesc: "Fügen Sie Ihren aktuellen Code.gs ein. Der API-Schlüssel wird automatisch erkannt.",
-        existingCodeLabel: "Ihr aktuelles Code.gs-Skript",
-        existingCodePlaceholder: "Fügen Sie hier Ihren Apps Script Code ein...",
-        editPromptLabel: "Was soll geändert oder hinzugefügt werden?",
-        editPromptPlaceholder: "z.B. Füge einen monatlichen Bericht per E-Mail hinzu...",
-        generateRefactoredBtn: "Aktualisierten Code generieren",
-        modifyingBtn: "KI aktualisiert Ihren Code...",
-        cancelBtn: "Abbrechen",
         step1Title: "Schritt 1: Jobbörsen & Gmail-Einrichtung",
         step1Desc: "Richten Sie automatische E-Mail-Benachrichtigungen und Filterregeln ein.",
         v1Title: "Einrichtung von Job-Alerts auf Jobportalen",
@@ -636,10 +552,10 @@
         step2Title: "Schritt 2: Google Workspace (Gemini API & Drive)",
         step2Desc: "Verbinden Sie die KI und Ihren Anschreiben_Temp Zielordner.",
         v3Title: "Gemini API-Schlüssel erhalten",
-        v3Text: "Fügen Sie Ihren API-Schlüssel oder Token unten ein.",
+        v3Text: "Erstellen Sie einen Schlüssel auf aistudio.google.com und fügen Sie ihn ein.",
         v4Title: "Google Drive Ordner einrichten",
         v4Text: "Fügen Sie den Freigabelink Ihrer Google Tabelle unten ein.",
-        geminiKeyPlaceholder: "API-Schlüssel oder Token einfügen (AQ... oder AIzaSy...)",
+        geminiKeyPlaceholder: "Gemini API-Schlüssel einfügen (AQ... oder AIzaSy...)",
         driveFolderPlaceholder: "Vollständigen Google Drive Link einfügen...",
         step3Title: "Schritt 3: Logistik, Transport & Match-Score",
         step3Desc: "Legen Sie Transportmittel (ÖPNV <60 Min ab 60386) und Mindest-Score fest.",
@@ -682,16 +598,6 @@
       },
       ES: {
         subtitle: "Automatiza tu búsqueda de empleo, cartas de presentación y CVs con Gemini AI",
-        quickEditBtn: "Editar código existente",
-        quickEditTitle: "Modificación rápida de código",
-        quickEditDesc: "Pega tu Code.gs actual. La clave API se detectará automáticamente.",
-        existingCodeLabel: "Tu script Code.gs actual",
-        existingCodePlaceholder: "Pega el código Apps Script aquí...",
-        editPromptLabel: "¿Qué deseas cambiar o añadir?",
-        editPromptPlaceholder: "ej. Añade un resumen mensual por correo...",
-        generateRefactoredBtn: "Generar código actualizado",
-        modifyingBtn: "La IA está actualizando el código...",
-        cancelBtn: "Cancelar",
         step1Title: "Paso 1: Alertas y Etiquetas de Gmail",
         step1Desc: "Configura la recepción automática y filtrado de ofertas de empleo.",
         v1Title: "Configuración de alertas",
@@ -703,10 +609,10 @@
         step2Title: "Paso 2: Servicios de Google (Gemini API y Drive)",
         step2Desc: "Conecta la IA y la carpeta de destino Anschreiben_Temp.",
         v3Title: "Obtención de Gemini API Key",
-        v3Text: "Pega tu clave o token de API abajo.",
+        v3Text: "Consigue la clave en aistudio.google.com y pégala abajo.",
         v4Title: "Configuración de carpeta en Google Drive",
         v4Text: "Pega el enlace de Google Sheets abajo.",
-        geminiKeyPlaceholder: "Pega clave o token (AQ... o AIzaSy...)",
+        geminiKeyPlaceholder: "Pega tu Gemini API key (AQ... o AIzaSy...)",
         driveFolderPlaceholder: "Pega el enlace de Google Drive...",
         step3Title: "Paso 3: Logística, Transporte y Coincidencia",
         step3Desc: "Define transporte (ÖPNV <60 min), tiempo máx y umbral de coincidencia.",
@@ -749,16 +655,6 @@
       },
       FR: {
         subtitle: "Automatisez votre recherche d'emploi, lettres de motivation et CV avec Gemini AI",
-        quickEditBtn: "Modifier le code existant",
-        quickEditTitle: "Modification rapide du code existant",
-        quickEditDesc: "Collez votre Code.gs actuel. La clé API sera détectée automatiquement.",
-        existingCodeLabel: "Votre script Code.gs actuel",
-        existingCodePlaceholder: "Collez le code Apps Script ici...",
-        editPromptLabel: "Que souhaitez-vous modifier ou ajouter ?",
-        editPromptPlaceholder: "ex. Ajoutez un rapport mensuel envoyé par e-mail...",
-        generateRefactoredBtn: "Générer le code mis à jour",
-        modifyingBtn: "L'IA met à jour votre code...",
-        cancelBtn: "Annuler",
         step1Title: "Étape 1 : Alertes e-mail & Étiquettes Gmail",
         step1Desc: "Configurez la réception automatique et le filtrage des offres d'emploi.",
         v1Title: "Configuration des alertes",
@@ -770,10 +666,10 @@
         step2Title: "Étape 2 : Services Google (Gemini API & Drive)",
         step2Desc: "Connectez l'IA et le dossier Anschreiben_Temp sur Google Drive.",
         v3Title: "Obtention d'une clé API Gemini",
-        v3Text: "Collez votre clé ou jeton d'API ci-dessous.",
+        v3Text: "Créez une clé sur aistudio.google.com et collez-la ci-dessous.",
         v4Title: "Configuration du dossier Google Drive",
         v4Text: "Collez le lien Google Sheets ci-dessous.",
-        geminiKeyPlaceholder: "Collez clé ou token (AQ... ou AIzaSy...)",
+        geminiKeyPlaceholder: "Collez votre clé API Gemini (AQ... ou AIzaSy...)",
         driveFolderPlaceholder: "Collez le lien Google Drive...",
         step3Title: "Étape 3 : Logistique, Transport & Score de correspondance",
         step3Desc: "Définissez le mode de transport (ÖPNV <60 min), le temps max et le score IA.",
@@ -792,7 +688,7 @@
         sheetColumnsLabel: "Colonnes Google Sheets",
         addColumnBtn: "Ajouter une colonne",
         blacklistLabel: "Postes exclus (Suppression automatique)",
-        blacklistPlaceholder: "ex. Analyste de données, Agent de call center",
+        blacklistPlaceholder: "ex. Data Analyst, Call Center Agent",
         addBtn: "Ajouter",
         step5Title: "Étape 5 : Profil et Expérience du CV",
         step5Desc: "Renseignez vos coordonnées pour la génération des PDF selon DIN 5008.",
@@ -816,16 +712,6 @@
       },
       PL: {
         subtitle: "Automatyzuj szukanie pracy, dopasowania, listy motywacyjne i CV z Gemini AI",
-        quickEditBtn: "Edytuj istniejący kod",
-        quickEditTitle: "Szybka edycja istniejącego kodu",
-        quickEditDesc: "Wklej swój obecny Code.gs. Klucz API zostanie wykryty automatycznie.",
-        existingCodeLabel: "Twój obecny skrypt Code.gs",
-        existingCodePlaceholder: "Wklej tutaj kod Apps Script zawierający CONFIG...",
-        editPromptLabel: "Co chcesz zmienić lub dodać?",
-        editPromptPlaceholder: "np. Dodaj comiesięczny raport wysyłany na e-mail...",
-        generateRefactoredBtn: "Wygeneruj zaktualizowany kod",
-        modifyingBtn: "AI aktualizuje Twój kod...",
-        cancelBtn: "Anuluj",
         step1Title: "Krok 1: Powiadomienia e-mail i Etykiety Gmail",
         step1Desc: "Skonfiguruj automatyczne odbieranie i filtrowanie ofert pracy.",
         v1Title: "Konfiguracja powiadomień",
@@ -837,10 +723,10 @@
         step2Title: "Krok 2: Usługi Google (Gemini API & Drive)",
         step2Desc: "Połącz sztuczną inteligencję i folder Anschreiben_Temp na Google Drive.",
         v3Title: "Uzyskanie klucza Gemini API Key",
-        v3Text: "Wklej swój klucz lub token API poniżej.",
+        v3Text: "Wygeneruj klucz na aistudio.google.com i wklej poniżej.",
         v4Title: "Konfiguracja folderu na Google Drive",
         v4Text: "Wklej link do arkusza Google Sheets poniżej.",
-        geminiKeyPlaceholder: "Wklej klucz lub token (AQ... lub AIzaSy...)",
+        geminiKeyPlaceholder: "Wklej swój klucz Gemini API (AQ... lub AIzaSy...)",
         driveFolderPlaceholder: "Wklej pełny link do Google Drive...",
         step3Title: "Krok 3: Logistyka, Transport i Próg dopasowania",
         step3Desc: "Określ środek transportu (ÖPNV <60 min), limit czasu dojazdu i wynik AI.",
@@ -859,7 +745,7 @@
         sheetColumnsLabel: "Kolumny Google Sheets",
         addColumnBtn: "Dodaj kolumnę",
         blacklistLabel: "Wykluczone stanowiska (Automatycznie do kosza)",
-        blacklistPlaceholder: "np. Analityk danych, Pracownik call center",
+        blacklistPlaceholder: "np. Data Analyst, Call Center Agent",
         addBtn: "Dodaj",
         step5Title: "Krok 5: Profil i Doświadczenie z CV",
         step5Desc: "Podaj dane Absender wg DIN 5008 do generowania PDF w Anschreiben_Temp.",
@@ -887,7 +773,7 @@
       EN: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Manual Labor", "Warehouse Worker"], fullName: "Oleksandr Kurmoiartsev", address: "Sample Street 1, 60386 Frankfurt am Main", resumeText: "Experience in Customer Experience, process optimization, QA testing, and AI automation..." },
       DE: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Körperliche Arbeit", "Lagerhelfer"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt am Main", resumeText: "Berufserfahrung im Bereich Customer Experience, Prozessoptimierung, QA-Testing und KI-Automatisierung..." },
       UA: { postcode: "60386", city: "Франкфурт-на-Майні", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Аналітик даних", "Оператор кол-центру", "Фізична праця", "Працівник складу"], fullName: "Олександр Курмоярцев", address: "Musterstraße 1, 60386 Франкфурт-на-Майні", resumeText: "Досвід у сфері Customer Experience, оптимізації процесів, QA тестування та автоматизації штучного інтелекту..." },
-      RU: { postcode: "60386", city: "Франкфурт-на-Майне", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Физический труд", "Рабочий на склад"], fullName: "Александр Курмоярцев", address: "Musterstraße 1, 60386 Франкфурт-на-Майне", resumeText: "Опыт в области Customer Experience, оптимизации процессов, QA-тестирования и авто-процессов с ИИ..." },
+      RU: { postcode: "60386", city: "Франкфурт-на-Майне", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Физический труд", "Рабочий на склад"], fullName: "Олександр Курмоярцев", address: "Musterstraße 1, 60386 Франкфурт-на-Майне", resumeText: "Опыт в области Customer Experience, оптимизации процессов, QA-тестирования и авто-процессов с ИИ..." },
       ES: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analista de datos", "Agente de call center", "Trabajo manual", "Mozo de almacén"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt am Main", resumeText: "Experiencia en Customer Experience, optimización de procesos, QA testing y automatización IA..." },
       FR: { postcode: "60386", city: "Francfort-sur-le-Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analyste de données", "Agent de centre d'appels", "Travail manuel", "Manutentionnaire"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Francfort-sur-le-Main", resumeText: "Expérience en Customer Experience, optimisation des processus, QA testing et automatisation IA..." },
       PL: { postcode: "60386", city: "Frankfurt nad Menem", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analityk danych", "Pracownik call center", "Praca fizyczna", "Pracownik magazynu"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt nad Menem", resumeText: "Doświadczenie w Customer Experience, optymalizacji procesów, testowaniu QA i automatyzacji AI..." }
@@ -911,13 +797,6 @@
         const newBlacklistWord = ref('');
         const selectedLanguageOption = ref('German');
         const customLanguageInput = ref('');
-
-        const quickEditMode = ref(false);
-        const existingCodeInput = ref('');
-        const extractedApiKey = ref('');
-        const quickEditPrompt = ref('');
-        const isModifyingCode = ref(false);
-        const customRefactoredCode = ref(null);
 
         const t = (key) => {
           const dict = translations[currentLang.value] || translations['RU'];
@@ -1032,21 +911,7 @@
           saveFormData();
         };
 
-        const extractApiKeyFromPastedCode = () => {
-          const code = existingCodeInput.value;
-          const match = code.match(/GEMINI_API_KEY\s*:\s*["']([^"']+)["']/i);
-          if (match && match[1]) {
-            extractedApiKey.value = match[1];
-            form.value.geminiApiKey = match[1];
-          } else {
-            extractedApiKey.value = '';
-          }
-        };
-
-        const activeApiKey = computed(() => {
-          return extractedApiKey.value || form.value.geminiApiKey;
-        });
-
+        // Ultimate Code Generator with built-in Self-Refactoring Inside Google Sheets Menu
         const standardGeneratedCode = computed(() => {
           const f = form.value;
           const colsJson = JSON.stringify(f.columns, null, 2);
@@ -1086,12 +951,80 @@
             '  }',
             '};',
             '',
+            '// Automatic Menu Generator inside Google Spreadsheet Interface',
+            'function onOpen() {',
+            '  const ui = SpreadsheetApp.getUi();',
+            '  ui.createMenu("🚀 Jmail Помощник")',
+            '    .addItem("✏️ Изменить настройки (ИИ)", "showRefactorDialog")',
+            '    .addItem("▶️ Запустить обработку вакансий", "processJobAlerts")',
+            '    .addToUi();',
+            '}',
+            '',
+            '// Custom UI Modal Dialog for human-language Self-Refactoring',
+            'function showRefactorDialog() {',
+            '  const ui = SpreadsheetApp.getUi();',
+            '  const response = ui.prompt(',
+            '    "✏️ Изменение настроек с помощью Gemini AI",',
+            '    "Напишите человеческим языком, что вы хотите изменить в работе скрипта:\\n(например: \\"Добавь в черный список вакансию складского рабочего\\" или \\"Уменьши время в пути до 45 минут\\")",',
+            '    ui.ButtonSet.OK_CANCEL',
+            '  );',
+            '  ',
+            '  if (response.getSelectedButton() == ui.Button.OK) {',
+            '    const userInstruction = response.getResponseText().trim();',
+            '    if (userInstruction) {',
+            '      ui.alert("⌛ Gemini обрабатывает ваш запрос... Пожалуйста, подождите несколько секунд.");',
+            '      applySelfRefactor(userInstruction);',
+            '    }',
+            '  }',
+            '}',
+            '',
+            '// Internal Self-Refactoring Execution via Google Server Environment',
+            'function applySelfRefactor(instruction) {',
+            '  const ui = SpreadsheetApp.getUi();',
+            '  const isBearer = CONFIG.GEMINI_API_KEY.startsWith("AQ.") || CONFIG.GEMINI_API_KEY.startsWith("ya29.");',
+            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
+            '  ',
+            '  const prompt = "You are an AI assistant updating settings for a Job Automation Script.\\n\\nCurrent Settings JSON:\\n" + JSON.stringify(CONFIG) + "\\n\\nUser Request: " + instruction + "\\n\\nReturn ONLY valid JSON with updated settings parameters (GEMINI_API_KEY, BLACKLIST_KEYWORDS, MAX_TRAVEL_MINUTES, MIN_MATCH_SCORE, TARGET_LANGUAGE). Do NOT return code, only JSON.";',
+            '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
+            '  const headers = { "Content-Type": "application/json" };',
+            '  if (isBearer) { headers["Authorization"] = "Bearer " + CONFIG.GEMINI_API_KEY; }',
+            '  else { headers["x-goog-api-key"] = CONFIG.GEMINI_API_KEY; }',
+            '',
+            '  try {',
+            '    const options = { method: "post", contentType: "application/json", headers: headers, payload: JSON.stringify(payload), muteHttpExceptions: true };',
+            '    const res = UrlFetchApp.fetch(url, options);',
+            '    const data = JSON.parse(res.getContentText());',
+            '    const rawText = data.candidates[0].content.parts[0].text.replace(/```json/g, "").replace(/```/g, "").trim();',
+            '    const updatedSettings = JSON.parse(rawText);',
+            '    ',
+            '    // Save settings directly into Google Workspace Properties',
+            '    const scriptProperties = PropertiesService.getScriptProperties();',
+            '    scriptProperties.setProperty("CUSTOM_CONFIG", JSON.stringify(updatedSettings));',
+            '    ui.alert("✅ Настройки успешно обновлены! Gemini применил ваши изменения.");',
+            '  } catch (e) {',
+            '    ui.alert("❌ Ошибка при обновлении настроек: " + e.message);',
+            '  }',
+            '}',
+            '',
+            '// Dynamic Runtime Config Getter (Merges Script Config + Saved UI Properties)',
+            'function getActiveConfig() {',
+            '  try {',
+            '    const saved = PropertiesService.getScriptProperties().getProperty("CUSTOM_CONFIG");',
+            '    if (saved) {',
+            '      const custom = JSON.parse(saved);',
+            '      return Object.assign({}, CONFIG, custom);',
+            '    }',
+            '  } catch(e) {}',
+            '  return CONFIG;',
+            '}',
+            '',
             'function processJobAlerts() {',
-            '  const inboxLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_INBOX_LABEL);',
-            '  const doneLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_DONE_LABEL) || GmailApp.createLabel(CONFIG.GMAIL_DONE_LABEL);',
+            '  const activeConf = getActiveConfig();',
+            '  const inboxLabel = GmailApp.getUserLabelByName(activeConf.GMAIL_INBOX_LABEL);',
+            '  const doneLabel = GmailApp.getUserLabelByName(activeConf.GMAIL_DONE_LABEL) || GmailApp.createLabel(activeConf.GMAIL_DONE_LABEL);',
             '',
             '  if (!inboxLabel) {',
-            '    Logger.log("Inbox label not found: " + CONFIG.GMAIL_INBOX_LABEL);',
+            '    Logger.log("Inbox label not found: " + activeConf.GMAIL_INBOX_LABEL);',
             '    return;',
             '  }',
             '',
@@ -1099,7 +1032,7 @@
             '  if (threads.length === 0) return;',
             '',
             '  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();',
-            '  ensureSheetHeaders(sheet);',
+            '  ensureSheetHeaders(sheet, activeConf);',
             '',
             '  for (let thread of threads) {',
             '    const messages = thread.getMessages();',
@@ -1107,23 +1040,24 @@
             '    const emailBody = lastMessage.getPlainBody();',
             '    const emailSubject = lastMessage.getSubject();',
             '',
-            '    if (containsBlacklistKeywords(emailSubject + " " + emailBody)) {',
+            '    if (containsBlacklistKeywords(emailSubject + " " + emailBody, activeConf)) {',
             '      thread.moveToTrash();',
             '      continue;',
             '    }',
             '',
-            '    const analysis = analyzeJobWithGemini(emailSubject, emailBody);',
-            '    if (!analysis || !analysis.isSuitable || analysis.matchScore < CONFIG.MIN_MATCH_SCORE) {',
+            '    const analysis = analyzeJobWithGemini(emailSubject, emailBody, activeConf);',
+            '    if (!analysis || !analysis.isSuitable || analysis.matchScore < activeConf.MIN_MATCH_SCORE) {',
             '      thread.moveToTrash();',
             '      continue;',
             '    }',
             '',
+            '    // Strictly 9 clean columns output format',
             '    const rowData = [',
             '      new Date(),',
             '      analysis.companyName || "N/A",',
             '      analysis.jobTitle || emailSubject,',
-            '      analysis.location || CONFIG.CITY,',
-            '      CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "Flexible / Remote" : (analysis.travelTimeMinutes || "?") + " mins (" + CONFIG.TRANSPORT_MODE + ")",',
+            '      analysis.location || activeConf.CITY,',
+            '      activeConf.TRANSPORT_MODE === "NO_LIMIT" ? "Flexible / Remote" : (analysis.travelTimeMinutes || "?") + " mins (" + activeConf.TRANSPORT_MODE + ")",',
             '      analysis.matchScore + "%",',
             '      analysis.salary || "Not specified",',
             '      analysis.jobUrl || "From Email",',
@@ -1131,35 +1065,35 @@
             '    ];',
             '    sheet.appendRow(rowData);',
             '',
-            '    generateAndSaveAnschreibenPdf(analysis);',
+            '    generateAndSaveAnschreibenPdf(analysis, activeConf);',
             '    thread.addLabel(doneLabel);',
             '    thread.removeLabel(inboxLabel);',
             '  }',
             '}',
             '',
-            'function containsBlacklistKeywords(text) {',
+            'function containsBlacklistKeywords(text, conf) {',
             '  const lowerText = text.toLowerCase();',
-            '  return CONFIG.BLACKLIST_KEYWORDS.some(keyword => lowerText.includes(keyword.toLowerCase()));',
+            '  return conf.BLACKLIST_KEYWORDS.some(keyword => lowerText.includes(keyword.toLowerCase()));',
             '}',
             '',
-            'function ensureSheetHeaders(sheet) {',
+            'function ensureSheetHeaders(sheet, conf) {',
             '  if (sheet.getLastRow() === 0) {',
-            '    sheet.appendRow(CONFIG.COLUMNS);',
-            '    sheet.getRange(1, 1, 1, CONFIG.COLUMNS.length).setFontWeight("bold").setBackground("#f3f4f6");',
+            '    sheet.appendRow(conf.COLUMNS);',
+            '    sheet.getRange(1, 1, 1, conf.COLUMNS.length).setFontWeight("bold").setBackground("#f3f4f6");',
             '  }',
             '}',
             '',
-            'function analyzeJobWithGemini(subject, body) {',
-            '  const isBearer = CONFIG.GEMINI_API_KEY.startsWith("AQ.") || CONFIG.GEMINI_API_KEY.startsWith("ya29.");',
-            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
+            'function analyzeJobWithGemini(subject, body, conf) {',
+            '  const isBearer = conf.GEMINI_API_KEY.startsWith("AQ.") || conf.GEMINI_API_KEY.startsWith("ya29.");',
+            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(conf.GEMINI_API_KEY);',
             '  ',
-            '  const modeConstraint = CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "No location restrictions." : "Max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via " + CONFIG.TRANSPORT_MODE + " from " + CONFIG.HOME_POSTCODE + ".";',
-            '  const prompt = "You are an expert Senior Technical Recruiter and Career Agent. Evaluate if this vacancy fits the profile.\\n\\nApplicant Background:\\n" + CONFIG.APPLICANT.RESUME_TEXT + "\\n\\nSubject: " + subject + "\\nBody: " + body + "\\n\\nConstraints: " + modeConstraint + " Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON: {isSuitable: bool, matchScore: number, companyName: string, jobTitle: string, location: string, travelTimeMinutes: number, salary: string, jobUrl: string, notes: string}.";',
+            '  const modeConstraint = conf.TRANSPORT_MODE === "NO_LIMIT" ? "No location restrictions." : "Max " + conf.MAX_TRAVEL_MINUTES + " mins via " + conf.TRANSPORT_MODE + " from " + conf.HOME_POSTCODE + ".";',
+            '  const prompt = "You are an expert Senior Technical Recruiter and Career Agent. Evaluate if this vacancy fits the profile.\\n\\nApplicant Background:\\n" + conf.APPLICANT.RESUME_TEXT + "\\n\\nSubject: " + subject + "\\nBody: " + body + "\\n\\nConstraints: " + modeConstraint + " Exclude: " + conf.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON: {isSuitable: bool, matchScore: number, companyName: string, jobTitle: string, location: string, travelTimeMinutes: number, salary: string, jobUrl: string, notes: string}.";',
             '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
             '  ',
             '  const headers = { "Content-Type": "application/json" };',
-            '  if (isBearer) { headers["Authorization"] = "Bearer " + CONFIG.GEMINI_API_KEY; }',
-            '  else { headers["x-goog-api-key"] = CONFIG.GEMINI_API_KEY; }',
+            '  if (isBearer) { headers["Authorization"] = "Bearer " + conf.GEMINI_API_KEY; }',
+            '  else { headers["x-goog-api-key"] = conf.GEMINI_API_KEY; }',
             '',
             '  const options = { method: "post", contentType: "application/json", headers: headers, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
@@ -1171,33 +1105,33 @@
             '  } catch (e) { return null; }',
             '}',
             '',
-            'function getOrCreateTargetFolder() {',
-            '  if (CONFIG.DRIVE_FOLDER_ID && CONFIG.DRIVE_FOLDER_ID.length > 10) {',
-            '    try { return DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID); } catch(e) {}',
+            'function getOrCreateTargetFolder(conf) {',
+            '  if (conf.DRIVE_FOLDER_ID && conf.DRIVE_FOLDER_ID.length > 10) {',
+            '    try { return DriveApp.getFolderById(conf.DRIVE_FOLDER_ID); } catch(e) {}',
             '  }',
             '  const folders = DriveApp.getFoldersByName("Anschreiben_Temp");',
             '  if (folders.hasNext()) return folders.next();',
             '  return DriveApp.createFolder("Anschreiben_Temp");',
             '}',
             '',
-            'function generateAndSaveAnschreibenPdf(jobData) {',
-            '  const folder = getOrCreateTargetFolder();',
-            '  const letterText = generateWithGemini("Write a DIN 5008 compliant Cover Letter (Anschreiben) in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying for " + jobData.jobTitle + " at " + jobData.companyName + ". Avoid AI clichés. Background: " + CONFIG.APPLICANT.RESUME_TEXT);',
+            'function generateAndSaveAnschreibenPdf(jobData, conf) {',
+            '  const folder = getOrCreateTargetFolder(conf);',
+            '  const letterText = generateWithGemini("Write a DIN 5008 compliant Cover Letter (Anschreiben) in " + conf.TARGET_LANGUAGE + " for " + conf.APPLICANT.NAME + " applying for " + jobData.jobTitle + " at " + jobData.companyName + ". Avoid AI clichés. Background: " + conf.APPLICANT.RESUME_TEXT, conf);',
             '  ',
-            '  const htmlContent = "<html><head><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#111;}.sender{font-size:8pt;color:#555;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:25px;}.recipient{margin-bottom:30px;}.date{text-align:right;margin-bottom:25px;}.subject{font-weight:bold;font-size:12pt;margin-bottom:20px;}.content{text-align:justify;white-space:pre-line;}.signature{margin-top:35px;}</style></head><body><div class=\\"sender\\">" + CONFIG.APPLICANT.NAME + " • " + CONFIG.APPLICANT.ADDRESS + "</div><div class=\\"recipient\\"><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + CONFIG.CITY + ", " + new Date().toLocaleDateString("de-DE") + "</div><div class=\\"subject\\">Bewerbung als " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div><div class=\\"signature\\">Mit freundlichen Grüßen,<br><br><strong>" + CONFIG.APPLICANT.NAME + "</strong></div></body></html>";',
+            '  const htmlContent = "<html><head><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#111;}.sender{font-size:8pt;color:#555;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:25px;}.recipient{margin-bottom:30px;}.date{text-align:right;margin-bottom:25px;}.subject{font-weight:bold;font-size:12pt;margin-bottom:20px;}.content{text-align:justify;white-space:pre-line;}.signature{margin-top:35px;}</style></head><body><div class=\\"sender\\">" + conf.APPLICANT.NAME + " • " + conf.APPLICANT.ADDRESS + "</div><div class=\\"recipient\\"><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + conf.CITY + ", " + new Date().toLocaleDateString("de-DE") + "</div><div class=\\"subject\\">Bewerbung als " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div><div class=\\"signature\\">Mit freundlichen Grüßen,<br><br><strong>" + conf.APPLICANT.NAME + "</strong></div></body></html>";',
             '  ',
             '  const pdfBlob = Utilities.newBlob(htmlContent, "text/html").getAs("application/pdf").setName("Anschreiben_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
             '  folder.createFile(pdfBlob);',
             '}',
             '',
-            'function generateWithGemini(promptText) {',
-            '  const isBearer = CONFIG.GEMINI_API_KEY.startsWith("AQ.") || CONFIG.GEMINI_API_KEY.startsWith("ya29.");',
-            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
+            'function generateWithGemini(promptText, conf) {',
+            '  const isBearer = conf.GEMINI_API_KEY.startsWith("AQ.") || conf.GEMINI_API_KEY.startsWith("ya29.");',
+            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(conf.GEMINI_API_KEY);',
             '  ',
             '  const payload = { contents: [{ parts: [{ text: promptText }] }] };',
             '  const headers = { "Content-Type": "application/json" };',
-            '  if (isBearer) { headers["Authorization"] = "Bearer " + CONFIG.GEMINI_API_KEY; }',
-            '  else { headers["x-goog-api-key"] = CONFIG.GEMINI_API_KEY; }',
+            '  if (isBearer) { headers["Authorization"] = "Bearer " + conf.GEMINI_API_KEY; }',
+            '  else { headers["x-goog-api-key"] = conf.GEMINI_API_KEY; }',
             '',
             '  const options = { method: "post", contentType: "application/json", headers: headers, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
@@ -1209,87 +1143,8 @@
           ].join('\n');
         });
 
-        const activeOutputCode = computed(() => {
-          return customRefactoredCode.value || standardGeneratedCode.value;
-        });
-
-        // Smart Quick Edit supporting Bearer tokens (AQ...) and standard keys (AIzaSy...)
-        const processQuickEdit = async () => {
-          const apiKey = activeApiKey.value ? activeApiKey.value.trim() : '';
-          if (!apiKey) {
-            alert("API Key / Token not found. Please paste a script containing CONFIG.GEMINI_API_KEY or enter your token!");
-            return;
-          }
-          if (!quickEditPrompt.value.trim()) {
-            alert("Please describe what changes you want to make!");
-            return;
-          }
-          if (!existingCodeInput.value.trim()) {
-            alert("Please paste your existing Code.gs script!");
-            return;
-          }
-
-          isModifyingCode.value = true;
-          const sourceCode = existingCodeInput.value.trim();
-          
-          const prompt = `You are an expert Google Apps Script developer. 
-Refactor and modify the following Apps Script code strictly according to user requirements.
-Respond and write code/comments considering the requested language context: ${currentLang.value}.
-
-User Instructions: ${quickEditPrompt.value}
-
-Source Code:
-${sourceCode}
-
-Return ONLY the complete modified Apps Script code in JavaScript without Markdown formatting codeblocks or explanations.`;
-
-          const isBearer = apiKey.startsWith("AQ.") || apiKey.startsWith("ya29.");
-          const url = isBearer 
-            ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-            : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-          
-          const headers = { 'Content-Type': 'application/json' };
-          if (isBearer) {
-            headers['Authorization'] = `Bearer ${apiKey}`;
-          } else {
-            headers['x-goog-api-key'] = apiKey;
-          }
-
-          try {
-            const res = await fetch(url, {
-              method: 'POST',
-              headers: headers,
-              body: JSON.stringify({ 
-                contents: [{ parts: [{ text: prompt }] }] 
-              })
-            });
-
-            const data = await res.json();
-            
-            if (res.ok && data.candidates && data.candidates[0]) {
-              const rawText = data.candidates[0].content.parts[0].text;
-              customRefactoredCode.value = rawText
-                .replace(/```javascript/g, "")
-                .replace(/```js/g, "")
-                .replace(/```/g, "")
-                .trim();
-              
-              quickEditMode.value = false;
-              currentStep.value = 6;
-            } else {
-              console.error("Gemini Response Error:", data);
-              alert(`API Error (${res.status}): ${data.error ? data.error.message : 'Unknown response from server'}`);
-            }
-          } catch (e) {
-            console.error("Fetch error:", e);
-            alert("Network or API call error. Please check browser console (F12).");
-          } finally {
-            isModifyingCode.value = false;
-          }
-        };
-
         const copyToClipboard = () => {
-          navigator.clipboard.writeText(activeOutputCode.value);
+          navigator.clipboard.writeText(standardGeneratedCode.value);
           copied.value = true;
           setTimeout(() => copied.value = false, 2500);
         };
@@ -1311,15 +1166,7 @@ Return ONLY the complete modified Apps Script code in JavaScript without Markdow
           removeColumn,
           addBlacklistWord,
           removeBlacklistWord,
-          quickEditMode,
-          existingCodeInput,
-          extractedApiKey,
-          extractApiKeyFromPastedCode,
-          activeApiKey,
-          quickEditPrompt,
-          isModifyingCode,
-          processQuickEdit,
-          activeOutputCode,
+          standardGeneratedCode,
           copyToClipboard,
           copied
         };

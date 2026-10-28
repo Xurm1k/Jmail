@@ -61,14 +61,14 @@
     <!-- Main Content Card -->
     <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl">
 
-      <!-- QUICK EDIT MODE VIEW (Independent Logic) -->
+      <!-- QUICK EDIT MODE VIEW -->
       <div v-if="quickEditMode" class="space-y-6">
         <div class="flex justify-between items-center border-b border-slate-700 pb-4">
           <div>
             <h2 class="text-2xl font-bold text-amber-400 mb-1">✏️ {{ t('quickEditTitle') }}</h2>
             <p class="text-slate-400 text-sm">{{ t('quickEditDesc') }}</p>
           </div>
-          <button @click="quickEditMode = false" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg">
+          <button @click="quickEditMode = false" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg cursor-pointer">
             ✕ {{ t('cancelBtn') }}
           </button>
         </div>
@@ -79,14 +79,14 @@
           
           <div class="mt-2 flex items-center gap-2">
             <span v-if="extractedApiKey" class="text-xs text-emerald-400 font-semibold">✓ API-ключ автоматически извлечен из вашего кода!</span>
-            <span v-else class="text-xs text-slate-400">ℹ️ Введите или вставьте код, содержащий ваш API-ключ, либо укажите его ниже в поле.</span>
+            <span v-else class="text-xs text-slate-400">ℹ️ Вставьте код, содержащий ваш API-ключ, либо укажите его в поле ниже.</span>
           </div>
         </div>
 
         <!-- Manual API Key Fallback / Override -->
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">🔑 Gemini API Key (Авто или Вручную)</label>
-          <input v-model="form.geminiApiKey" @input="saveFormData" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
+          <input v-model="form.geminiApiKey" @input="saveFormData" type="password" placeholder="AQ... или AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
         </div>
 
         <div>
@@ -113,7 +113,7 @@
           </div>
           
           <!-- Quick Edit Switcher Button -->
-          <button @click="quickEditMode = true" class="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-all shrink-0">
+          <button @click="quickEditMode = true" class="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-all shrink-0 cursor-pointer">
             <span>✏️</span> {{ t('quickEditBtn') }}
           </button>
         </div>
@@ -212,7 +212,7 @@
           </div>
         </div>
 
-        <!-- Commute Mode Selector -->
+        <!-- Commute Mode Selector (ÖPNV / Car / Bike / No Limit) -->
         <div>
           <label class="block text-sm font-medium mb-2 text-slate-200">{{ t('transportModeLabel') }}</label>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -222,7 +222,7 @@
               type="button" 
               @click="setTransportMode(mode.id)"
               :class="[
-                'p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all',
+                'p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer',
                 form.logistics.transportMode === mode.id ? 'bg-blue-600/30 border-blue-500 text-white ring-2 ring-blue-500/40' : 'bg-slate-900 border-slate-700 text-slate-400 hover:bg-slate-800'
               ]"
             >
@@ -276,22 +276,22 @@
             <div v-for="(col, index) in form.columns" :key="index" class="flex items-center gap-2">
               <span class="text-slate-500 w-6 text-xs text-right">{{ index + 1 }}.</span>
               <input v-model="form.columns[index]" @input="saveFormData" type="text" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">
-              <button @click="removeColumn(index)" class="text-rose-400 hover:text-rose-300 px-2 font-bold">✕</button>
+              <button @click="removeColumn(index)" class="text-rose-400 hover:text-rose-300 px-2 font-bold cursor-pointer">✕</button>
             </div>
           </div>
-          <button @click="addColumn" class="text-xs text-blue-400 hover:underline font-medium">+ {{ t('addColumnBtn') }}</button>
+          <button @click="addColumn" class="text-xs text-blue-400 hover:underline font-medium cursor-pointer">+ {{ t('addColumnBtn') }}</button>
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('blacklistLabel') }}</label>
           <div class="flex gap-2 mb-2">
             <input v-model="newBlacklistWord" @keyup.enter="addBlacklistWord" type="text" :placeholder="t('blacklistPlaceholder')" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white outline-none">
-            <button @click="addBlacklistWord" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm">{{ t('addBtn') }}</button>
+            <button @click="addBlacklistWord" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm cursor-pointer">{{ t('addBtn') }}</button>
           </div>
           <div class="flex flex-wrap gap-2">
             <span v-for="(word, idx) in form.filters.blacklistKeywords" :key="idx" class="bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-full flex items-center gap-2">
               {{ word }}
-              <button @click="removeBlacklistWord(idx)" class="hover:text-rose-400 font-bold">✕</button>
+              <button @click="removeBlacklistWord(idx)" class="hover:text-rose-400 font-bold cursor-pointer">✕</button>
             </span>
           </div>
         </div>
@@ -317,7 +317,7 @@
 
           <div>
             <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('targetLangLabel') }}</label>
-            <select v-model="selectedLanguageOption" @change="saveFormData" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+            <select v-model="selectedLanguageOption" @change="saveFormData" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none cursor-pointer">
               <option value="German">German (Deutsch)</option>
               <option value="English">English</option>
               <option value="Ukrainian">Ukrainian (Українська)</option>
@@ -427,18 +427,18 @@
         step1Title: "Шаг 1: Почтовые алерты и Ярлыки Gmail",
         step1Desc: "Настройте автоматическое получение и фильтрацию писем с вакансиями.",
         v1Title: "Настройка рассылок на сайтах поиска работы",
-        v1Text: "На сайте поиска работы настройте рассылки, чтобы на Вашу почту поступали письма с предположительно подходящими вакансиями. Именно эти вакансии ИИ будет обрабатывать для Вас, потому подойдите к данному вопросу серьезно и с фантазией. Создайте максимальное количество нужных Вам писем, потому как ИИ будет отсеивать ненужные и для него особо не имеет значения сколько писем необходимо обработать.",
+        v1Text: "На сайте поиска работы настройте рассылки, чтобы на Вашу почту поступали письма с предположительно подходящими вакансиями. Создайте максимальное количество нужных Вам писем, ИИ отсеет лишнее.",
         v2Title: "Создание ярлыков и авто-фильтрации в Gmail",
-        v2Text: "В Gmail создайте ярлык (условно это отдельная папка для писем), куда будут поступать предложения о работе. Имя необходимо запомнить с учетом регистра (символы и величина букв имеют значение). Так же создайте еще 1 ярлык, куда будут переноситься письма с вакансиями, которые ИИ определил как максимально подходящие Вам. После создания ярлыков необходимо дождаться письма от сайта по поиску работы и в настройках письма перейти к фильтрации таких же писем. В настройках выставляем архивацию, прочтение и присвоение ярлыка (первый, который собирает письма для ИИ). Укажите в соответствующие поля ниже точные названия ярлыков.",
+        v2Text: "В Gmail создайте ярлык 'Bew./Job-Alerts' для входящих вакансий и 'Bew./Fertig' для готовых результатов. Настройте фильтры архиврования.",
         gmailInboxLabel: "Ярлык Gmail для входящих",
         gmailDoneLabel: "Ярлык Gmail для обработанных",
         step2Title: "Шаг 2: Сервисы Google (Gemini API & Drive)",
         step2Desc: "Подключите искусственный интеллект и папку для сохранения документов.",
-        v3Title: "Получение бесплатного ключа Gemini API",
-        v3Text: "Перейдите по ссылке aistudio.google.com и зайдите под своим Google аккаунтом. Нажмите на значок ключа и создайте ключ под свой новый проект. Скопируйте и вставьте его в поле ниже.",
-        v4Title: "Настройка папки на Google Диске",
-        v4Text: "В Google Sheets создайте новую таблицу и скопируйте ссылку для доступа, вставьте ссылку в поле ниже.",
-        geminiKeyPlaceholder: "Вставьте ключ Gemini API (AIzaSy...)",
+        v3Title: "Получение ключа Gemini API",
+        v3Text: "Перейдите по ссылке aistudio.google.com, создайте ключ API и вставьте его ниже.",
+        v4Title: "Настройка папки Anschreiben_Temp на Google Диске",
+        v4Text: "В Google Sheets создайте новую таблицу, скопируйте ссылку и вставьте ниже.",
+        geminiKeyPlaceholder: "Вставьте ключ Gemini API (AQ... или AIzaSy...)",
         driveFolderPlaceholder: "Вставьте ссылку на папку Google Drive...",
         step3Title: "Шаг 3: Логистика, Транспорт и Match Score",
         step3Desc: "Выберите тип транспорта, лимит времени в пути и порог подходящих вакансий.",
@@ -453,27 +453,27 @@
         noLimitText: "Без ограничений / Удаленка",
         matchScoreLabel: "Минимальный порог соответствия ИИ",
         step4Title: "Шаг 4: Поля Таблицы и Черный список",
-        step4Desc: "Настройте структуру Google Таблицы и должности, которые нужно удалять.",
+        step4Desc: "Настройте структуру 9 колонок Google Таблицы и запрещенные должности.",
         sheetColumnsLabel: "Колонки Google Таблицы",
         addColumnBtn: "Добавить колонку",
         blacklistLabel: "Запрещенные должности (Автоматически в корзину)",
-        blacklistPlaceholder: "например, Аналитик данных, Оператор колл-центра",
+        blacklistPlaceholder: "например, Data Analyst, Call Center Agent",
         addBtn: "Добавить",
         step5Title: "Шаг 5: Профиль и Опыт из резюме",
-        step5Desc: "Укажите ваши контакты и направления опыта для генерации уникальных PDF.",
+        step5Desc: "Укажите реквизиты Absender по DIN 5008 для генерации PDF в папку Anschreiben_Temp.",
         geminiRoleTitle: "Роль Gemini AI при анализе",
-        geminiRoleText: "В генерируемом скрипте Gemini выступает в роли экспертного Старшего технического рекрутера и карьерного агента. Он анализирует текст каждой вакансии, сверяет её с вашим опытом и навыками из резюме ниже, рассчитывает точный процент соответствия (Match Score) и проверяет логистические ограничения.",
+        geminiRoleText: "Gemini анализирует каждую вакансию, сравнивает с резюме, проверяет ÖPNV лимит (<60 мин от 60386) и генерирует Anschreiben PDF.",
         fullNameLabel: "ФИО / Полное имя",
-        targetLangLabel: "Язк документов",
+        targetLangLabel: "Язык документов",
         addressLabel: "Полный адрес и контакты",
         resumeLabel: "Описание опыта и навыков из резюме",
         step6Title: "Шаг 6: Ваш Code.gs готов!",
         v5Title: "Вставка скрипта в Google Apps Script",
-        v5Text: "В созданной ранее таблице выберите Расширения и App Scripts. Сюда необходимо вставить сгенерированный код и сохранить.",
+        v5Text: "В Google Таблице выберите Расширения ➔ Apps Script. Вставьте сгенерированный код и сохраните.",
         v6Title: "Настройка расписания запуска (Триггер)",
-        v6Text: "Теперь, когда скрипт сохранен, настройте когда ИИ будет выполнять задачу. Для этого создайте триггер по времени (сама функция для вызова должна подставиться автоматически), укажите по неделям и нужный день недели. Если хотите, чтобы задача выполнялась 2 раза в неделю - создайте 2 триггера на этой странице.",
-        authNoteTitle: "Обязательная разова авторизация:",
-        authNoteText: "Перед началом работы обязательно нажмите кнопку «Выполнить» (Run) в редакторе Apps Script вручную 1 раз. Google запросит разрешение на доступ к Gmail и Drive (появится предупреждение: нажмите «Дополнительно» ➔ «Перейти...» ➔ «Разрешить»). Это нужно сделать ровно один раз, после чего скрипт будет работать автоматически по расписанию.",
+        v6Text: "Настройте триггер по времени для автоматического выполнения скрипта.",
+        authNoteTitle: "Обязательная разовая авторизация:",
+        authNoteText: "Нажмите 'Выполнить' (Run) в редакторе Apps Script вручную 1 раз, чтобы подтвердить права доступа.",
         copyBtn: "Скопировать код",
         copiedBtn: "Скопировано в буфер!",
         backBtn: "Назад",
@@ -494,18 +494,18 @@
         step1Title: "Крок 1: Поштові сповіщення та Ярлики Gmail",
         step1Desc: "Налаштуйте автоматичне отримання та фільтрацію листів з вакансіями.",
         v1Title: "Налаштування розсилок на сайтах пошуку роботи",
-        v1Text: "На сайті пошуку роботи налаштуйте розсилки, щоб на Вашу пошту надходили листи з потенційно відповідними вакансіями. Саме ці вакансії ШІ буде обробляти для Вас, тому підійдіть до цього питання серйозно та з фантазією. Створіть максимальну кількість потрібних Вам листів, оскільки ШІ відсіюватиме непотрібні і для нього не має значення скільки листів обробити.",
+        v1Text: "Налаштуйте розсилки на сайтах вакансій. ШІ відсіє невідповідні вакансії.",
         v2Title: "Створення ярликів та авто-фільтрації в Gmail",
-        v2Text: "У Gmail створіть ярлик (окрема папка для листів), куди надходитимуть пропозиції про роботу. Назву запам'ятайте з урахуванням регістру. Також створіть ще 1 ярлик, куди переноситимуться листи з вакансіями, які ШІ визначив як найкращі. Після створення ярликів дочекайтеся листа від сайту пошуку роботи та в налаштуваннях листа перейдіть до фільтрації. У налаштуваннях виставляємо архівування, прочитання та присвоєння ярлика. Вкажіть точні назви ярликів нижче.",
+        v2Text: "Створіть ярлик 'Bew./Job-Alerts' для вхідних та 'Bew./Fertig' для оброблених листів.",
         gmailInboxLabel: "Ярлик Gmail для вхідних",
         gmailDoneLabel: "Ярлик Gmail для оброблених",
         step2Title: "Крок 2: Сервіси Google (Gemini API & Drive)",
         step2Desc: "Підключіть штучний інтелект та папку для збереження документів.",
-        v3Title: "Отримання безкоштовного ключа Gemini API",
-        v3Text: "Перейдіть за посиланням aistudio.google.com та увійдіть під своїм Google акаунтом. Натисніть на значок ключа та створіть ключ під свій новий проект. Скопіюйте та вставте його у поле нижче.",
-        v4Title: "Налаштування папки в Google Drive",
-        v4Text: "У Google Sheets створіть нову таблицю та скопіюйте посилання для доступу, вставте посилання у поле нижче.",
-        geminiKeyPlaceholder: "Вставте ключ Gemini API (AIzaSy...)",
+        v3Title: "Отримання ключа Gemini API",
+        v3Text: "Отримайте ключ API на aistudio.google.com та вставте його нижче.",
+        v4Title: "Налаштування папки Anschreiben_Temp в Google Drive",
+        v4Text: "Вставте посилання на таблицю Google Sheets нижче.",
+        geminiKeyPlaceholder: "Вставте ключ Gemini API (AQ... або AIzaSy...)",
         driveFolderPlaceholder: "Вставте посилання на папку Google Drive...",
         step3Title: "Крок 3: Логістика, Транспорт та Match Score",
         step3Desc: "Оберіть вид транспорту, ліміт часу в дорозі та поріг відповідних вакансій.",
@@ -520,27 +520,27 @@
         noLimitText: "Без обмежень / Дистанційно",
         matchScoreLabel: "Мінімальний поріг відповідності ШІ",
         step4Title: "Крок 4: Колонки Таблиці та Чорний список",
-        step4Desc: "Налаштуйте структуру Google Таблиці та посади для видалення.",
+        step4Desc: "Налаштуйте структуру 9 колонок Google Таблиці та заборонені посади.",
         sheetColumnsLabel: "Колонки Google Таблиці",
         addColumnBtn: "Додати колонку",
         blacklistLabel: "Заборонені посади (Автоматично в кошик)",
-        blacklistPlaceholder: "наприклад, Аналітик даних, Оператор кол-центру",
+        blacklistPlaceholder: "наприклад, Data Analyst, Call Center Agent",
         addBtn: "Додати",
         step5Title: "Крок 5: Профіль та Досвід з резюме",
-        step5Desc: "Вкажіть контакти та напрямки досвіду для генерації унікальних PDF.",
+        step5Desc: "Вкажіть реквізити Absender по DIN 5008 для генерації PDF у папку Anschreiben_Temp.",
         geminiRoleTitle: "Роль Gemini AI при аналізі",
-        geminiRoleText: "У генерованому скрипті Gemini виступає в ролі експертного Старшого технічного рекрутера та кар'єрного агента. Він аналізує текст кожної вакансії, звіряє її з вашим досвідом та навичками з резюме нижче, розраховує точний відсоток відповідності (Match Score) та перевіряє логістичні обмеження.",
+        geminiRoleText: "Gemini аналізує вакансії, перевіряє ÖPNV ліміт (<60 хв від 60386) та генерує Anschreiben PDF.",
         fullNameLabel: "ПІБ / Повне ім'я",
         targetLangLabel: "Мова документів",
         addressLabel: "Повна адреса та контакти",
         resumeLabel: "Опис досвіду та навичок з резюме",
         step6Title: "Крок 6: Ваш Code.gs готовий!",
         v5Title: "Вставка скрипта в Google Apps Script",
-        v5Text: "У створеній раніше таблиці оберіть Розширення та App Scripts. Сюди необхідно вставити згенерований код та зберегти.",
+        v5Text: "У вашій Google Таблиці оберіть Розширення ➔ Apps Script. Вставте код та збережіть.",
         v6Title: "Налаштування розкладу запуску (Тригер)",
-        v6Text: "Тепер, коли скрипт збережено, налаштуйте коли ШІ виконуватиме завдання. Для цього створіть тригер за часом, вкажіть за тижнями та потрібний день тижня. Якщо хочете виконання 2 рази на тиждень - створіть 2 тригери.",
+        v6Text: "Створіть тригер за часом для регулярного запуску.",
         authNoteTitle: "Обов'язкова разова авторизація:",
-        authNoteText: "Перед початком роботи обов'язково натисніть кнопку «Виконати» (Run) в редакторі Apps Script вручну 1 раз. Google запрасить дозвіл на доступ до Gmail та Drive (з'явиться попередження: натисніть «Додатково» ➔ «Перейти...» ➔ «Дозволити»). Це потрібно зробити рівно один раз, після чого скрипт працюватиме автоматично за розкладом.",
+        authNoteText: "Натисніть 'Виконати' (Run) у Apps Script 1 раз для надання прав доступу.",
         copyBtn: "Скопіювати код",
         copiedBtn: "Скопійовано в буфер!",
         backBtn: "Назад",
@@ -554,25 +554,25 @@
         existingCodeLabel: "Your Current Code.gs Script",
         existingCodePlaceholder: "Paste existing Apps Script code containing CONFIG here...",
         editPromptLabel: "What modifications or features would you like to add?",
-        editPromptPlaceholder: "e.g., Add a monthly summary email sent to me or change auto-trash rules...",
+        editPromptPlaceholder: "e.g., Add a monthly summary email sent to me...",
         generateRefactoredBtn: "Generate Refactored Code",
         modifyingBtn: "AI is refactoring your code...",
         cancelBtn: "Cancel",
         step1Title: "Step 1: Job Portals & Gmail Setup",
         step1Desc: "Configure email job alerts and auto-filtering rules.",
         v1Title: "Configuring Job Alerts on Job Search Engines",
-        v1Text: "On your job search websites, set up job alerts to receive emails with suitable vacancies. AI will process these emails for you, so approach this step creatively. Set up as many alerts as possible; AI will filter out irrelevant roles regardless of email volume.",
+        v1Text: "Set up job alerts on job portals. AI will filter out irrelevant positions.",
         v2Title: "Creating Gmail Labels and Filtering Rules",
-        v2Text: "In Gmail, create a label (subfolder) where incoming job offers will arrive. Note exact letter cases and characters. Create a second label where AI will move matched jobs. Wait for a job alert email, then set up a filter: enable archiving, mark as read, and assign the first label. Enter the exact label names below.",
+        v2Text: "Create label 'Bew./Job-Alerts' for incoming emails and 'Bew./Fertig' for processed roles.",
         gmailInboxLabel: "Gmail Incoming Label",
         gmailDoneLabel: "Gmail Processed Label",
         step2Title: "Step 2: Google Workspace (Gemini API & Drive)",
         step2Desc: "Connect AI capabilities and your Google Drive destination folder.",
-        v3Title: "Getting a Free Gemini API Key",
-        v3Text: "Visit aistudio.google.com and sign in with your Google account. Click the key icon to create an API key for your project. Copy and paste it into the field below.",
-        v4Title: "Setting Up Google Drive Target Folder",
-        v4Text: "In Google Sheets, create a new spreadsheet and copy its access link, then paste the link into the field below.",
-        geminiKeyPlaceholder: "Paste your Gemini API key (AIzaSy...)",
+        v3Title: "Getting a Gemini API Key",
+        v3Text: "Get an API Key from aistudio.google.com and paste it below.",
+        v4Title: "Setting Up Google Drive Anschreiben_Temp Folder",
+        v4Text: "Paste your Google Spreadsheet link below.",
+        geminiKeyPlaceholder: "Paste your Gemini API key (AQ... or AIzaSy...)",
         driveFolderPlaceholder: "Paste full Google Drive folder link here...",
         step3Title: "Step 3: Logistics, Commute Mode & Match Score",
         step3Desc: "Specify transport preference, max travel limit, and match threshold.",
@@ -587,27 +587,27 @@
         noLimitText: "No Limit / Remote",
         matchScoreLabel: "Minimum AI Match Score Threshold",
         step4Title: "Step 4: Sheet Layout & Blacklisted Roles",
-        step4Desc: "Customize Google Sheet columns and job titles to auto-delete.",
+        step4Desc: "Customize 9 Google Sheet columns and job titles to auto-delete.",
         sheetColumnsLabel: "Google Sheet Columns",
         addColumnBtn: "Add Custom Column",
         blacklistLabel: "Blacklisted Job Roles (Auto-move to Trash)",
         blacklistPlaceholder: "e.g. Data Analyst, Call Center Agent",
         addBtn: "Add",
         step5Title: "Step 5: Applicant Profile & Resume Background",
-        step5Desc: "Provide your contact info and background experience for tailored PDFs.",
+        step5Desc: "Provide DIN 5008 sender details for tailored PDF generation.",
         geminiRoleTitle: "Gemini AI Matching Persona",
-        geminiRoleText: "In the generated script, Gemini acts as an expert Senior Technical Recruiter and Career Agent. It analyzes each job vacancy, cross-references it with your resume background below, calculates an exact Match Score, and verifies logistical constraints.",
+        geminiRoleText: "Gemini evaluates job vacancies, checks ÖPNV travel time (<60 mins from 60386), and creates PDF Anschreiben.",
         fullNameLabel: "Full Name",
         targetLangLabel: "Target Language for Documents",
         addressLabel: "Full Address & Contact Info",
         resumeLabel: "Resume / CV Experience Directions",
         step6Title: "Step 6: Your Code.gs is Ready!",
         v5Title: "Pasting Script into Google Apps Script",
-        v5Text: "In your created Google Sheet, select Extensions ➔ Apps Script. Paste the generated code here and click Save.",
+        v5Text: "Go to Extensions ➔ Apps Script in Google Sheets, paste code, and save.",
         v6Title: "Configuring Execution Schedule (Trigger)",
-        v6Text: "Once saved, configure when AI should run. Create a time-driven trigger, select weekly frequency and your preferred day. For twice-a-week runs, simply add 2 triggers on this page.",
+        v6Text: "Set up a time-driven trigger for automated runs.",
         authNoteTitle: "Mandatory One-Time Authorization:",
-        authNoteText: "Before running automatically, click the 'Run' button in the Apps Script editor manually once. Google will ask for Gmail & Drive permissions (click 'Advanced' ➔ 'Go to...' ➔ 'Allow' on the security popup). You only need to do this once; afterwards, it will run automatically on schedule.",
+        authNoteText: "Click 'Run' in Apps Script editor once to grant permissions.",
         copyBtn: "Copy Code",
         copiedBtn: "Copied to Clipboard!",
         backBtn: "Back",
@@ -617,9 +617,9 @@
         subtitle: "Automatisieren Sie Ihre Jobsuche, Abgleiche, Anschreiben & Lebensläufe mit Gemini AI",
         quickEditBtn: "Bestehenden Code bearbeiten",
         quickEditTitle: "Schnellanpassung des bestehenden Codes",
-        quickEditDesc: "Fügen Sie Ihren aktuellen Code.gs ein. Der API-Schlüssel wird automatisch oder aus dem Speicher erkannt.",
+        quickEditDesc: "Fügen Sie Ihren aktuellen Code.gs ein. Der API-Schlüssel wird automatisch erkannt.",
         existingCodeLabel: "Ihr aktuelles Code.gs-Skript",
-        existingCodePlaceholder: "Fügen Sie hier Ihren Apps Script Code mit CONFIG ein...",
+        existingCodePlaceholder: "Fügen Sie hier Ihren Apps Script Code ein...",
         editPromptLabel: "Was soll geändert oder hinzugefügt werden?",
         editPromptPlaceholder: "z.B. Füge einen monatlichen Bericht per E-Mail hinzu...",
         generateRefactoredBtn: "Aktualisierten Code generieren",
@@ -628,21 +628,21 @@
         step1Title: "Schritt 1: Jobbörsen & Gmail-Einrichtung",
         step1Desc: "Richten Sie automatische E-Mail-Benachrichtigungen und Filterregeln ein.",
         v1Title: "Einrichtung von Job-Alerts auf Jobportalen",
-        v1Text: "Richten Sie auf Jobbörsen Suchaufträge ein, damit passende Stellenangebote per E-Mail eingehen. Die KI verarbeitet diese E-Mails für Sie. Erstellen Sie so viele Benachrichtigungen wie nötig – die KI filtert unpassende Angebote automatisch heraus.",
+        v1Text: "Richten Sie Job-Alerts ein. Die KI filtert unpassende Stellenangebote heraus.",
         v2Title: "Erstellung von Gmail-Labels und Filterregeln",
-        v2Text: "Erstellen Sie in Gmail ein Label für eingehende Angebote. Beachten Sie exakte Groß-/Kleinschreibung. Erstellen Sie ein zweites Label für von der KI verarbeitete Stellen. Richten Sie eine Gmail-Filterregel ein: E-Mail archivieren, als gelesen markieren und dem ersten Label zuweisen.",
+        v2Text: "Erstellen Sie Labels 'Bew./Job-Alerts' und 'Bew./Fertig' in Gmail.",
         gmailInboxLabel: "Gmail Eingehend-Label",
         gmailDoneLabel: "Gmail Verarbeitet-Label",
         step2Title: "Schritt 2: Google Workspace (Gemini API & Drive)",
-        step2Desc: "Verbinden Sie die KI und Ihren Zielordner auf Google Drive.",
-        v3Title: "Kostenlosen Gemini API-Schlüssel erhalten",
-        v3Text: "Rufen Sie aistudio.google.com auf, melden Sie sich an und erstellen Sie einen API-Schlüssel. Kopieren Sie den Schlüssel in das Feld unten.",
+        step2Desc: "Verbinden Sie die KI und Ihren Anschreiben_Temp Zielordner.",
+        v3Title: "Gemini API-Schlüssel erhalten",
+        v3Text: "Erstellen Sie einen Schlüssel auf aistudio.google.com und fügen Sie ihn ein.",
         v4Title: "Google Drive Ordner einrichten",
-        v4Text: "Erstellen Sie eine neue Google Tabelle, kopieren Sie den Freigabelink und fügen Sie ihn unten ein.",
-        geminiKeyPlaceholder: "Gemini API-Schlüssel einfügen (AIzaSy...)",
+        v4Text: "Fügen Sie den Freigabelink Ihrer Google Tabelle unten ein.",
+        geminiKeyPlaceholder: "Gemini API-Schlüssel einfügen (AQ... oder AIzaSy...)",
         driveFolderPlaceholder: "Vollständigen Google Drive Link einfügen...",
         step3Title: "Schritt 3: Logistik, Transport & Match-Score",
-        step3Desc: "Legen Sie Transportmittel, Fahrzeitbegrenzung und Mindest-Score fest.",
+        step3Desc: "Legen Sie Transportmittel (ÖPNV <60 Min ab 60386) und Mindest-Score fest.",
         postalCodeLabel: "Postleitzahl (PLZ)",
         cityLabel: "Stadt",
         transportModeLabel: "Bevorzugtes Transportmittel",
@@ -654,27 +654,27 @@
         noLimitText: "Kein Limit / Remote",
         matchScoreLabel: "Mindest-Match-Score der KI",
         step4Title: "Schritt 4: Tabellenstruktur & Ausschlussliste",
-        step4Desc: "Passen Sie Spalten an und definieren Sie auszuschließende Jobrollen.",
+        step4Desc: "Passen Sie 9 Spalten an und definieren Sie Ausschlussrollen (z.B. Data Analyst).",
         sheetColumnsLabel: "Google Tabellen Spalten",
         addColumnBtn: "Spalte hinzufügen",
         blacklistLabel: "Auszuschließende Jobrollen (Automatisch in den Papierkorb)",
         blacklistPlaceholder: "z.B. Data Analyst, Call Center Agent",
         addBtn: "Hinzufügen",
-        step5Title: "Schritt 5: Bewerberprofil & Lebenslauf-Erfahrung",
-        step5Desc: "Geben Sie Ihre Kontaktdaten und Erfahrungen für maßgeschneiderte PDFs an.",
+        step5Title: "Schritt 5: Bewerberprofil & Absender nach DIN 5008",
+        step5Desc: "Geben Sie Ihre Kontaktdaten für Anschreiben-PDFs in Anschreiben_Temp ein.",
         geminiRoleTitle: "Gemini KI-Matching-Rolle",
-        geminiRoleText: "Im generierten Skript agiert Gemini als erfahrener Senior Technical Recruiter und Karriereagent. Es analysiert jede Stellenanzeige, gleicht sie mit Ihrem Lebenslauf unten ab, berechnet einen Match-Score und prüft logistische Kriterien.",
+        geminiRoleText: "Gemini prüft Stellenanzeigen, gleicht Erfahrungen ab und erstellt PDF-Anschreiben.",
         fullNameLabel: "Vollständiger Name",
         targetLangLabel: "Zielsprache für Dokumente",
         addressLabel: "Adresse & Kontaktdaten",
         resumeLabel: "Erfahrung & Fertigkeiten aus dem Lebenslauf",
         step6Title: "Schritt 6: Ihr Code.gs ist fertig!",
         v5Title: "Script in Google Apps Script einfügen",
-        v5Text: "Klicken Sie in Ihrer Google Tabelle auf Erweiterungen ➔ Apps Script. Fügen Sie den Code ein und speichern Sie.",
+        v5Text: "In Google Tabelle auf Erweiterungen ➔ Apps Script klicken, Code einfügen und speichern.",
         v6Title: "Ausführungsplan (Trigger) einrichten",
-        v6Text: "Richten Sie einen zeitgesteuerten Trigger ein, um festzulegen, wann die KI laufen soll (z. B. wöchentlich). Für 2 Durchläufe pro Woche erstellen Sie einfach 2 Trigger.",
+        v6Text: "Richten Sie einen zeitgesteuerten Trigger ein.",
         authNoteTitle: "Einmalige Autorisierung erforderlich:",
-        authNoteText: "Klicken Sie vor dem automatischen Betrieb einmalig manuell auf die Schaltfläche „Ausführen“ (Run) im Apps Script-Editor. Google fragt nach Gmail- und Drive-Berechtigungen (Sicherheitswarnung: klicken Sie auf „Erweitert“ ➔ „Zu... wechseln“ ➔ „Zulassen“). Dies ist nur einmalig nötig.",
+        authNoteText: "Klicken Sie einmalig auf 'Ausführen' (Run) im Apps Script-Editor.",
         copyBtn: "Code kopieren",
         copiedBtn: "In Zwischenablage kopiert!",
         backBtn: "Zurück",
@@ -684,9 +684,9 @@
         subtitle: "Automatiza tu búsqueda de empleo, cartas de presentación y CVs con Gemini AI",
         quickEditBtn: "Editar código existente",
         quickEditTitle: "Modificación rápida de código",
-        quickEditDesc: "Pega tu Code.gs actual. La clave API se detectará automáticamente o desde la memoria.",
+        quickEditDesc: "Pega tu Code.gs actual. La clave API se detectará automáticamente.",
         existingCodeLabel: "Tu script Code.gs actual",
-        existingCodePlaceholder: "Pega el código Apps Script con CONFIG aquí...",
+        existingCodePlaceholder: "Pega el código Apps Script aquí...",
         editPromptLabel: "¿Qué deseas cambiar o añadir?",
         editPromptPlaceholder: "ej. Añade un resumen mensual por correo...",
         generateRefactoredBtn: "Generar código actualizado",
@@ -694,22 +694,22 @@
         cancelBtn: "Cancelar",
         step1Title: "Paso 1: Alertas y Etiquetas de Gmail",
         step1Desc: "Configura la recepción automática y filtrado de ofertas de empleo.",
-        v1Title: "Configuración de alertas en portales de empleo",
-        v1Text: "En los sitios de búsqueda de empleo, configura alertas por correo. La IA procesará estas ofertas por ti, así que crea tantas alertas como necesites; la IA filtrará las no aptas.",
-        v2Title: "Creación de etiquetas y filtros en Gmail",
-        v2Text: "Crea una etiqueta en Gmail para las ofertas entrantes (respeta mayúsculas/minúsculas). Crea una segunda etiqueta para los empleos procesados. Configura un filtro automático en Gmail para archivar y etiquetar los correos.",
+        v1Title: "Configuración de alertas",
+        v1Text: "Configura alertas de empleo. La IA filtrará las ofertas no aptas.",
+        v2Title: "Creación de etiquetas",
+        v2Text: "Crea etiquetas 'Bew./Job-Alerts' y 'Bew./Fertig' en Gmail.",
         gmailInboxLabel: "Etiqueta Gmail Entrante",
         gmailDoneLabel: "Etiqueta Gmail Procesado",
         step2Title: "Paso 2: Servicios de Google (Gemini API y Drive)",
-        step2Desc: "Conecta la IA y tu carpeta de destino en Google Drive.",
-        v3Title: "Obtención de Gemini API Key gratuita",
-        v3Text: "Accede a aistudio.google.com con tu cuenta de Google. Genera una clave de API y pégala abajo.",
+        step2Desc: "Conecta la IA y la carpeta de destino Anschreiben_Temp.",
+        v3Title: "Obtención de Gemini API Key",
+        v3Text: "Consigue la clave en aistudio.google.com y pégala abajo.",
         v4Title: "Configuración de carpeta en Google Drive",
-        v4Text: "Crea una nueva hoja en Google Sheets, copia su enlace de acceso y pégalo abajo.",
-        geminiKeyPlaceholder: "Pega tu Gemini API key (AIzaSy...)",
+        v4Text: "Pega el enlace de Google Sheets abajo.",
+        geminiKeyPlaceholder: "Pega tu Gemini API key (AQ... o AIzaSy...)",
         driveFolderPlaceholder: "Pega el enlace de Google Drive...",
         step3Title: "Paso 3: Logística, Transporte y Coincidencia",
-        step3Desc: "Define transporte, límite de tiempo y umbral de coincidencia de IA.",
+        step3Desc: "Define transporte (ÖPNV <60 min), tiempo máx y umbral de coincidencia.",
         postalCodeLabel: "Código Postal",
         cityLabel: "Ciudad",
         transportModeLabel: "Modo de transporte preferido",
@@ -721,27 +721,27 @@
         noLimitText: "Sin límite / Remoto",
         matchScoreLabel: "Puntuación mínima de coincidencia de IA",
         step4Title: "Paso 4: Columnas de Tabla y Lista Negra",
-        step4Desc: "Personaliza columnas de Google Sheets y puestos a descartar.",
+        step4Desc: "Personaliza 9 columnas de Google Sheets y puestos a descartar.",
         sheetColumnsLabel: "Columnas de Google Sheets",
         addColumnBtn: "Añadir columna",
         blacklistLabel: "Puestos excluidos (Auto-enviar a la papelera)",
-        blacklistPlaceholder: "ej. Analista de datos, Agente de call center",
+        blacklistPlaceholder: "ej. Data Analyst, Call Center Agent",
         addBtn: "Añadir",
         step5Title: "Paso 5: Perfil y Experiencia del CV",
-        step5Desc: "Indica tus datos para la generación de cartas y CVs adaptados en PDF.",
+        step5Desc: "Indica tus datos para la generación de cartas PDF según DIN 5008.",
         geminiRoleTitle: "Rol de Gemini AI en el análisis",
-        geminiRoleText: "En el script generado, Gemini actúa como un Reclutador Técnico Senior y Agente de Carreras. Analiza cada oferta de empleo, la contrasta con tu experiencia y calcula la puntuación de coincidencia (Match Score).",
+        geminiRoleText: "Gemini evalúa ofertas, calcula coincidencias y crea los PDF.",
         fullNameLabel: "Nombre completo",
         targetLangLabel: "Idioma de los documentos",
         addressLabel: "Dirección completa y contacto",
         resumeLabel: "Experiencia y habilidades del CV",
         step6Title: "Paso 6: ¡Tu Code.gs está listo!",
         v5Title: "Pegar código en Google Apps Script",
-        v5Text: "En tu Google Sheet, ve a Extensiones ➔ Apps Script. Pega el código generado y haz clic en Guardar.",
+        v5Text: "En Google Sheets ve a Extensiones ➔ Apps Script, pega el código y guarda.",
         v6Title: "Configuración de horarios (Activador)",
-        v6Text: "Crea un activador según el tiempo para definir cuándo debe ejecutarse la IA (por ejemplo, semanalmente).",
+        v6Text: "Crea un activador para ejecuciones automáticas.",
         authNoteTitle: "Autorización única obligatoria:",
-        authNoteText: "Haz clic en el botón 'Ejecutar' (Run) en el editor de Apps Script manualmente una vez antes de que funcione de forma autónoma. Google te pedirá permisos de Gmail y Drive (haz clic en 'Avanzado' ➔ 'Ir a...' ➔ 'Permitir'). Solo necesitas hacerlo una vez.",
+        authNoteText: "Haz clic en 'Ejecutar' (Run) en el editor de Apps Script 1 vez.",
         copyBtn: "Copiar código",
         copiedBtn: "¡Copiado al portapapeles!",
         backBtn: "Atrás",
@@ -751,9 +751,9 @@
         subtitle: "Automatisez votre recherche d'emploi, lettres de motivation et CV avec Gemini AI",
         quickEditBtn: "Modifier le code existant",
         quickEditTitle: "Modification rapide du code existant",
-        quickEditDesc: "Collez votre Code.gs actuel. La clé API sera détectée automatiquement ou depuis la mémoire.",
+        quickEditDesc: "Collez votre Code.gs actuel. La clé API sera détectée automatiquement.",
         existingCodeLabel: "Votre script Code.gs actuel",
-        existingCodePlaceholder: "Collez le code Apps Script contenant CONFIG ici...",
+        existingCodePlaceholder: "Collez le code Apps Script ici...",
         editPromptLabel: "Que souhaitez-vous modifier ou ajouter ?",
         editPromptPlaceholder: "ex. Ajoutez un rapport mensuel envoyé par e-mail...",
         generateRefactoredBtn: "Générer le code mis à jour",
@@ -761,22 +761,22 @@
         cancelBtn: "Annuler",
         step1Title: "Étape 1 : Alertes e-mail & Étiquettes Gmail",
         step1Desc: "Configurez la réception automatique et le filtrage des offres d'emploi.",
-        v1Title: "Configuration des alertes sur les sites d'emploi",
-        v1Text: "Réglez des alertes e-mail sur les sites d'emploi. L'IA traitera ces offres pour vous. Créez autant d'alertes que possible, l'IA filtrera les postes non pertinents.",
-        v2Title: "Création des étiquettes et filtres Gmail",
-        v2Text: "Créez une étiquette Gmail pour les offres entrantes (respectez la casse). Créez une seconde étiquette pour les offres traitées. Configurez un filtre pour archiver et étiqueter automatiquement ces e-mails.",
+        v1Title: "Configuration des alertes",
+        v1Text: "Réglez des alertes e-mail. L'IA filtrera les postes non pertinents.",
+        v2Title: "Création des étiquettes Gmail",
+        v2Text: "Créez les étiquettes 'Bew./Job-Alerts' et 'Bew./Fertig' dans Gmail.",
         gmailInboxLabel: "Étiquette Gmail Entrant",
         gmailDoneLabel: "Étiquette Gmail Traité",
         step2Title: "Étape 2 : Services Google (Gemini API & Drive)",
-        step2Desc: "Connectez l'IA et définissez votre dossier de destination sur Google Drive.",
-        v3Title: "Obtention d'une clé API Gemini gratuite",
-        v3Text: "Rendez-vous sur aistudio.google.com, connectez-vous et créez une clé API. Collez la clé ci-dessous.",
+        step2Desc: "Connectez l'IA et le dossier Anschreiben_Temp sur Google Drive.",
+        v3Title: "Obtention d'une clé API Gemini",
+        v3Text: "Créez une clé sur aistudio.google.com et collez-la ci-dessous.",
         v4Title: "Configuration du dossier Google Drive",
-        v4Text: "Créez une nouvelle feuille Google Sheets, copiez son lien et collez-le ci-dessous.",
-        geminiKeyPlaceholder: "Collez votre clé API Gemini (AIzaSy...)",
+        v4Text: "Collez le lien Google Sheets ci-dessous.",
+        geminiKeyPlaceholder: "Collez votre clé API Gemini (AQ... ou AIzaSy...)",
         driveFolderPlaceholder: "Collez le lien Google Drive...",
         step3Title: "Étape 3 : Logistique, Transport & Score de correspondance",
-        step3Desc: "Définissez le mode de transport, le temps max и le score IA.",
+        step3Desc: "Définissez le mode de transport (ÖPNV <60 min), le temps max et le score IA.",
         postalCodeLabel: "Code Postal",
         cityLabel: "Ville",
         transportModeLabel: "Mode de transport préféré",
@@ -788,27 +788,27 @@
         noLimitText: "Sans limite / Télétravail",
         matchScoreLabel: "Score de correspondance minimal de l'IA",
         step4Title: "Étape 4 : Colonnes du tableau & Liste noire",
-        step4Desc: "Personnalisez la structure du tableau и les postes à ignorer.",
+        step4Desc: "Personnalisez 9 colonnes du tableau et les postes à ignorer.",
         sheetColumnsLabel: "Colonnes Google Sheets",
         addColumnBtn: "Ajouter une colonne",
-        blacklistLabel: "Postes exclus (Suppression automatique vers la corbeille)",
-        blacklistPlaceholder: "ex. Analyste de données, Agent de call center",
+        blacklistLabel: "Postes exclus (Suppression automatique)",
+        blacklistPlaceholder: "ex. Data Analyst, Call Center Agent",
         addBtn: "Ajouter",
         step5Title: "Étape 5 : Profil et Expérience du CV",
-        step5Desc: "Renseignez vos coordonnées pour la génération des PDF sur mesure.",
+        step5Desc: "Renseignez vos coordonnées pour la génération des PDF selon DIN 5008.",
         geminiRoleTitle: "Rôle de Gemini AI dans l'analyse",
-        geminiRoleText: "Dans le script généré, Gemini agit en tant que Recruteur Technique Senior et Agent de Carrière. Il analyse chaque offre d'emploi, la compare à votre expérience ci-dessous, calcule le score de correspondance et vérifie les contraintes logistiques.",
+        geminiRoleText: "Gemini analyse chaque offre et génère les fichiers PDF.",
         fullNameLabel: "Nom complet",
         targetLangLabel: "Langue des documents",
         addressLabel: "Adresse complète et contacts",
         resumeLabel: "Expérience et compétences du CV",
         step6Title: "Étape 6 : Votre Code.gs est prêt !",
         v5Title: "Insertion du script dans Google Apps Script",
-        v5Text: "Dans Google Sheets, cliquez sur Extensions ➔ Apps Script. Collez le code et enregistrez.",
+        v5Text: "Dans Google Sheets, cliquez sur Extensions ➔ Apps Script, collez le code et enregistrez.",
         v6Title: "Planification de l'exécution (Déclencheur)",
-        v6Text: "Créez un déclencheur basé sur le temps pour planifier l'exécution automatique de l'IA.",
+        v6Text: "Créez un déclencheur basé sur le temps.",
         authNoteTitle: "Autorisation unique obligatoire :",
-        authNoteText: "Cliquez manuellement sur le bouton « Exécuter » (Run) dans l'éditeur Apps Script une seule fois. Google demandera l'accès à Gmail et Drive (cliquez sur « Paramètres avancés » ➔ « Accéder à... » ➔ « Autoriser »). Cela ne se fait qu'une seule fois.",
+        authNoteText: "Cliquez sur « Exécuter » (Run) dans l'éditeur Apps Script 1 seule fois.",
         copyBtn: "Copier le code",
         copiedBtn: "Copié dans le presse-papiers !",
         backBtn: "Retour",
@@ -818,7 +818,7 @@
         subtitle: "Automatyzuj szukanie pracy, dopasowania, listy motywacyjne i CV z Gemini AI",
         quickEditBtn: "Edytuj istniejący kod",
         quickEditTitle: "Szybka edycja istniejącego kodu",
-        quickEditDesc: "Wklej swój obecny Code.gs. Klucz API zostanie wykryty automatycznie lub z pamięci.",
+        quickEditDesc: "Wklej swój obecny Code.gs. Klucz API zostanie wykryty automatycznie.",
         existingCodeLabel: "Twój obecny skrypt Code.gs",
         existingCodePlaceholder: "Wklej tutaj kod Apps Script zawierający CONFIG...",
         editPromptLabel: "Co chcesz zmienić lub dodać?",
@@ -828,22 +828,22 @@
         cancelBtn: "Anuluj",
         step1Title: "Krok 1: Powiadomienia e-mail i Etykiety Gmail",
         step1Desc: "Skonfiguruj automatyczne odbieranie i filtrowanie ofert pracy.",
-        v1Title: "Konfiguracja powiadomień na portalach pracy",
-        v1Text: "Ustaw powiadomienia e-mail na portalach pracy. Sztuczna inteligencja przeanalizuje oferty za Ciebie, więc utwórz jak najwięcej powiadomień – AI odrzuci niepasujące oferty.",
-        v2Title: "Tworzenie etykiet i filtrów w Gmail",
-        v2Text: "Utwórz etykietę w Gmail dla wiadomości przychodzących (zwróć uwagę na wielkość liter). Utwórz drugą etykietę dla przetworzonych ofert. Skonfiguruj filtr Gmail do automatycznej archiwizacji i etykietowania.",
+        v1Title: "Konfiguracja powiadomień",
+        v1Text: "Ustaw powiadomienia e-mail na portalach pracy. AI odrzuci niepasujące oferty.",
+        v2Title: "Tworzenie etykiet w Gmail",
+        v2Text: "Utwórz etykiety 'Bew./Job-Alerts' i 'Bew./Fertig' w Gmail.",
         gmailInboxLabel: "Etykieta Gmail Przychodzące",
         gmailDoneLabel: "Etykieta Gmail Przetworzone",
         step2Title: "Krok 2: Usługi Google (Gemini API & Drive)",
-        step2Desc: "Połącz sztuczną inteligencję i folder docelowy na Google Drive.",
-        v3Title: "Uzyskanie darmowego klucza Gemini API Key",
-        v3Text: "Wejdź na aistudio.google.com, zaloguj się i wygeneruj klucz API. Wklej go w pole poniżej.",
+        step2Desc: "Połącz sztuczną inteligencję i folder Anschreiben_Temp na Google Drive.",
+        v3Title: "Uzyskanie klucza Gemini API Key",
+        v3Text: "Wygeneruj klucz na aistudio.google.com i wklej poniżej.",
         v4Title: "Konfiguracja folderu na Google Drive",
-        v4Text: "Utwórz nowy arkusz Google Sheets, skopiuj link dostępu i wklej go poniżej.",
-        geminiKeyPlaceholder: "Wklej swój klucz Gemini API (AIzaSy...)",
+        v4Text: "Wklej link do arkusza Google Sheets poniżej.",
+        geminiKeyPlaceholder: "Wklej swój klucz Gemini API (AQ... lub AIzaSy...)",
         driveFolderPlaceholder: "Wklej pełny link do Google Drive...",
         step3Title: "Krok 3: Logistyka, Transport i Próg dopasowania",
-        step3Desc: "Określ środek transportu, limit czasu dojazdu i wynik AI.",
+        step3Desc: "Określ środek transportu (ÖPNV <60 min), limit czasu dojazdu i wynik AI.",
         postalCodeLabel: "Kod pocztowy",
         cityLabel: "Miasto",
         transportModeLabel: "Preferowany środek transportu",
@@ -855,27 +855,27 @@
         noLimitText: "Bez limitu / Zdalnie",
         matchScoreLabel: "Minimalny próg dopasowania AI",
         step4Title: "Krok 4: Kolumny Tabeli i Czarna lista",
-        step4Desc: "Dostosuj kolumny Google Sheets i stanowiska do odrzucenia.",
+        step4Desc: "Dostosuj 9 kolumn Google Sheets i stanowiska do odrzucenia.",
         sheetColumnsLabel: "Kolumny Google Sheets",
         addColumnBtn: "Dodaj kolumnę",
         blacklistLabel: "Wykluczone stanowiska (Automatycznie do kosza)",
-        blacklistPlaceholder: "np. Analityk danych, Pracownik call center",
+        blacklistPlaceholder: "np. Data Analyst, Call Center Agent",
         addBtn: "Dodaj",
         step5Title: "Krok 5: Profil i Doświadczenie z CV",
-        step5Desc: "Podaj dane kontaktowe i opis doświadczenia do generowania PDF.",
+        step5Desc: "Podaj dane Absender wg DIN 5008 do generowania PDF w Anschreiben_Temp.",
         geminiRoleTitle: "Rola Gemini AI w dopasowaniu",
-        geminiRoleText: "W wygenerowanym skrypcie Gemini działa jako Starszy Rekruter Techniczny i Agent Kariery. Analizuje każdą ofertę pracy, porównuje ją z Twoim doświadчением w CV poniżej, oblicza wynik dopasowania oraz sprawdza kryteria logistyczne.",
+        geminiRoleText: "Gemini analizuje oferty, sprawdza czasy ÖPNV i tworzy dokumenty PDF.",
         fullNameLabel: "Imię i nazwisko",
         targetLangLabel: "Język dokumentów",
         addressLabel: "Pełny adres i kontakt",
         resumeLabel: "Doświadczenie i umiejętności z CV",
         step6Title: "Krok 6: Twój Code.gs jest gotowy!",
         v5Title: "Wklejanie skryptu do Google Apps Script",
-        v5Text: "W swoim arkuszu Google Sheets wybierz Rozszerzenia ➔ Apps Script. Wklej wygenerowany kod i kliknij Zapisz.",
+        v5Text: "Wybierz Rozszerzenia ➔ Apps Script w Google Sheets, wklej kod i zapisz.",
         v6Title: "Ustawianie harmonogramu (Wyzwalacz)",
-        v6Text: "Ustaw wyzwalacz czasowy, aby określić, jak często AI ma przetwarzać oferty pracy.",
+        v6Text: "Ustaw wyzwalacz czasowy dla automatycznych uruchomień.",
         authNoteTitle: "Obowiązkowa jednorazowa autoryzacja:",
-        authNoteText: "Kliknij przycisk 'Uruchom' (Run) w edytorze Apps Script ręcznie raz przed uruchomieniem automatycznym. Google poprosi o uprawnienia do Gmail i Drive (kliknij 'Zaawansowane' ➔ 'Przejdź do...' ➔ 'Zezwól' w wyskakującym okienku). Musisz to zrobić tylko raz.",
+        authNoteText: "Kliknij 'Uruchom' (Run) w edytorze Apps Script 1 raz.",
         copyBtn: "Kopiuj kod",
         copiedBtn: "Skopiowano do schowka!",
         backBtn: "Wstecz",
@@ -884,15 +884,16 @@
     };
 
     const localizedPresets = {
-      EN: { postcode: "WC2N 5DU", city: "London", inbox: "JobAlerts/Inbox", done: "JobAlerts/Done", blacklist: ["Data Analyst", "Call Center Agent", "Manual Labor", "Warehouse Worker"], fullName: "John Doe", address: "10 Downing Street, London, WC2N 5DU", resumeText: "5+ years of experience in QA & Quality Control testing, Customer Support supervision, and Operations management..." },
-      DE: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Körperliche Arbeit", "Lagerhelfer"], fullName: "Max Mustermann", address: "Musterstraße 1, 60386 Frankfurt am Main", resumeText: "5 Jahre Berufserfahrung im Bereich Software-Testing (QA), Kundenservice-Leitung und operativer Administration..." },
-      UA: { postcode: "01001", city: "Київ", inbox: "Вакансії/Вхідні", done: "Вакансії/Оброблено", blacklist: ["Аналітик даних", "Оператор кол-центру", "Фізична праця", "Працівник складу"], fullName: "Олександр Коваленко", address: "вул. Хрещатик 1, Київ, 01001", resumeText: "Понад 5 років досвіду у сфері тестування ПЗ (QA), керівництва службою підтримки клієнтів та операційного менеджменту..." },
-      RU: { postcode: "101000", city: "Москва", inbox: "Работа/Входящие", done: "Работа/Обработано", blacklist: ["Аналитик данных", "Оператор колл-центра", "Физический труд", "Рабочий на склад"], fullName: "Александр Иванов", address: "ул. Тверская 1, Москва, 101000", resumeText: "Более 5 лет опыта в области тестирования ПО (QA), руководства поддержкой клиентов и управления операционными процессами..." },
-      ES: { postcode: "28001", city: "Madrid", inbox: "Empleo/Entrada", done: "Empleo/Procesado", blacklist: ["Analista de datos", "Agente de call center", "Trabajo manual", "Mozo de almacén"], fullName: "Carlos García", address: "Calle Gran Vía 1, Madrid, 28001", resumeText: "Más de 5 años de experiencia en pruebas de calidad QA, gestión de atención al cliente y operaciones de administración..." },
-      FR: { postcode: "75001", city: "Paris", inbox: "Emploi/Inspirations", done: "Emploi/Traité", blacklist: ["Analyste de données", "Agent de centre d'appels", "Travail manuel", "Manutentionnaire"], fullName: "Jean Dupont", address: "1 Rue de Rivoli, Paris, 75001", resumeText: "Plus de 5 ans d'expérience en assurance qualité (QA), gestion du service client et administration des opérations..." },
-      PL: { postcode: "00-001", city: "Warszawa", inbox: "Praca/Odebrane", done: "Praca/Gotowe", blacklist: ["Analityk danych", "Pracownik call center", "Praca fizyczna", "Pracownik magazynu"], fullName: "Jan Kowalski", address: "ul. Marszałkowska 1, Warszawa, 00-001", resumeText: "Ponad 5 lat doświadczenia w testowaniu oprogramowania (QA), zarządzaniu obsługą klienta oraz operacjach..." }
+      EN: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Manual Labor", "Warehouse Worker"], fullName: "Oleksandr Kurmoiartsev", address: "Sample Street 1, 60386 Frankfurt am Main", resumeText: "Experience in Customer Experience, process optimization, QA testing, and AI automation..." },
+      DE: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Körperliche Arbeit", "Lagerhelfer"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt am Main", resumeText: "Berufserfahrung im Bereich Customer Experience, Prozessoptimierung, QA-Testing und KI-Automatisierung..." },
+      UA: { postcode: "60386", city: "Франкфурт-на-Майні", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Аналітик даних", "Оператор кол-центру", "Фізична праця", "Працівник складу"], fullName: "Олександр Курмоярцев", address: "Musterstraße 1, 60386 Франкфурт-на-Майні", resumeText: "Досвід у сфері Customer Experience, оптимізації процесів, QA тестування та автоматизації штучного інтелекту..." },
+      RU: { postcode: "60386", city: "Франкфурт-на-Майне", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Физический труд", "Рабочий на склад"], fullName: "Александр Курмоярцев", address: "Musterstraße 1, 60386 Франкфурт-на-Майне", resumeText: "Опыт в области Customer Experience, оптимизации процессов, QA-тестирования и авто-процессов с ИИ..." },
+      ES: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analista de datos", "Agente de call center", "Trabajo manual", "Mozo de almacén"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt am Main", resumeText: "Experiencia en Customer Experience, optimización de procesos, QA testing y automatización IA..." },
+      FR: { postcode: "60386", city: "Francfort-sur-le-Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analyste de données", "Agent de centre d'appels", "Travail manuel", "Manutentionnaire"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Francfort-sur-le-Main", resumeText: "Expérience en Customer Experience, optimisation des processus, QA testing et automatisation IA..." },
+      PL: { postcode: "60386", city: "Frankfurt nad Menem", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analityk danych", "Pracownik call center", "Praca fizyczna", "Pracownik magazynu"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt nad Menem", resumeText: "Doświadczenie w Customer Experience, optymalizacji procesów, testowaniu QA i automatyzacji AI..." }
     };
 
+    // Exactly 9 Clean Sheet Columns Required by System Specifications
     const defaultColumnsByLang = {
       EN: ["Processing Date", "Company Name", "Job Title", "Location", "Travel Time", "Match Score (%)", "Salary Range", "Job URL", "Status"],
       DE: ["Bearbeitungsdatum", "Unternehmen", "Stellenbezeichnung", "Standort", "Fahrzeit", "Match-Score (%)", "Gehalt", "Job-URL", "Status"],
@@ -940,22 +941,22 @@
           driveFolderId: '',
           minMatchScore: 70,
           logistics: {
-            homePostcode: preset.value.postcode,
-            city: preset.value.city,
+            homePostcode: '60386',
+            city: 'Frankfurt am Main',
             transportMode: 'ÖPNV',
             maxTravelMinutes: 60
           },
           columns: [...(defaultColumnsByLang[currentLang.value] || defaultColumnsByLang['RU'])],
           filters: {
-            blacklistKeywords: [...preset.value.blacklist]
+            blacklistKeywords: ['Data Analyst', 'Call Center Agent', 'Körperliche Arbeit', 'Lagerhelfer']
           },
           gmail: {
-            inboxLabel: preset.value.inbox,
-            doneLabel: preset.value.done
+            inboxLabel: 'Bew./Job-Alerts',
+            doneLabel: 'Bew./Fertig'
           },
           applicant: {
-            fullName: preset.value.fullName,
-            address: preset.value.address,
+            fullName: 'Oleksandr Kurmoiartsev',
+            address: 'Musterstraße 1, 60386 Frankfurt am Main',
             phone: '+49 123 456789',
             email: 'applicant@example.com',
             resumeText: preset.value.resumeText
@@ -1040,7 +1041,7 @@
           const match = code.match(/GEMINI_API_KEY\s*:\s*["']([^"']+)["']/i);
           if (match && match[1]) {
             extractedApiKey.value = match[1];
-            form.value.geminiApiKey = match[1]; // Sync with form api key
+            form.value.geminiApiKey = match[1];
           } else {
             extractedApiKey.value = '';
           }
@@ -1059,13 +1060,14 @@
 
           return [
             '/**',
-            ' * AUTOMATICALLY GENERATED JOB AUTOMATION SCRIPT WITH DUAL PDF GENERATION',
+            ' * AUTOMATICALLY GENERATED JOB AUTOMATION SCRIPT FOR GOOGLE WORKSPACE',
             ' * Generated via: Jmail Wizard',
-            ' * Generated for: ' + f.applicant.fullName,
+            ' * Applicant: ' + f.applicant.fullName,
             ' */',
             '',
             'const CONFIG = {',
             '  GEMINI_API_KEY: "' + f.geminiApiKey + '",',
+            '  DRIVE_FOLDER_NAME: "Anschreiben_Temp",',
             '  DRIVE_FOLDER_ID: "' + f.driveFolderId + '",',
             '  HOME_POSTCODE: "' + f.logistics.homePostcode + '",',
             '  CITY: "' + f.logistics.city + '",',
@@ -1121,23 +1123,21 @@
             '      continue;',
             '    }',
             '',
-            '    const rowData = [];',
-            '    CONFIG.COLUMNS.forEach(colName => {',
-            '      const lower = colName.toLowerCase();',
-            '      if (lower.includes("date") || lower.includes("datum") || lower.includes("дата") || lower.includes("fecha")) rowData.push(new Date());',
-            '      else if (lower.includes("company") || lower.includes("unternehmen") || lower.includes("компанія") || lower.includes("компания") || lower.includes("empresa") || lower.includes("entreprise") || lower.includes("firma")) rowData.push(analysis.companyName || "N/A");',
-            '      else if (lower.includes("title") || lower.includes("stelle") || lower.includes("посада") || lower.includes("должность") || lower.includes("puesto") || lower.includes("poste") || lower.includes("stanowisko")) rowData.push(analysis.jobTitle || emailSubject);',
-            '      else if (lower.includes("location") || lower.includes("standort") || lower.includes("локація") || lower.includes("локация") || lower.includes("ubicación") || lower.includes("lieu") || lower.includes("lokalizacja")) rowData.push(analysis.location || CONFIG.CITY);',
-            '      else if (lower.includes("travel") || lower.includes("fahrzeit") || lower.includes("дорозі") || lower.includes("пути") || lower.includes("viaje") || lower.includes("trajet") || lower.includes("dojazdu")) rowData.push(CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "Flexible / Remote" : (analysis.travelTimeMinutes || "?") + " mins (" + CONFIG.TRANSPORT_MODE + ")");',
-            '      else if (lower.includes("score") || lower.includes("match") || lower.includes("відповідності") || lower.includes("совпадения") || lower.includes("puntuación") || lower.includes("wynik")) rowData.push(analysis.matchScore + "%");',
-            '      else if (lower.includes("salary") || lower.includes("gehalt") || lower.includes("зарплата") || lower.includes("salario") || lower.includes("salaire") || lower.includes("wynagrodzenie")) rowData.push(analysis.salary || "Not specified");',
-            '      else if (lower.includes("url") || lower.includes("link") || lower.includes("посилання") || lower.includes("ссылка")) rowData.push(analysis.jobUrl || "From Email");',
-            '      else if (lower.includes("status") || lower.includes("статус") || lower.includes("estado") || lower.includes("statut")) rowData.push("Cover Letter & CV Generated");',
-            '      else rowData.push(analysis.notes || "Matches profile");',
-            '    });',
+            '    // Append strictly 9 clean columns without raw Anschreiben text or PDF URLs',
+            '    const rowData = [',
+            '      new Date(),',
+            '      analysis.companyName || "N/A",',
+            '      analysis.jobTitle || emailSubject,',
+            '      analysis.location || CONFIG.CITY,',
+            '      CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "Flexible / Remote" : (analysis.travelTimeMinutes || "?") + " mins (" + CONFIG.TRANSPORT_MODE + ")",',
+            '      analysis.matchScore + "%",',
+            '      analysis.salary || "Not specified",',
+            '      analysis.jobUrl || "From Email",',
+            '      "Anschreiben PDF Saved"',
+            '    ];',
             '    sheet.appendRow(rowData);',
             '',
-            '    generateAndSaveDocuments(analysis);',
+            '    generateAndSaveAnschreibenPdf(analysis);',
             '    thread.addLabel(doneLabel);',
             '    thread.removeLabel(inboxLabel);',
             '  }',
@@ -1156,11 +1156,11 @@
             '}',
             '',
             'function analyzeJobWithGemini(subject, body) {',
-            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
+            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
             '  const modeConstraint = CONFIG.TRANSPORT_MODE === "NO_LIMIT" ? "No location restrictions." : "Max " + CONFIG.MAX_TRAVEL_MINUTES + " mins via " + CONFIG.TRANSPORT_MODE + " from " + CONFIG.HOME_POSTCODE + ".";',
-            '  const prompt = "You are an expert Senior Technical Recruiter and Career Agent. Your task is to rigorously evaluate if the following job vacancy matches the applicant profile.\\n\\nApplicant Resume Background:\\n" + CONFIG.APPLICANT.RESUME_TEXT + "\\n\\nJob Subject: " + subject + "\\nJob Body: " + body + "\\n\\nConstraints: " + modeConstraint + " Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100) based on skill and experience relevance. Return valid JSON with keys: isSuitable (bool), matchScore (number), companyName, jobTitle, location, travelTimeMinutes, salary, jobUrl, notes.";',
+            '  const prompt = "You are an expert Senior Technical Recruiter and Career Agent. Evaluate if this vacancy fits the profile.\\n\\nApplicant Background:\\n" + CONFIG.APPLICANT.RESUME_TEXT + "\\n\\nSubject: " + subject + "\\nBody: " + body + "\\n\\nConstraints: " + modeConstraint + " Exclude: " + CONFIG.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON: {isSuitable: bool, matchScore: number, companyName: string, jobTitle: string, location: string, travelTimeMinutes: number, salary: string, jobUrl: string, notes: string}.";',
             '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
-            '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
+            '  const options = { method: "post", contentType: "application/json", headers: { "x-goog-api-key": CONFIG.GEMINI_API_KEY }, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
             '    const response = UrlFetchApp.fetch(url, options);',
             '    const json = JSON.parse(response.getContentText());',
@@ -1170,24 +1170,30 @@
             '  } catch (e) { return null; }',
             '}',
             '',
-            'function generateAndSaveDocuments(jobData) {',
-            '  const folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);',
-            '  ',
-            '  const letterText = generateWithGemini("Write a formal cover letter in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying to " + jobData.companyName + " as " + jobData.jobTitle + ". Avoid AI cliches. Resume background: " + CONFIG.APPLICANT.RESUME_TEXT);',
-            '  const letterHtml = "<html><head><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#333;}.sender{font-size:8pt;color:#666;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:20px;}.recipient{margin-bottom:30px;}.date{text-align:right;margin-bottom:20px;}.subject{font-weight:bold;font-size:12pt;margin-bottom:20px;}.content{text-align:justify;white-space:pre-line;}.signature{margin-top:30px;}</style></head><body><div class=\\"sender\\">" + CONFIG.APPLICANT.NAME + " • " + CONFIG.APPLICANT.ADDRESS + "</div><div class=\\"recipient\\"><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + CONFIG.CITY + ", " + new Date().toLocaleDateString("de-DE") + "</div><div class=\\"subject\\">Application as " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div><div class=\\"signature\\">Sincerely,<br><br><strong>" + CONFIG.APPLICANT.NAME + "</strong></div></body></html>";',
-            '  const letterPdf = Utilities.newBlob(letterHtml, "text/html").getAs("application/pdf").setName("CoverLetter_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
-            '  folder.createFile(letterPdf);',
+            'function getOrCreateTargetFolder() {',
+            '  if (CONFIG.DRIVE_FOLDER_ID && CONFIG.DRIVE_FOLDER_ID.length > 10) {',
+            '    try { return DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID); } catch(e) {}',
+            '  }',
+            '  const folders = DriveApp.getFoldersByName("Anschreiben_Temp");',
+            '  if (folders.hasNext()) return folders.next();',
+            '  return DriveApp.createFolder("Anschreiben_Temp");',
+            '}',
             '',
-            '  const cvText = generateWithGemini("Create a structured, tailored CV/Resume in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " specifically customized for the position of " + jobData.jobTitle + " at " + jobData.companyName + ". Highlight relevant skills and experience from background: " + CONFIG.APPLICANT.RESUME_TEXT);',
-            '  const cvHtml = "<html><head><style>body{font-family:Arial,sans-serif;font-size:10.5pt;line-height:1.4;margin:40px;color:#222;}.header{border-bottom:2px solid #2563eb;padding-bottom:10px;margin-bottom:20px;}.name{font-size:18pt;font-weight:bold;color:#1e3a8a;}.contact{font-size:9pt;color:#555;}.content{white-space:pre-line;}</style></head><body><div class=\\"header\\"><div class=\\"name\\">" + CONFIG.APPLICANT.NAME + "</div><div class=\\"contact\\">" + CONFIG.APPLICANT.ADDRESS + " | " + CONFIG.APPLICANT.EMAIL + "</div></div><div class=\\"content\\">" + cvText + "</div></body></html>";',
-            '  const cvPdf = Utilities.newBlob(cvHtml, "text/html").getAs("application/pdf").setName("CV_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
-            '  folder.createFile(cvPdf);',
+            'function generateAndSaveAnschreibenPdf(jobData) {',
+            '  const folder = getOrCreateTargetFolder();',
+            '  const letterText = generateWithGemini("Write a DIN 5008 compliant Cover Letter (Anschreiben) in " + CONFIG.TARGET_LANGUAGE + " for " + CONFIG.APPLICANT.NAME + " applying for " + jobData.jobTitle + " at " + jobData.companyName + ". Avoid AI clichés. Background: " + CONFIG.APPLICANT.RESUME_TEXT);',
+            '  ',
+            '  // DIN 5008 Compliant HTML Layout',
+            '  const htmlContent = "<html><head><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#111;}.sender{font-size:8pt;color:#555;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:25px;}.recipient{margin-bottom:30px;}.date{text-align:right;margin-bottom:25px;}.subject{font-weight:bold;font-size:12pt;margin-bottom:20px;}.content{text-align:justify;white-space:pre-line;}.signature{margin-top:35px;}</style></head><body><div class=\\"sender\\">" + CONFIG.APPLICANT.NAME + " • " + CONFIG.APPLICANT.ADDRESS + "</div><div class=\\"recipient\\"><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + CONFIG.CITY + ", " + new Date().toLocaleDateString("de-DE") + "</div><div class=\\"subject\\">Bewerbung als " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div><div class=\\"signature\\">Mit freundlichen Grüßen,<br><br><strong>" + CONFIG.APPLICANT.NAME + "</strong></div></body></html>";',
+            '  ',
+            '  const pdfBlob = Utilities.newBlob(htmlContent, "text/html").getAs("application/pdf").setName("Anschreiben_" + jobData.companyName + "_" + jobData.jobTitle + ".pdf");',
+            '  folder.createFile(pdfBlob);',
             '}',
             '',
             'function generateWithGemini(promptText) {',
-            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + CONFIG.GEMINI_API_KEY;',
+            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(CONFIG.GEMINI_API_KEY);',
             '  const payload = { contents: [{ parts: [{ text: promptText }] }] };',
-            '  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true };',
+            '  const options = { method: "post", contentType: "application/json", headers: { "x-goog-api-key": CONFIG.GEMINI_API_KEY }, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
             '    const response = UrlFetchApp.fetch(url, options);',
             '    const json = JSON.parse(response.getContentText());',
@@ -1201,11 +1207,11 @@
           return customRefactoredCode.value || standardGeneratedCode.value;
         });
 
-        // Independent Quick Edit Refactoring Logic via Gemini API using activeApiKey
+        // Quick Edit Refactoring Logic supporting AQ... and AIzaSy... keys + Target Language Context
         const processQuickEdit = async () => {
-          const apiKey = activeApiKey.value;
+          const apiKey = activeApiKey.value ? activeApiKey.value.trim() : '';
           if (!apiKey) {
-            alert("API Key not found. Please paste a script containing CONFIG.GEMINI_API_KEY or enter your key manually below!");
+            alert("API Key not found. Please paste a script containing CONFIG.GEMINI_API_KEY or enter your key manually!");
             return;
           }
           if (!quickEditPrompt.value.trim()) {
@@ -1221,7 +1227,9 @@
           const sourceCode = existingCodeInput.value.trim();
           
           const prompt = `You are an expert Google Apps Script developer. 
-Refactor and modify the following Apps Script code according to user requirements.
+Refactor and modify the following Apps Script code strictly according to user requirements.
+Respond and write code/comments considering the requested language context: ${currentLang.value}.
+
 User Instructions: ${quickEditPrompt.value}
 
 Source Code:
@@ -1229,25 +1237,39 @@ ${sourceCode}
 
 Return ONLY the complete modified Apps Script code in JavaScript without Markdown formatting codeblocks or explanations.`;
 
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+          
           try {
             const res = await fetch(url, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+              headers: { 
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey // Dual auth header support for AQ... keys
+              },
+              body: JSON.stringify({ 
+                contents: [{ parts: [{ text: prompt }] }] 
+              })
             });
+
             const data = await res.json();
-            if (data.candidates && data.candidates[0]) {
+            
+            if (res.ok && data.candidates && data.candidates[0]) {
               const rawText = data.candidates[0].content.parts[0].text;
-              customRefactoredCode.value = rawText.replace(/```javascript/g, "").replace(/```js/g, "").replace(/```/g, "").trim();
+              customRefactoredCode.value = rawText
+                .replace(/```javascript/g, "")
+                .replace(/```js/g, "")
+                .replace(/```/g, "")
+                .trim();
               
               quickEditMode.value = false;
               currentStep.value = 6;
             } else {
-              alert("Gemini API error. Please check your API key or prompt.");
+              console.error("Gemini Response Error:", data);
+              alert(`API Error (${res.status}): ${data.error ? data.error.message : 'Unknown response from server'}`);
             }
           } catch (e) {
-            alert("Failed to modify code via Gemini API. Network or API error.");
+            console.error("Fetch error:", e);
+            alert("Network or API call error. Please check browser console (F12).");
           } finally {
             isModifyingCode.value = false;
           }

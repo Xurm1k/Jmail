@@ -125,7 +125,8 @@
               <source src="./assets/videos/Api_Key.mp4" type="video/mp4">
             </video>
           </div>
-          <input v-model="form.geminiApiKey" @input="saveFormData" type="password" :placeholder="t('geminiKeyPlaceholder')" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
+          <input v-model="form.geminiApiKey" type="password" :placeholder="t('geminiKeyPlaceholder')" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none">
+          <p class="text-xs text-slate-400 mt-2">{{ t('privateDataNote') }}</p>
         </div>
 
         <!-- Video 4: Drive Folder -->
@@ -226,10 +227,8 @@
             <div v-for="(col, index) in form.columns" :key="index" class="flex items-center gap-2">
               <span class="text-slate-500 w-6 text-xs text-right">{{ index + 1 }}.</span>
               <input v-model="form.columns[index]" @input="saveFormData" type="text" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">
-              <button @click="removeColumn(index)" class="text-rose-400 hover:text-rose-300 px-2 font-bold cursor-pointer">✕</button>
             </div>
           </div>
-          <button @click="addColumn" class="text-xs text-blue-400 hover:underline font-medium cursor-pointer">+ {{ t('addColumnBtn') }}</button>
         </div>
 
         <div>
@@ -284,11 +283,23 @@
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('addressLabel') }}</label>
           <input v-model="form.applicant.address" @input="saveFormData" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('phoneLabel') }}</label>
+            <input v-model="form.applicant.phone" @input="saveFormData" type="tel" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('emailLabel') }}</label>
+            <input v-model="form.applicant.email" @input="saveFormData" type="email" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none">
+          </div>
+        </div>
 
         <div>
           <label class="block text-sm font-medium mb-1 text-slate-200">{{ t('resumeLabel') }}</label>
           <textarea v-model="form.applicant.resumeText" @input="saveFormData" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white text-sm outline-none"></textarea>
         </div>
+        <p class="text-xs text-slate-400">{{ t('privateDataNote') }}</p>
+        <button type="button" @click="clearSavedData" class="text-xs text-rose-300 hover:text-rose-200 underline">{{ t('clearSavedData') }}</button>
       </div>
 
       <!-- STEP 6: Code Generation & Execution Guide -->
@@ -385,6 +396,9 @@
         v4Title: "Настройка папки Anschreiben_Temp на Google Диске",
         v4Text: "В Google Sheets создайте новую таблицу, скопируйте ссылку и вставьте ниже.",
         geminiKeyPlaceholder: "Вставьте ваш Gemini API key (AQ... или AIzaSy...)",
+        privateDataNote: "Ключ API и профиль не сохраняются в хранилище браузера. Они включаются в скопированный код. При работе скрипт отправляет текст вакансий и резюме в Gemini для анализа и подготовки письма.",
+        clearSavedData: "Удалить сохранённые настройки на этом устройстве",
+        clearSavedConfirm: "Удалить сохранённые настройки? Введённые данные в этой вкладке будут очищены.",
         driveFolderPlaceholder: "Вставьте ссылку на папку Google Drive...",
         step3Title: "Шаг 3: Логистика, Транспорт и Match Score",
         step3Desc: "Выберите тип транспорта, лимит времени в пути и порог подходящих вакансий.",
@@ -412,6 +426,8 @@
         fullNameLabel: "ФИО / Полное имя",
         targetLangLabel: "Язык документов",
         addressLabel: "Полный адрес и контакты",
+        phoneLabel: "Телефон",
+        emailLabel: "Электронная почта",
         resumeLabel: "Описание опыта и навыков из резюме",
         step6Title: "Шаг 6: Ваш Code.gs готов!",
         v5Title: "Вставка скрипта в Google Apps Script",
@@ -442,6 +458,9 @@
         v4Title: "Налаштування папки Anschreiben_Temp в Google Drive",
         v4Text: "Вставте посилання на таблицю Google Sheets нижче.",
         geminiKeyPlaceholder: "Вставте ключ Gemini API (AQ... або AIzaSy...)",
+        privateDataNote: "Ключ API та профіль не зберігаються у браузері. Вони включаються до скопійованого коду. Під час роботи скрипт надсилає текст вакансій і резюме до Gemini для аналізу та підготовки листа.",
+        clearSavedData: "Видалити збережені налаштування на цьому пристрої",
+        clearSavedConfirm: "Видалити збережені налаштування? Дані в цій вкладці буде очищено.",
         driveFolderPlaceholder: "Вставте посилання на папку Google Drive...",
         step3Title: "Крок 3: Логістика, Транспорт та Match Score",
         step3Desc: "Оберіть вид транспорту, ліміт часу в дорозі та поріг відповідних вакансій.",
@@ -469,6 +488,8 @@
         fullNameLabel: "ПІБ / Повне ім'я",
         targetLangLabel: "Мова документів",
         addressLabel: "Повна адреса та контакти",
+        phoneLabel: "Телефон",
+        emailLabel: "Електронна пошта",
         resumeLabel: "Опис досвіду та навичок з резюме",
         step6Title: "Крок 6: Ваш Code.gs готовий!",
         v5Title: "Вставка скрипта в Google Apps Script",
@@ -499,6 +520,9 @@
         v4Title: "Setting Up Google Drive Anschreiben_Temp Folder",
         v4Text: "Paste your Google Spreadsheet link below.",
         geminiKeyPlaceholder: "Paste your Gemini API key (AQ... or AIzaSy...)",
+        privateDataNote: "Your API key and profile are not saved in browser storage. They are included in the copied code. When the script runs, it sends job email text and your resume to Gemini for analysis and letter drafting.",
+        clearSavedData: "Clear saved settings on this device",
+        clearSavedConfirm: "Clear saved settings? Values entered in this tab will be cleared.",
         driveFolderPlaceholder: "Paste full Google Drive folder link here...",
         step3Title: "Step 3: Logistics, Commute Mode & Match Score",
         step3Desc: "Specify transport preference, max travel limit, and match threshold.",
@@ -526,6 +550,8 @@
         fullNameLabel: "Full Name",
         targetLangLabel: "Target Language for Documents",
         addressLabel: "Full Address & Contact Info",
+        phoneLabel: "Phone",
+        emailLabel: "Email",
         resumeLabel: "Resume / CV Experience Directions",
         step6Title: "Step 6: Your Code.gs is Ready!",
         v5Title: "Pasting Script into Google Apps Script",
@@ -556,6 +582,9 @@
         v4Title: "Google Drive Ordner einrichten",
         v4Text: "Fügen Sie den Freigabelink Ihrer Google Tabelle unten ein.",
         geminiKeyPlaceholder: "Gemini API-Schlüssel einfügen (AQ... oder AIzaSy...)",
+        privateDataNote: "API-Schlüssel und Profil werden nicht im Browserspeicher gespeichert. Sie sind im kopierten Code enthalten. Bei der Ausführung sendet das Script den Text der Stellenanzeigen und Ihren Lebenslauf zur Analyse und Erstellung des Anschreibens an Gemini.",
+        clearSavedData: "Gespeicherte Einstellungen auf diesem Gerät löschen",
+        clearSavedConfirm: "Gespeicherte Einstellungen löschen? Die Eingaben in diesem Tab werden entfernt.",
         driveFolderPlaceholder: "Vollständigen Google Drive Link einfügen...",
         step3Title: "Schritt 3: Logistik, Transport & Match-Score",
         step3Desc: "Legen Sie Transportmittel (ÖPNV <60 Min ab 60386) und Mindest-Score fest.",
@@ -583,6 +612,8 @@
         fullNameLabel: "Vollständiger Name",
         targetLangLabel: "Zielsprache für Dokumente",
         addressLabel: "Adresse & Kontaktdaten",
+        phoneLabel: "Telefon",
+        emailLabel: "E-Mail",
         resumeLabel: "Erfahrung & Fertigkeiten aus dem Lebenslauf",
         step6Title: "Schritt 6: Ihr Code.gs ist fertig!",
         v5Title: "Script in Google Apps Script einfügen",
@@ -613,6 +644,9 @@
         v4Title: "Configuración de carpeta en Google Drive",
         v4Text: "Pega el enlace de Google Sheets abajo.",
         geminiKeyPlaceholder: "Pega tu Gemini API key (AQ... o AIzaSy...)",
+        privateDataNote: "La clave API y el perfil no se guardan en el navegador. Se incluyen en el código copiado. Al ejecutarse, el script envía el texto de las ofertas y el CV a Gemini para analizarlos y redactar la carta.",
+        clearSavedData: "Borrar los ajustes guardados en este dispositivo",
+        clearSavedConfirm: "¿Borrar los ajustes guardados? Se borrarán los datos introducidos en esta pestaña.",
         driveFolderPlaceholder: "Pega el enlace de Google Drive...",
         step3Title: "Paso 3: Logística, Transporte y Coincidencia",
         step3Desc: "Define transporte (ÖPNV <60 min), tiempo máx y umbral de coincidencia.",
@@ -640,6 +674,8 @@
         fullNameLabel: "Nombre completo",
         targetLangLabel: "Idioma de los documentos",
         addressLabel: "Dirección completa y contacto",
+        phoneLabel: "Teléfono",
+        emailLabel: "Correo electrónico",
         resumeLabel: "Experiencia y habilidades del CV",
         step6Title: "Paso 6: ¡Tu Code.gs está listo!",
         v5Title: "Pegar código en Google Apps Script",
@@ -670,6 +706,9 @@
         v4Title: "Configuration du dossier Google Drive",
         v4Text: "Collez le lien Google Sheets ci-dessous.",
         geminiKeyPlaceholder: "Collez votre clé API Gemini (AQ... ou AIzaSy...)",
+        privateDataNote: "La clé API et le profil ne sont pas enregistrés dans le navigateur. Ils sont inclus dans le code copié. Lors de son exécution, le script envoie le texte des offres et votre CV à Gemini pour l’analyse et la rédaction de la lettre.",
+        clearSavedData: "Effacer les paramètres enregistrés sur cet appareil",
+        clearSavedConfirm: "Effacer les paramètres enregistrés ? Les données saisies dans cet onglet seront supprimées.",
         driveFolderPlaceholder: "Collez le lien Google Drive...",
         step3Title: "Étape 3 : Logistique, Transport & Score de correspondance",
         step3Desc: "Définissez le mode de transport (ÖPNV <60 min), le temps max et le score IA.",
@@ -697,6 +736,8 @@
         fullNameLabel: "Nom complet",
         targetLangLabel: "Langue des documents",
         addressLabel: "Adresse complète et contacts",
+        phoneLabel: "Téléphone",
+        emailLabel: "E-mail",
         resumeLabel: "Expérience et compétences du CV",
         step6Title: "Étape 6 : Votre Code.gs est prêt !",
         v5Title: "Insertion du script dans Google Apps Script",
@@ -727,6 +768,9 @@
         v4Title: "Konfiguracja folderu na Google Drive",
         v4Text: "Wklej link do arkusza Google Sheets poniżej.",
         geminiKeyPlaceholder: "Wklej swój klucz Gemini API (AQ... lub AIzaSy...)",
+        privateDataNote: "Klucz API i profil nie są zapisywane w przeglądarce. Są umieszczane w kopiowanym kodzie. Podczas działania skrypt wysyła treść ofert i CV do Gemini w celu analizy i przygotowania listu.",
+        clearSavedData: "Wyczyść zapisane ustawienia na tym urządzeniu",
+        clearSavedConfirm: "Wyczyścić zapisane ustawienia? Dane wpisane w tej karcie zostaną usunięte.",
         driveFolderPlaceholder: "Wklej pełny link do Google Drive...",
         step3Title: "Krok 3: Logistyka, Transport i Próg dopasowania",
         step3Desc: "Określ środek transportu (ÖPNV <60 min), limit czasu dojazdu i wynik AI.",
@@ -754,6 +798,8 @@
         fullNameLabel: "Imię i nazwisko",
         targetLangLabel: "Język dokumentów",
         addressLabel: "Pełny adres i kontakt",
+        phoneLabel: "Telefon",
+        emailLabel: "E-mail",
         resumeLabel: "Doświadczenie i umiejętności z CV",
         step6Title: "Krok 6: Twój Code.gs jest gotowy!",
         v5Title: "Wklejanie skryptu do Google Apps Script",
@@ -770,13 +816,13 @@
     };
 
     const localizedPresets = {
-      EN: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Manual Labor", "Warehouse Worker"], fullName: "Oleksandr Kurmoiartsev", address: "Sample Street 1, 60386 Frankfurt am Main", resumeText: "Experience in Customer Experience, process optimization, QA testing, and AI automation..." },
-      DE: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Körperliche Arbeit", "Lagerhelfer"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt am Main", resumeText: "Berufserfahrung im Bereich Customer Experience, Prozessoptimierung, QA-Testing und KI-Automatisierung..." },
-      UA: { postcode: "60386", city: "Франкфурт-на-Майні", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Аналітик даних", "Оператор кол-центру", "Фізична праця", "Працівник складу"], fullName: "Олександр Курмоярцев", address: "Musterstraße 1, 60386 Франкфурт-на-Майні", resumeText: "Досвід у сфері Customer Experience, оптимізації процесів, QA тестування та автоматизації штучного інтелекту..." },
-      RU: { postcode: "60386", city: "Франкфурт-на-Майне", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Физический труд", "Рабочий на склад"], fullName: "Олександр Курмоярцев", address: "Musterstraße 1, 60386 Франкфурт-на-Майне", resumeText: "Опыт в области Customer Experience, оптимизации процессов, QA-тестирования и авто-процессов с ИИ..." },
-      ES: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analista de datos", "Agente de call center", "Trabajo manual", "Mozo de almacén"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt am Main", resumeText: "Experiencia en Customer Experience, optimización de procesos, QA testing y automatización IA..." },
-      FR: { postcode: "60386", city: "Francfort-sur-le-Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analyste de données", "Agent de centre d'appels", "Travail manuel", "Manutentionnaire"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Francfort-sur-le-Main", resumeText: "Expérience en Customer Experience, optimisation des processus, QA testing et automatisation IA..." },
-      PL: { postcode: "60386", city: "Frankfurt nad Menem", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analityk danych", "Pracownik call center", "Praca fizyczna", "Pracownik magazynu"], fullName: "Oleksandr Kurmoiartsev", address: "Musterstraße 1, 60386 Frankfurt nad Menem", resumeText: "Doświadczenie w Customer Experience, optymalizacji procesów, testowaniu QA i automatyzacji AI..." }
+      EN: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Manual Labor", "Warehouse Worker"] },
+      DE: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Körperliche Arbeit", "Lagerhelfer"] },
+      UA: { postcode: "60386", city: "Франкфурт-на-Майні", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Аналітик даних", "Оператор кол-центру", "Фізична праця", "Працівник складу"] },
+      RU: { postcode: "60386", city: "Франкфурт-на-Майне", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Data Analyst", "Call Center Agent", "Физический труд", "Рабочий на склад"] },
+      ES: { postcode: "60386", city: "Frankfurt am Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analista de datos", "Agente de call center", "Trabajo manual", "Mozo de almacén"] },
+      FR: { postcode: "60386", city: "Francfort-sur-le-Main", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analyste de données", "Agent de centre d'appels", "Travail manuel", "Manutentionnaire"] },
+      PL: { postcode: "60386", city: "Frankfurt nad Menem", inbox: "Bew./Job-Alerts", done: "Bew./Fertig", blacklist: ["Analityk danych", "Pracownik call center", "Praca fizyczna", "Pracownik magazynu"] }
     };
 
     const defaultColumnsByLang = {
@@ -832,26 +878,52 @@
             doneLabel: 'Bew./Fertig'
           },
           applicant: {
-            fullName: 'Oleksandr Kurmoiartsev',
-            address: 'Musterstraße 1, 60386 Frankfurt am Main',
-            phone: '+49 123 456789',
-            email: 'applicant@example.com',
-            resumeText: preset.value.resumeText
+            fullName: '',
+            address: '',
+            phone: '',
+            email: '',
+            resumeText: ''
           }
         });
 
         const saveFormData = () => {
-          localStorage.setItem('jmail_form_data', JSON.stringify(form.value));
+          const savedForm = JSON.parse(JSON.stringify(form.value));
+          savedForm.geminiApiKey = "";
+          savedForm.applicant.fullName = "";
+          savedForm.applicant.address = "";
+          savedForm.applicant.phone = "";
+          savedForm.applicant.email = "";
+          savedForm.applicant.resumeText = "";
+          localStorage.setItem("jmail_form_data", JSON.stringify(savedForm));
         };
 
         const loadSavedFormData = () => {
-          const saved = localStorage.getItem('jmail_form_data');
-          if (saved) {
-            try {
-              form.value = { ...form.value, ...JSON.parse(saved) };
-            } catch(e) {}
+          const saved = localStorage.getItem("jmail_form_data");
+          if (!saved) return;
+          try {
+            const parsed = JSON.parse(saved);
+            form.value = {
+              ...form.value, ...parsed,
+              logistics: { ...form.value.logistics, ...(parsed.logistics || {}) },
+              filters: { ...form.value.filters, ...(parsed.filters || {}) },
+              gmail: { ...form.value.gmail, ...(parsed.gmail || {}) },
+              applicant: { ...form.value.applicant, ...(parsed.applicant || {}) },
+              columns: Array.isArray(parsed.columns) && parsed.columns.length === 9 ? parsed.columns : form.value.columns
+            };
+            form.value.geminiApiKey = "";
+            form.value.applicant = { fullName: "", address: "", phone: "", email: "", resumeText: "" };
+            saveFormData();
+          } catch(e) { localStorage.removeItem("jmail_form_data"); }
+        };
+
+        const clearSavedData = () => {
+          if (window.confirm(t("clearSavedConfirm"))) {
+            localStorage.removeItem("jmail_form_data");
+            localStorage.removeItem("jmail_lang");
+            window.location.reload();
           }
         };
+
 
         onMounted(() => {
           loadSavedFormData();
@@ -867,9 +939,6 @@
             form.value.gmail.inboxLabel = p.inbox;
             form.value.gmail.doneLabel = p.done;
             form.value.filters.blacklistKeywords = [...p.blacklist];
-            form.value.applicant.fullName = p.fullName;
-            form.value.applicant.address = p.address;
-            form.value.applicant.resumeText = p.resumeText;
             form.value.columns = [...(defaultColumnsByLang[currentLang.value] || defaultColumnsByLang['RU'])];
           }
         };
@@ -890,14 +959,6 @@
           return selectedLanguageOption.value === 'CUSTOM' ? (customLanguageInput.value || 'German') : selectedLanguageOption.value;
         });
 
-        const addColumn = () => {
-          form.value.columns.push('Column ' + (form.value.columns.length + 1));
-          saveFormData();
-        };
-        const removeColumn = (idx) => {
-          form.value.columns.splice(idx, 1);
-          saveFormData();
-        };
 
         const addBlacklistWord = () => {
           if (newBlacklistWord.value.trim()) {
@@ -911,10 +972,10 @@
           saveFormData();
         };
 
-        // Ultimate Code Generator (Synced with Oleksandr's Proven Script Logic)
         const standardGeneratedCode = computed(() => {
           const f = form.value;
-          const colsJson = JSON.stringify(f.columns, null, 2);
+          const columns = Array.isArray(f.columns) && f.columns.length === 9 ? f.columns : (defaultColumnsByLang[currentLang.value] || defaultColumnsByLang['RU']);
+          const colsJson = JSON.stringify(columns, null, 2);
           const blacklistJson = JSON.stringify(f.filters.blacklistKeywords);
           const resumeJson = JSON.stringify(f.applicant.resumeText);
 
@@ -922,31 +983,30 @@
             '/**',
             ' * AUTOMATICALLY GENERATED JOB AUTOMATION SCRIPT FOR GOOGLE WORKSPACE',
             ' * Generated via: Jmail Wizard',
-            ' * Applicant: ' + f.applicant.fullName,
             ' */',
             '',
             'const CONFIG = {',
-            '  GEMINI_API_KEY: "' + f.geminiApiKey + '",',
+            '  GEMINI_API_KEY: ' + JSON.stringify(f.geminiApiKey) + ',',
             '  DRIVE_FOLDER_NAME: "Anschreiben_Temp",',
-            '  DRIVE_FOLDER_ID: "' + f.driveFolderId + '",',
-            '  HOME_POSTCODE: "' + f.logistics.homePostcode + '",',
-            '  CITY: "' + f.logistics.city + '",',
-            '  TRANSPORT_MODE: "' + f.logistics.transportMode + '",',
+            '  DRIVE_FOLDER_ID: ' + JSON.stringify(f.driveFolderId) + ',',
+            '  HOME_POSTCODE: ' + JSON.stringify(f.logistics.homePostcode) + ',',
+            '  CITY: ' + JSON.stringify(f.logistics.city) + ',',
+            '  TRANSPORT_MODE: ' + JSON.stringify(f.logistics.transportMode) + ',',
             '  MAX_TRAVEL_MINUTES: ' + (f.logistics.transportMode === 'NO_LIMIT' ? 999 : f.logistics.maxTravelMinutes) + ',',
             '  MIN_MATCH_SCORE: ' + f.minMatchScore + ',',
             '  ',
             '  COLUMNS: ' + colsJson + ',',
             '  BLACKLIST_KEYWORDS: ' + blacklistJson + ',',
-            '  TARGET_LANGUAGE: "' + targetLanguage.value + '",',
+            '  TARGET_LANGUAGE: ' + JSON.stringify(targetLanguage.value) + ',',
             '  ',
-            '  GMAIL_INBOX_LABEL: "' + f.gmail.inboxLabel + '",',
-            '  GMAIL_DONE_LABEL: "' + f.gmail.doneLabel + '",',
+            '  GMAIL_INBOX_LABEL: ' + JSON.stringify(f.gmail.inboxLabel) + ',',
+            '  GMAIL_DONE_LABEL: ' + JSON.stringify(f.gmail.doneLabel) + ',',
             '  ',
             '  APPLICANT: {',
-            '    NAME: "' + f.applicant.fullName + '",',
-            '    ADDRESS: "' + f.applicant.address + '",',
-            '    PHONE: "' + f.applicant.phone + '",',
-            '    EMAIL: "' + f.applicant.email + '",',
+            '    NAME: ' + JSON.stringify(f.applicant.fullName) + ',',
+            '    ADDRESS: ' + JSON.stringify(f.applicant.address) + ',',
+            '    PHONE: ' + JSON.stringify(f.applicant.phone) + ',',
+            '    EMAIL: ' + JSON.stringify(f.applicant.email) + ',',
             '    RESUME_TEXT: ' + resumeJson,
             '  }',
             '};',
@@ -974,7 +1034,7 @@
             '    if (userInstruction) {',
             '      ui.alert("⌛ Gemini обрабатывает ваш запрос... Пожалуйста, подождите несколько секунд.");',
             '      applySelfRefactor(userInstruction);',
-            '    }',
+              '    }',
             '  }',
             '}',
             '',
@@ -983,10 +1043,11 @@
             '  const ui = SpreadsheetApp.getUi();',
             '  const activeConf = getActiveConfig();',
             '  const isBearer = activeConf.GEMINI_API_KEY.startsWith("AQ.") || activeConf.GEMINI_API_KEY.startsWith("ya29.");',
-            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(activeConf.GEMINI_API_KEY);',
+            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";',
             '  ',
-            '  const prompt = "You are an AI assistant updating settings for a Job Automation Script.\\n\\nCurrent Settings JSON:\\n" + JSON.stringify(activeConf) + "\\n\\nUser Request: " + instruction + "\\n\\nReturn ONLY valid JSON with updated settings parameters (GEMINI_API_KEY, BLACKLIST_KEYWORDS, MAX_TRAVEL_MINUTES, MIN_MATCH_SCORE, TARGET_LANGUAGE). Do NOT return code, only JSON.";',
-            '  const payload = { contents: [{ parts: [{ text: prompt }] }] };',
+            '  const editableSettings = { BLACKLIST_KEYWORDS: activeConf.BLACKLIST_KEYWORDS, MAX_TRAVEL_MINUTES: activeConf.MAX_TRAVEL_MINUTES, MIN_MATCH_SCORE: activeConf.MIN_MATCH_SCORE, TARGET_LANGUAGE: activeConf.TARGET_LANGUAGE };',
+            '  const prompt = "Update only allowed job-search settings. Never return secrets, personal data, or code.\\nCurrent settings: " + JSON.stringify(editableSettings) + "\\nUser request: " + instruction + "\\nReturn JSON with only BLACKLIST_KEYWORDS, MAX_TRAVEL_MINUTES, MIN_MATCH_SCORE, TARGET_LANGUAGE.";',
+            '  const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };',
             '  const headers = { "Content-Type": "application/json" };',
             '  if (isBearer) { headers["Authorization"] = "Bearer " + activeConf.GEMINI_API_KEY; }',
             '  else { headers["x-goog-api-key"] = activeConf.GEMINI_API_KEY; }',
@@ -994,10 +1055,15 @@
             '  try {',
             '    const options = { method: "post", contentType: "application/json", headers: headers, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '    const res = UrlFetchApp.fetch(url, options);',
+            '    if (res.getResponseCode() < 200 || res.getResponseCode() >= 300) throw new Error("Gemini HTTP " + res.getResponseCode());',
             '    const data = JSON.parse(res.getContentText());',
             '    const rawText = data.candidates[0].content.parts[0].text.replace(/```json/g, "").replace(/```/g, "").trim();',
-            '    const updatedSettings = JSON.parse(rawText);',
-            '    ',
+            '    const proposed = JSON.parse(rawText);',
+            '    if (!Array.isArray(proposed.BLACKLIST_KEYWORDS) || proposed.BLACKLIST_KEYWORDS.some(word => typeof word !== "string") ||',
+            '        !Number.isFinite(proposed.MAX_TRAVEL_MINUTES) || proposed.MAX_TRAVEL_MINUTES < 15 || proposed.MAX_TRAVEL_MINUTES > 90 ||',
+            '        !Number.isFinite(proposed.MIN_MATCH_SCORE) || proposed.MIN_MATCH_SCORE < 50 || proposed.MIN_MATCH_SCORE > 95 ||',
+            '        typeof proposed.TARGET_LANGUAGE !== "string" || proposed.TARGET_LANGUAGE.length > 40) throw new Error("Invalid settings response.");',
+            '    const updatedSettings = { BLACKLIST_KEYWORDS: proposed.BLACKLIST_KEYWORDS, MAX_TRAVEL_MINUTES: proposed.MAX_TRAVEL_MINUTES, MIN_MATCH_SCORE: proposed.MIN_MATCH_SCORE, TARGET_LANGUAGE: proposed.TARGET_LANGUAGE };',
             '    const scriptProperties = PropertiesService.getScriptProperties();',
             '    scriptProperties.setProperty("CUSTOM_CONFIG", JSON.stringify(updatedSettings));',
             '    ui.alert("✅ Настройки успешно обновлены! Gemini применил ваши изменения.");',
@@ -1008,10 +1074,17 @@
             '',
             'function getActiveConfig() {',
             '  try {',
-            '    const saved = PropertiesService.getScriptProperties().getProperty("CUSTOM_CONFIG");',
+            '    const scriptProperties = PropertiesService.getScriptProperties();',
+            '    const saved = scriptProperties.getProperty("CUSTOM_CONFIG");',
             '    if (saved) {',
             '      const custom = JSON.parse(saved);',
-            '      return Object.assign({}, CONFIG, custom);',
+            '      const safeCustom = {};',
+            '      if (Array.isArray(custom.BLACKLIST_KEYWORDS) && custom.BLACKLIST_KEYWORDS.length <= 100 && custom.BLACKLIST_KEYWORDS.every(word => typeof word === "string" && word.length <= 100)) safeCustom.BLACKLIST_KEYWORDS = custom.BLACKLIST_KEYWORDS;',
+            '      if (Number.isFinite(custom.MAX_TRAVEL_MINUTES) && custom.MAX_TRAVEL_MINUTES >= 15 && custom.MAX_TRAVEL_MINUTES <= 90) safeCustom.MAX_TRAVEL_MINUTES = custom.MAX_TRAVEL_MINUTES;',
+            '      if (Number.isFinite(custom.MIN_MATCH_SCORE) && custom.MIN_MATCH_SCORE >= 50 && custom.MIN_MATCH_SCORE <= 95) safeCustom.MIN_MATCH_SCORE = custom.MIN_MATCH_SCORE;',
+            '      if (typeof custom.TARGET_LANGUAGE === "string" && custom.TARGET_LANGUAGE.length <= 40) safeCustom.TARGET_LANGUAGE = custom.TARGET_LANGUAGE;',
+            '      scriptProperties.setProperty("CUSTOM_CONFIG", JSON.stringify(safeCustom));',
+            '      return Object.assign({}, CONFIG, safeCustom);',
             '    }',
             '  } catch(e) {}',
             '  return CONFIG;',
@@ -1031,19 +1104,20 @@
             '  if (threads.length === 0) return;',
             '',
             '  const recentApplications = getRecentApplicationsFromSheet(90);',
-            '  const currentDate = Utilities.formatDate(new Date(), "GMT+2", "dd.MM.yyyy");',
+            '  const currentDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd.MM.yyyy");',
             '  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();',
             '  ensureSheetHeaders(sheet, activeConf);',
             '',
             '  for (let thread of threads) {',
-            '    const messages = thread.getMessages();',
+            '    try {',
+            '      const messages = thread.getMessages();',
             '    const lastMessage = messages[messages.length - 1];',
             '    const emailBody = lastMessage.getPlainBody();',
             '    const emailSubject = lastMessage.getSubject();',
             '',
             '    if (isAutoReply(emailSubject, emailBody)) {',
-            '      thread.moveToTrash();',
-            '      continue;',
+                '        thread.moveToTrash();',
+                '        continue;',
             '    }',
             '',
             '    if (containsBlacklistKeywords(emailSubject + " " + emailBody, activeConf)) {',
@@ -1052,7 +1126,7 @@
             '    }',
             '',
             '    const analysis = analyzeJobWithGemini(emailSubject, emailBody, currentDate, recentApplications, activeConf);',
-            '    if (!analysis || !analysis.isSuitable || analysis.matchScore < activeConf.MIN_MATCH_SCORE) {',
+            '      if (!analysis.isSuitable || analysis.matchScore < activeConf.MIN_MATCH_SCORE) {',
             '      thread.moveToTrash();',
             '      continue;',
             '    }',
@@ -1069,11 +1143,14 @@
             '      analysis.jobUrl || "From Email",',
             '      "Anschreiben PDF Saved"',
             '    ];',
-            '    sheet.appendRow(rowData);',
             '',
             '    generateAndSaveAnschreibenPdf(analysis, currentDate, activeConf);',
+            '    sheet.appendRow(rowData);',
             '    thread.addLabel(doneLabel);',
             '    thread.removeLabel(inboxLabel);',
+            '    } catch (e) {',
+            '      Logger.log("Processing failed for thread " + thread.getId() + "; keeping it under the input label for the next scheduled run: " + e.message);',
+            '    }',
             '  }',
             '}',
             '',
@@ -1109,7 +1186,7 @@
             '      }',
             '    }',
             '    return applications;',
-            '  } catch (e) { return []; }',
+            '  } catch (e) { throw new Error("Could not read application history: " + e.message); }',
             '}',
             '',
             'function parseSheetDate(raw) {',
@@ -1135,7 +1212,7 @@
             '',
             'function analyzeJobWithGemini(subject, body, currentDate, recentApplications, conf) {',
             '  const isBearer = conf.GEMINI_API_KEY.startsWith("AQ.") || conf.GEMINI_API_KEY.startsWith("ya29.");',
-            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(conf.GEMINI_API_KEY);',
+            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";',
             '  ',
             '  const modeConstraint = conf.TRANSPORT_MODE === "NO_LIMIT" ? "No location restrictions." : "Max " + conf.MAX_TRAVEL_MINUTES + " mins via " + conf.TRANSPORT_MODE + " from " + conf.HOME_POSTCODE + ".";',
             '  const prompt = "You are an expert Senior Technical Recruiter and Career Agent for " + conf.APPLICANT.NAME + ". Evaluate if this vacancy fits the profile.\\n\\nApplicant Background:\\n" + conf.APPLICANT.RESUME_TEXT + "\\n\\n3-MONTH APPLICATION HISTORY (SKIP DUPLICATES):\\n" + JSON.stringify(recentApplications) + "\\n\\nSubject: " + subject + "\\nBody: " + body + "\\n\\nConstraints: " + modeConstraint + " Exclude: " + conf.BLACKLIST_KEYWORDS.join(", ") + ". Rate match score (0-100). Return valid JSON: {isSuitable: bool, matchScore: number, companyName: string, jobTitle: string, location: string, travelTimeMinutes: number, salary: string, jobUrl: string, notes: string}.";',
@@ -1148,11 +1225,14 @@
             '  const options = { method: "post", contentType: "application/json", headers: headers, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
             '    const response = UrlFetchApp.fetch(url, options);',
+            '    if (response.getResponseCode() < 200 || response.getResponseCode() >= 300) throw new Error("Gemini HTTP " + response.getResponseCode());',
             '    const json = JSON.parse(response.getContentText());',
             '    const rawText = json.candidates[0].content.parts[0].text;',
             '    const cleanJsonText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();',
-            '    return JSON.parse(cleanJsonText);',
-            '  } catch (e) { return null; }',
+            '    const result = JSON.parse(cleanJsonText);',
+            '    if (typeof result.isSuitable !== "boolean" || !Number.isFinite(result.matchScore) || result.matchScore < 0 || result.matchScore > 100) throw new Error("Invalid vacancy assessment.");',
+            '    return result;',
+            '  } catch (e) { throw new Error("Vacancy analysis failed: " + e.message); }',
             '}',
             '',
             'function getOrCreateTargetFolder(conf) {',
@@ -1168,15 +1248,19 @@
             '  const folder = getOrCreateTargetFolder(conf);',
             '  const letterText = generateWithGemini("Write a DIN 5008 compliant Cover Letter (Anschreiben) in " + conf.TARGET_LANGUAGE + " for " + conf.APPLICANT.NAME + " applying for " + jobData.jobTitle + " at " + jobData.companyName + ". Avoid AI clichés. Background: " + conf.APPLICANT.RESUME_TEXT, conf);',
             '  ',
-            '  const htmlContent = "<html><head><style>body{font-family:Helvetica,Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#222;}.sender{font-size:9pt;color:#555;border-bottom:2px solid #1a365d;padding-bottom:6px;margin-bottom:30px;}.recipient{margin-bottom:30px;line-height:1.4;}.date{text-align:right;margin-bottom:25px;font-size:10pt;color:#444;}.subject{font-size:12pt;font-weight:bold;margin-bottom:20px;color:#1a365d;}.content{text-align:justify;white-space:pre-line;}</style></head><body><div class=\\"sender\\"><strong>" + conf.APPLICANT.NAME + "</strong> • " + conf.APPLICANT.ADDRESS + "<br>Telefon: " + conf.APPLICANT.PHONE + " • E-Mail: " + conf.APPLICANT.EMAIL + "</div><div class=\\"recipient\\">An die Personalabteilung<br><strong>" + jobData.companyName + "</strong><br>" + jobData.location + "</div><div class=\\"date\\">" + conf.CITY + ", den " + currentDate + "</div><div class=\\"subject\\">Bewerbung als " + jobData.jobTitle + "</div><div class=\\"content\\">" + letterText + "</div></body></html>";',
+            '  const htmlContent = `<html><head><meta charset="UTF-8"><style>body{font-family:Helvetica,Arial,sans-serif;font-size:11pt;line-height:1.5;margin:40px;color:#222;}.sender{font-size:9pt;color:#555;border-bottom:2px solid #1a365d;padding-bottom:6px;margin-bottom:30px;}.recipient{margin-bottom:30px;line-height:1.4;}.date{text-align:right;margin-bottom:25px;font-size:10pt;color:#444;}.subject{font-size:12pt;font-weight:bold;margin-bottom:20px;color:#1a365d;}.content{text-align:justify;white-space:pre-line;}</style></head><body><div class="sender"><strong>${escapeHtml(conf.APPLICANT.NAME)}</strong> • ${escapeHtml(conf.APPLICANT.ADDRESS)}<br>Telefon: ${escapeHtml(conf.APPLICANT.PHONE)} • E-Mail: ${escapeHtml(conf.APPLICANT.EMAIL)}</div><div class="recipient">An die Personalabteilung<br><strong>${escapeHtml(jobData.companyName)}</strong><br>${escapeHtml(jobData.location)}</div><div class="date">${escapeHtml(conf.CITY)}, den ${escapeHtml(currentDate)}</div><div class="subject">Bewerbung als ${escapeHtml(jobData.jobTitle)}</div><div class="content">${escapeHtml(letterText)}</div></body></html>`;',
             '  ',
             '  const pdfBlob = Utilities.newBlob(htmlContent, "text/html").getAs("application/pdf").setName("Anschreiben_" + jobData.companyName.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");',
             '  folder.createFile(pdfBlob);',
             '}',
             '',
+            'function escapeHtml(value) {',
+            '  return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\x27/g, "&#39;");',
+            '}',
+            '',
             'function generateWithGemini(promptText, conf) {',
             '  const isBearer = conf.GEMINI_API_KEY.startsWith("AQ.") || conf.GEMINI_API_KEY.startsWith("ya29.");',
-            '  const url = isBearer ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" : "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(conf.GEMINI_API_KEY);',
+            '  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";',
             '  ',
             '  const payload = { contents: [{ parts: [{ text: promptText }] }] };',
             '  const headers = { "Content-Type": "application/json" };',
@@ -1186,9 +1270,12 @@
             '  const options = { method: "post", contentType: "application/json", headers: headers, payload: JSON.stringify(payload), muteHttpExceptions: true };',
             '  try {',
             '    const response = UrlFetchApp.fetch(url, options);',
+            '    if (response.getResponseCode() < 200 || response.getResponseCode() >= 300) throw new Error("Gemini HTTP " + response.getResponseCode());',
             '    const json = JSON.parse(response.getContentText());',
-            '    return json.candidates[0].content.parts[0].text.trim();',
-            '  } catch (e) { return "Generated Document Content"; }',
+            '    const text = json.candidates[0].content.parts[0].text.trim();',
+            '    if (!text) throw new Error("Gemini returned an empty document.");',
+            '    return text;',
+            '  } catch (e) { throw new Error("Document generation failed: " + e.message); }',
             '}'
           ].join('\n');
         });
@@ -1207,13 +1294,12 @@
           localizedTransportOptions,
           form,
           saveFormData,
+          clearSavedData,
           setTransportMode,
           handleFolderInput,
           selectedLanguageOption,
           customLanguageInput,
           newBlacklistWord,
-          addColumn,
-          removeColumn,
           addBlacklistWord,
           removeBlacklistWord,
           standardGeneratedCode,

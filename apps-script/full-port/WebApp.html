@@ -39,7 +39,7 @@
     <h2>Подключить Gemini</h2>
     <p class="small">Нужен личный ключ Google AI Studio: он хранится в закрытых настройках аккаунта и используется только для ваших запросов. Бесплатная квота может меняться; оплату включать не нужно.</p>
     <button class="secondary" id="apiGuideOpen" type="button">Как получить и добавить ключ</button>
-    <label for="apiKey">Ключ Gemini</label><input id="apiKey" type="password" autocomplete="new-password">
+    <label for="apiKey">Ключ Gemini</label><input id="apiKey" type="password" autocomplete="new-password" placeholder="Вставьте скопированный API key">
     <button onclick="saveKey()">Проверить и сохранить ключ</button>
   </div></div></section>
 
@@ -49,11 +49,11 @@
     <ol>
       <li data-guide-key="account">Откройте AI Studio под тем же отдельным Google-аккаунтом, который используется для Jmail. Не используйте основную почту.</li>
       <li data-guide-key="switch">Если открылся основной аккаунт, нажмите на аватар Google и переключитесь на отдельный рабочий аккаунт.</li>
-      <li data-guide-key="create">Нажмите «Create API key» и создайте ключ. Если появится выбор проекта, выберите или создайте проект.</li>
-      <li data-guide-key="paste">Скопируйте ключ, вернитесь в мастер, вставьте его в поле Gemini и нажмите «Проверить и сохранить».</li>
+      <li data-guide-key="create">Нажмите «Create API key».</li>
+      <li data-guide-key="project">Если появится выбор проекта, оставьте проект по умолчанию. Новый проект создавать не нужно; не подключайте оплату — используйте бесплатный вариант.</li>
+      <li data-guide-key="paste">Скопируйте ключ. Закройте это окно, вставьте его в поле «Ключ Gemini» прямо под инструкцией и нажмите «Проверить и сохранить ключ».</li>
     </ol>
-    <p data-guide-key="free">Для Gemini 3.1 Flash-Lite Google указывает бесплатную квоту. Без подключения биллинга платные запросы не выполняются; при достижении бесплатных лимитов обработка может остановиться. Не подключайте оплату и не передавайте ключ другим.</p>
-    <a class="button" data-guide-key="open" href="https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Faistudio.google.com%2Fapp%2Fapikey" target="_blank" rel="noopener">Открыть Google AI Studio</a>
+    <a class="button" data-guide-key="open" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Открыть Google AI Studio</a>
   </dialog>
 
   <section class="panel"><div class="step"><span class="num">3</span><div style="width:100%">
@@ -92,11 +92,11 @@
   };
   let currentLanguage="ru";
   const guideTranslations={
-    ru:{title:"Получить и подключить Gemini API key",account:"Откройте AI Studio под тем же отдельным Google-аккаунтом, который используется для Jmail. Не используйте основную почту.",switch:"Если открылся основной аккаунт, нажмите на аватар Google и переключитесь на отдельный рабочий аккаунт.",create:"Нажмите «Create API key» и создайте ключ. Если появится выбор проекта, выберите или создайте проект.",paste:"Скопируйте ключ, вернитесь в мастер, вставьте его в поле Gemini и нажмите «Проверить и сохранить».",free:"Для Gemini 3.1 Flash-Lite Google указывает бесплатную квоту. Без подключения биллинга платные запросы не выполняются; при достижении бесплатных лимитов обработка может остановиться. Не подключайте оплату и не передавайте ключ другим.",open:"Открыть Google AI Studio"},
-    en:{title:"Get and connect a Gemini API key",account:"Open AI Studio with the same separate Google account used for Jmail. Do not use your primary email.",switch:"If your primary account opens, click the Google profile picture and switch to your separate job-search account.",create:"Click Create API key. If asked to choose a project, select or create one.",paste:"Copy the key, return to the setup, paste it into the Gemini field, and click Verify and save.",free:"Google lists a free tier for Gemini 3.1 Flash-Lite. Without billing enabled, paid requests cannot run; processing may stop when free limits are reached. Do not enable billing or share your key.",open:"Open Google AI Studio"},
-    de:{title:"Gemini API-Schlüssel abrufen und verbinden",account:"Öffnen Sie AI Studio mit demselben separaten Google-Konto, das Sie für Jmail verwenden. Nutzen Sie nicht Ihr Hauptkonto.",switch:"Falls Ihr Hauptkonto geöffnet wird, klicken Sie auf das Google-Profilbild und wechseln Sie zum separaten Konto für die Jobsuche.",create:"Klicken Sie auf Create API key. Falls Sie ein Projekt auswählen sollen, wählen oder erstellen Sie eines.",paste:"Kopieren Sie den Schlüssel, kehren Sie zum Setup zurück, fügen Sie ihn in das Gemini-Feld ein und klicken Sie auf Prüfen und speichern.",free:"Google bietet für Gemini 3.1 Flash-Lite ein kostenloses Kontingent. Ohne aktivierte Abrechnung sind keine kostenpflichtigen Anfragen möglich; bei Erreichen des Limits kann die Verarbeitung stoppen. Aktivieren Sie keine Abrechnung und teilen Sie den Schlüssel nicht.",open:"Google AI Studio öffnen"}
+    ru:{title:"Получить и подключить Gemini API key",account:"Откройте AI Studio под тем же отдельным Google-аккаунтом, который используется для Jmail. Не используйте основную почту.",switch:"Если открылся основной аккаунт, нажмите на аватар Google и переключитесь на отдельный рабочий аккаунт.",create:"Нажмите «Create API key».",project:"Если появится выбор проекта, оставьте проект по умолчанию. Новый проект создавать не нужно; не подключайте оплату — используйте бесплатный вариант.",paste:"Скопируйте ключ. Закройте это окно, вставьте его в поле «Ключ Gemini» прямо под инструкцией и нажмите «Проверить и сохранить ключ».",open:"Открыть Google AI Studio"},
+    en:{title:"Get and connect a Gemini API key",account:"Open AI Studio with the same separate Google account used for Jmail. Do not use your primary email.",switch:"If your primary account opens, click the Google profile picture and switch to your separate job-search account.",create:"Click Create API key.",project:"If asked to choose a project, keep the default project. Do not create a new one or enable billing; use the free option.",paste:"Copy the key, close this guide, paste it into the Gemini key field below, and click Verify and save key.",open:"Open Google AI Studio"},
+    de:{title:"Gemini API-Schlüssel abrufen und verbinden",account:"Öffnen Sie AI Studio mit demselben separaten Google-Konto, das Sie für Jmail verwenden. Nutzen Sie nicht Ihr Hauptkonto.",switch:"Falls Ihr Hauptkonto geöffnet wird, klicken Sie auf das Google-Profilbild und wechseln Sie zum separaten Konto für die Jobsuche.",create:"Klicken Sie auf Create API key.",project:"Falls Sie ein Projekt auswählen sollen, behalten Sie das Standardprojekt bei. Erstellen Sie kein neues Projekt und aktivieren Sie keine Abrechnung; nutzen Sie die kostenlose Option.",paste:"Kopieren Sie den Schlüssel, schließen Sie diese Anleitung, fügen Sie ihn in das Gemini-Schlüsselfeld darunter ein und klicken Sie auf Schlüssel prüfen und speichern.",open:"Google AI Studio öffnen"}
   };
-  function updateGuideText(lang){document.getElementById("apiGuideTitle").textContent=guideTranslations[lang].title;document.querySelectorAll("[data-guide-key]").forEach(n=>n.textContent=guideTranslations[lang][n.dataset.guideKey]);document.getElementById("apiGuideOpen").textContent={ru:"Как получить и добавить ключ",en:"How to get and add a key",de:"Schlüssel erhalten und einfügen"}[lang];document.getElementById("apiGuideClose").textContent={ru:"Закрыть",en:"Close",de:"Schließen"}[lang]}
+  function updateGuideText(lang){document.getElementById("apiGuideTitle").textContent=guideTranslations[lang].title;document.querySelectorAll("[data-guide-key]").forEach(n=>n.textContent=guideTranslations[lang][n.dataset.guideKey]);document.getElementById("apiGuideOpen").textContent={ru:"Как получить и добавить ключ",en:"How to get and add a key",de:"Schlüssel erhalten und einfügen"}[lang];document.getElementById("apiGuideClose").textContent={ru:"Закрыть",en:"Close",de:"Schließen"}[lang];document.getElementById("apiKey").placeholder={ru:"Вставьте скопированный API key",en:"Paste your copied API key",de:"Kopierten API-Schlüssel einfügen"}[lang]}
   const textNodes=[];const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   while(walker.nextNode())textNodes.push({node:walker.currentNode,source:walker.currentNode.nodeValue.trim(),leading:walker.currentNode.nodeValue.match(/^\s*/)[0],trailing:walker.currentNode.nodeValue.match(/\s*$/)[0]});
   function translate(text){return translations[currentLanguage]?.[text]||text}
@@ -170,4 +170,5 @@
 </script>
 </body>
 </html>
+
 

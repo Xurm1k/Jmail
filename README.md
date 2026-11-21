@@ -1,29 +1,29 @@
 # Jmail
 
-**Статус: прототип в разработке; не готов к публичному подключению пользователей.**
+**Status: the public onboarding page is connected to a deployed Google Apps Script Web App, but the complete setup flow, permissions, and account isolation have not yet been verified. Treat Jmail as a prototype, not a production-ready service.**
 
-Jmail исследует, как упростить повторяющийся процесс разбора писем с вакансиями и подготовки материалов для отклика. В репозитории есть веб-интерфейс настройки и несколько вариантов Google Apps Script worker. Сценарий общего мастера и изоляции пользовательских данных пока не подтверждён полноценным публичным запуском.
+Jmail explores how to reduce repetitive work in reviewing job-alert email and preparing application materials. The repository contains a public onboarding page and several Google Apps Script worker variants. A configured Web App URL now connects the page's setup button to Google AccountChooser; this confirms the handoff is configured, not that a user setup has completed successfully.
 
-## Что задумано
+## What it is intended to do
 
-Пользователь проходит настройку под своим Google-аккаунтом, задаёт критерии и подключает собственный Gemini API key. Google Apps Script анализирует письма с вакансиями, записывает результаты и готовит материалы для проверки. Отклики автоматически не отправляются.
+A user selects their own Google account, sets criteria, and supplies a Gemini API key. Google Apps Script reviews job-alert email, records results, and prepares materials for human review. Applications are not submitted automatically.
 
-В предназначенном для общего Web App варианте выполнение должно быть настроено как **User accessing the web app**. Код в `apps-script/full-port/Code.gs` использует Apps Script User Properties для пользовательских настроек и секретов. В репозитории также остаётся отдельный legacy worker в `apps-script/Code.gs` с другим способом настройки; эти пути не взаимозаменяемы.
+The shared Web App is intended to run as **User accessing the web app**. The full-port script in `apps-script/full-port/Code.gs` uses Apps Script User Properties for account-specific settings and credentials. The repository also contains a separate legacy worker in `apps-script/Code.gs` with a different setup model; these deployment paths are not interchangeable.
 
-## Текущие ограничения
+## Current limitations
 
-- Адрес Web App в `webapp-config.js` пуст. Поэтому публичная кнопка начала настройки пока не подключена к развёрнутому Google-мастеру.
-- Реальная многопользовательская изоляция и полный пользовательский сценарий требуют проверки в отдельных тестовых аккаунтах.
-- Текущий классификатор может перемещать письма, которые сочтёт неподходящими, в Gmail Trash. Ошибка модели может скрыть подходящую вакансию. Используйте только отдельный Gmail и проверяйте первые результаты; безопасная версия должна сначала отправлять такие письма на ручную проверку.
-- Тексты писем, CV и критерии передаются Google Gemini. Не используйте данные, которые не готовы передавать этому сервису.
-- Google может показать предупреждение о непроверенном приложении до завершения OAuth-проверки владельцем.
-- Квоты и условия Gemini могут меняться.
+- The public landing page and `webapp-config.js` now contain a configured Web App URL, and the setup button routes through Google AccountChooser. The complete setup and processing path has not been verified with a dedicated test account.
+- The deployed script version, execution identity, OAuth scopes, multi-user isolation, consent, and data-retention behavior need end-to-end verification. Source code and a working link do not prove these behaviors.
+- The current classifier can move messages it considers unrelated or unsuitable to Gmail Trash. A false positive could hide a relevant vacancy. Before any wider use, replace automatic Trash actions with a review or quarantine step and a clear recovery path.
+- Email text, CV content, and criteria are sent to Google Gemini. Do not use information that you are not prepared to send to that service.
+- Google may show an unverified-app warning until the owner completes OAuth verification.
+- Gemini quotas and terms may change.
 
-## Запуск и материалы
+## Setup and materials
 
-Владелец проекта должен развернуть Apps Script Web App и настроить его адрес в `webapp-config.js`. До подключения и проверки этого адреса веб-интерфейс остаётся прототипом.
+The owner has configured a Google Apps Script Web App URL in `webapp-config.js`. Before relying on the workflow, verify the deployed version and complete setup with a dedicated Google account and a separate test Gmail inbox. Review the permissions shown by Google before granting access.
 
-- [Инструкция запуска и проверки](./LIVE_TEST_RU.md)
-- [Портфолио-кейс и статус проекта](./PORTFOLIO_CASE_STUDY.md)
+- [Setup and test instructions](./LIVE_TEST_RU.md)
+- [Portfolio case study and project status](./PORTFOLIO_CASE_STUDY.md)
 
-Синтетические скрипты в `apps-script/full-port/` используют заглушки Google API; это не подтверждение живого многопользовательского запуска.
+Synthetic scripts in `apps-script/full-port/` use Google API stubs; they do not prove a live multi-user deployment.

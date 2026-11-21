@@ -6,6 +6,8 @@ function onOpen() {
   ui.createMenu('🤖 Job Automation')
     .addItem('⚙️ Настроить профиль и критерии', 'showJmailProfileSetup')
     .addItem('🚀 Запустить обработку вакансий', 'processJobEmails')
+    .addItem('⏰ Включить ежедневный запуск', 'installJmailDailyTrigger')
+    .addItem('⏸️ Остановить ежедневный запуск', 'removeJmailDailyTrigger')
     .addItem('🧹 Очистить неподтвержденные строки и архив', 'manualCleanupAction')
     .addToUi();
 }
@@ -78,3 +80,4 @@ function manualCleanupAction() {
     SpreadsheetApp.getUi().alert("❌ Ошибка при очистке: " + err.toString());
   }
 }
+

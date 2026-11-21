@@ -1,17 +1,20 @@
 {
-  "name": "Jmail - Job Automation Wizard",
+  "name": "Jmail — помощник в поиске работы",
   "short_name": "Jmail",
-  "start_url": "./index.html",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#2563eb",
-  "description": "Generate your personalized Google Apps Script for automated job application processing.",
+  "background_color": "#f5f7f3",
+  "theme_color": "#f6f7f4",
+  "description": "Помогает оценивать вакансии из писем и готовить отклики под контролем пользователя.",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/281/281769.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "./jmail-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
 }
+

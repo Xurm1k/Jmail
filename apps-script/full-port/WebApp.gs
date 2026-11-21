@@ -58,6 +58,7 @@ function getJmailSetupStatus() {
     hasApiKey: Boolean(p.getProperty("GEMINI_API_KEY")),
     hasDataConsent: p.getProperty("GEMINI_DATA_CONSENT") === "yes",
     hasProfile: Boolean(p.getProperty("CAREER_PROFILE_JSON")),
+    dashboardUnlocked: p.getProperty("JMAIL_DASHBOARD_UNLOCKED") === "yes",
     dailyEnabled: ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === "processJobEmails" && t.getEventType() === ScriptApp.EventType.CLOCK),
     lastRun: readJmailJson_("last_run_stats", null),
     lastRunAt: p.getProperty("last_run_timestamp") || "",
@@ -68,6 +69,11 @@ function getJmailSetupStatus() {
       maxCommuteMinutes: Number(settings.maxCommuteMinutes || 60)
     }
   };
+}
+
+function markJmailDashboardUnlocked() {
+  jmailProps_().setProperty("JMAIL_DASHBOARD_UNLOCKED", "yes");
+  return true;
 }
 
 /** Removes this user's Jmail data, resources, labels, filters, triggers, and script authorization. */
@@ -131,6 +137,7 @@ function deleteJmailUserData() {
   catch (e) { warnings.push("Откройте настройки Google-аккаунта и отзовите доступ Jmail вручную."); }
   return {deleted: true, warnings: warnings};
 }
+
 
 
 

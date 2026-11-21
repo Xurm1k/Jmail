@@ -95,7 +95,7 @@ function buildCareerProfileFromResume(resumeInput, outputProperty) {
   const p = PropertiesService.getScriptProperties();
   const resume = typeof resumeInput === "string" ? resumeInput : (p.getProperty("CAREER_RESUME_TEXT") || "");
   const key = p.getProperty("GEMINI_API_KEY") || "";
-  if (!resume.trim()) throw new Error("No resume text. Download the setup file from Jmail and run installJmailUserSetup() first.");
+  if (!resume.trim()) throw new Error("No resume text. Upload a text resume in the setup sidebar first.");
   if (!key) throw new Error("Set GEMINI_API_KEY in Script Properties first.");
   if (resume.length > 15000) throw new Error("Resume text exceeds the 15,000 character limit. Shorten it and try again.");
 

@@ -7,37 +7,39 @@ function setupJmail() {
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
   const processedName = settings.processedLabel || "Jmail/Обработано";
   const reviewName = settings.reviewLabel || "Jmail/Проверить";
-  const existingId = p.getProperty("SPREADSHEET_ID");
-  if (existingId) {
-    try {
-      const existing = SpreadsheetApp.openById(existingId);
-      console.log("Jmail spreadsheet: " + existing.getUrl());
-      const folderId = p.getProperty("PDF_FOLDER_ID");
-      console.log("Setup was already completed. No duplicate resources were created.");
-      return {spreadsheetUrl: existing.getUrl(), folderUrl: folderId ? DriveApp.getFolderById(folderId).getUrl() : ""};
-    } catch (e) {
-      p.deleteProperty("SPREADSHEET_ID");
-    }
+  let ss = null;
+  const savedSpreadsheetId = p.getProperty("SPREADSHEET_ID");
+  if (savedSpreadsheetId) {
+    try { ss = SpreadsheetApp.openById(savedSpreadsheetId); }
+    catch (e) { p.deleteProperty("SPREADSHEET_ID"); }
   }
-  const ss = SpreadsheetApp.create("Jmail — вакансии");
-  const sheet = ss.getSheets()[0];
-  sheet.setName("Vorlage");
-  sheet.appendRow(["Datum", "Firma", "Bereich", "Quelle", "Status", "Kanal", "Match Score", "CV-Vorlage", "Kontakt E-Mail"]);
-  const folder = DriveApp.createFolder("Jmail — Bewerbungsunterlagen");
-  p.setProperty("SPREADSHEET_ID", ss.getId());
-  p.setProperty("PDF_FOLDER_ID", folder.getId());
+  if (!ss) {
+    ss = SpreadsheetApp.create("Jmail — вакансии");
+    const sheet = ss.getSheets()[0];
+    sheet.setName("Vorlage");
+    sheet.appendRow(["Datum", "Firma", "Bereich", "Quelle", "Status", "Kanal", "Match Score", "CV-Vorlage", "Kontakt E-Mail"]);
+    p.setProperty("SPREADSHEET_ID", ss.getId());
+  }
+  let folder = null;
+  const savedFolderId = p.getProperty("PDF_FOLDER_ID");
+  if (savedFolderId) {
+    try { folder = DriveApp.getFolderById(savedFolderId); }
+    catch (e) { p.deleteProperty("PDF_FOLDER_ID"); }
+  }
+  if (!folder) {
+    folder = DriveApp.createFolder("Jmail — Bewerbungsunterlagen");
+    p.setProperty("PDF_FOLDER_ID", folder.getId());
+  }
   [processedName, reviewName].forEach(n => {
     if (!GmailApp.getUserLabelByName(n)) GmailApp.createLabel(n);
   });
-  ScriptApp.newTrigger("onOpen").forSpreadsheet(ss).onOpen().create();
-  ScriptApp.newTrigger("onEdit").forSpreadsheet(ss).onEdit().create();
-  console.log("Jmail spreadsheet: " + ss.getUrl());
-  console.log("Jmail Drive folder: " + folder.getUrl());
-  console.log("Setup complete. Open the spreadsheet and use Job Automation → Настроить профиль и критерии.");
+  const triggers = ScriptApp.getProjectTriggers();
+  if (!triggers.some(t => t.getHandlerFunction() === "onOpen" && t.getTriggerSourceId() === ss.getId()))
+    ScriptApp.newTrigger("onOpen").forSpreadsheet(ss).onOpen().create();
+  if (!triggers.some(t => t.getHandlerFunction() === "onEdit" && t.getTriggerSourceId() === ss.getId()))
+    ScriptApp.newTrigger("onEdit").forSpreadsheet(ss).onEdit().create();
   return {spreadsheetUrl: ss.getUrl(), folderUrl: folder.getUrl()};
 }
-
-/** Validates a user's own free Gemini API key before saving it to private User Properties. */
 function saveJmailGeminiApiKey(apiKey) {
   const key = String(apiKey || "").trim();
   if (key.length < 20 || key.length > 200) throw new Error("Проверьте ключ Gemini: его длина выглядит неверно.");
@@ -310,6 +312,6 @@ function approveJmailProfile() {
   if (!draft) throw new Error("No profile draft. Prepare a profile first.");
   p.setProperty("CAREER_PROFILE_JSON", draft);
   p.deleteProperty("CAREER_PROFILE_DRAFT_JSON");
-  return "Профиль сохранён. Теперь проверьте письмо на одном тестовом ярлыке.";
+  return "Профиль сохранён. Теперь можно проверить новые письма во Входящих.";
 }
 

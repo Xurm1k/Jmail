@@ -3,15 +3,22 @@
 // ==========================================
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('🤖 Job Automation')
-    .addItem('⚙️ Настроить профиль и критерии', 'showJmailProfileSetup')
-    .addItem('🚀 Запустить обработку вакансий', 'processJobEmails')
-    .addItem('⏰ Включить ежедневный запуск', 'installJmailDailyTriggerFromSheet')
-    .addItem('⏸️ Остановить ежедневный запуск', 'removeJmailDailyTriggerFromSheet')
-    .addItem('🧹 Очистить неподтвержденные строки и архив', 'manualCleanupAction')
+  ui.createMenu("🤖 Jmail")
+    .addItem("Открыть приложение Jmail", "showJmailWebAppLink")
+    .addItem("Проверить новые письма", "processJobEmails")
+    .addItem("Включить ежедневный запуск", "installJmailDailyTriggerFromSheet")
+    .addItem("Остановить ежедневный запуск", "removeJmailDailyTriggerFromSheet")
     .addToUi();
 }
-
+function showJmailWebAppLink() {
+  const url = ScriptApp.getService().getUrl();
+  if (!url) {
+    SpreadsheetApp.getUi().alert("Сначала владелец должен развернуть Jmail как веб-приложение.");
+    return;
+  }
+  const html = HtmlService.createHtmlOutput('<p>Настройки и профиль Jmail:</p><p><a target="_blank" href="' + url + '">Открыть Jmail</a></p>');
+  SpreadsheetApp.getUi().showModalDialog(html, "Jmail");
+}
 function installJmailDailyTriggerFromSheet() {
   installJmailDailyTrigger();
   SpreadsheetApp.getUi().alert("Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.");

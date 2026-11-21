@@ -6,44 +6,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root{--ink:#17251f;--muted:#68756e;--line:#e3e8e2;--paper:#fff;--canvas:#f5f7f3;--green:#176b4b;--greenbg:#e6f3eb;--amber:#fff3d6}
+    [data-theme="dark"]{--ink:#e5eee8;--muted:#a5b3aa;--line:#34443a;--paper:#1d2921;--canvas:#121a15;--green:#74c69d;--greenbg:#233b2d;--amber:#40351d}
     *{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-    main{max-width:820px;margin:0 auto;padding:26px 18px 60px}header{margin-bottom:20px}h1{margin:0;color:var(--green);font-size:28px}header p{color:var(--muted);margin:5px 0}
+    main{max-width:850px;margin:0 auto;padding:22px 18px 60px}header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:12px}h1{margin:0;color:var(--green);font-size:28px}header p{color:var(--muted);margin:5px 0}.tools{display:flex;gap:8px;align-items:center}.tools select,.tools button{font:inherit;padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink)}
     .note,.panel{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:18px;margin:14px 0}.note{background:var(--amber);font-size:13px}
     h2{font-size:18px;margin:0 0 12px}.step{display:flex;gap:12px;align-items:flex-start}.num{background:var(--greenbg);color:var(--green);font-weight:800;border-radius:50%;width:30px;height:30px;display:grid;place-items:center;flex:none}
-    label{display:block;font-weight:700;font-size:13px;margin:13px 0 5px}input,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;background:white;color:var(--ink)}textarea{min-height:90px}
-    button,.button{display:inline-block;border:0;border-radius:9px;padding:10px 14px;background:var(--green);color:white;font-weight:750;text-decoration:none;margin:10px 8px 0 0;cursor:pointer}
-    button.secondary,.button.secondary{background:white;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.55;cursor:wait}
+    label{display:block;font-weight:700;font-size:13px;margin:13px 0 5px}input,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink)}textarea{min-height:90px}
+    button,.button{display:inline-block;border:0;border-radius:9px;padding:10px 14px;background:var(--green);color:#fff;font-weight:750;text-decoration:none;margin:10px 8px 0 0;cursor:pointer}
+    button.secondary,.button.secondary{background:var(--paper);color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.55;cursor:wait}
     .status{white-space:pre-wrap;color:var(--muted);font-size:13px;margin-top:10px;min-height:20px}.links{display:flex;gap:10px;flex-wrap:wrap}
-    .small{font-size:12px;color:var(--muted)}.preview{display:none;background:#f1f5f2;border-radius:9px;padding:12px;white-space:pre-wrap;margin-top:12px;font-size:13px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:600px){.row{grid-template-columns:1fr}main{padding:18px 12px 40px}}
+    .small{font-size:12px;color:var(--muted)}.preview,.run-summary{display:none;background:var(--canvas);border:1px solid var(--line);border-radius:9px;padding:12px;white-space:pre-wrap;margin-top:12px;font-size:13px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:600px){.row{grid-template-columns:1fr}main{padding:18px 12px 40px}header{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
 <body>
 <main>
-  <header><h1>Jmail</h1><p>Настройте помощника по вакансиям в своём Google-аккаунте.</p></header>
-  <div class="note"><b>Используйте отдельный Gmail для поиска работы.</b> Jmail автоматически проверяет новые письма во «Входящих» за последние сутки через Gemini. Письма не-вакансии и неподходящие вакансии Jmail перемещает в корзину. Первые результаты проверьте. Используйте отдельный Gmail. Отклики не отправляются без вашего действия; текст почты, резюме и критерии передаются Google Gemini.
+  <header><div><h1>Jmail</h1><p>Настройте помощника по вакансиям в своём Google-аккаунте.</p></div>
+    <div class="tools"><label for="language" style="margin:0">Язык</label><select id="language" aria-label="Язык"><option value="ru">Русский</option><option value="de">Deutsch</option><option value="en">English</option></select><button id="themeBtn" type="button">Тёмная тема</button></div>
+  </header>
+  <div class="note"><b>Используйте отдельный Gmail для поиска работы.</b> Jmail проверяет новые письма во «Входящих» за последние сутки. Невакансии и неподходящие вакансии перемещаются в корзину; сомнительные письма получают ярлык проверки. Проверьте первые результаты. Jmail не отправляет отклики. Текст писем, резюме и критерии передаются Google Gemini.</div>
 
   <section class="panel"><div class="step"><span class="num">1</span><div>
     <h2>Подключить Google и создать рабочие материалы</h2>
-    <p class="small">Google покажет разрешения перед первым использованием. Подтверждайте доступ только если согласны предоставить Jmail доступ к Gmail, Drive и таблицам этого аккаунта.</p>
+    <p class="small">Откройте мастер под тем Google-аккаунтом, который будет использоваться для поиска работы. При первом запуске Google попросит разрешить доступ к Gmail, Drive и таблицам. Ресурсы создаются в аккаунте, который подтвердил доступ.</p>
     <button id="setupBtn" onclick="setup()">Создать папку и таблицу</button>
     <div class="links" id="resourceLinks"></div>
   </div></div></section>
 
   <section class="panel"><div class="step"><span class="num">2</span><div style="width:100%">
-    <h2>Подключить бесплатный Gemini</h2>
-    <p class="small">Создайте личный ключ в Google AI Studio. Не включайте оплату и никому не отправляйте ключ.</p>
-    <a class="button secondary" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Получить бесплатный ключ</a>
-    <label for="apiKey">Ваш Gemini API key</label><input id="apiKey" type="password" autocomplete="new-password">
+    <h2>Подключить Gemini</h2>
+    <p class="small">Нужен личный ключ Google AI Studio: он хранится в закрытых настройках аккаунта и используется только для ваших запросов. Бесплатная квота может меняться; оплату включать не нужно.</p>
+    <a class="button secondary" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Получить ключ Gemini</a>
+    <label for="apiKey">Ключ Gemini</label><input id="apiKey" type="password" autocomplete="new-password">
     <button onclick="saveKey()">Проверить и сохранить ключ</button>
   </div></div></section>
 
   <section class="panel"><div class="step"><span class="num">3</span><div style="width:100%">
-    <h2>Задать профиль и критерии</h2>
-    <label for="resume">Текст резюме (.txt, до 15 000 символов)</label><input id="resume" type="file" accept=".txt,text/plain">
-    <p class="small">PDF/DOCX можно распознать локально на странице Jmail, затем загрузить сюда текстовый файл.</p>
+    <h2>Загрузить резюме и задать критерии</h2>
+    <label for="resume">Резюме (PDF, DOCX или TXT, до 15 000 символов)</label><input id="resume" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain">
+    <p class="small">Текст извлекается в браузере. Он отправится в Apps Script и Google Gemini только после нажатия «Сформировать профиль».</p>
     <div class="row"><div><label for="name">Имя</label><input id="name" autocomplete="name"></div><div><label for="email">Почта для откликов</label><input id="email" type="email" autocomplete="email"></div></div>
-    <div class="row"><div><label for="phone">Телефон</label><input id="phone" autocomplete="tel"></div><div><label for="city">Город или индекс</label><input id="city"></div></div>
+    <div class="row"><div><label for="phone">Телефон</label><input id="phone" autocomplete="tel"></div><div><label for="city">Город или индекс отправления</label><input id="city"></div></div>
     <label for="criteria">Какие вакансии искать и что учитывать</label><textarea id="criteria" placeholder="Должности, язык, формат, занятость, зарплата и другие критерии"></textarea>
     <div class="row"><div><label for="score">Минимальная оценка (0–100)</label><input id="score" type="number" min="0" max="100" value="85"></div><div><label for="commute">Максимальная дорога, минут</label><input id="commute" type="number" min="0" max="240" value="60"></div></div>
     <button onclick="prepareProfile()">Сформировать профиль для проверки</button>
@@ -51,45 +55,92 @@
   </div></div></section>
 
   <section class="panel"><div class="step"><span class="num">4</span><div style="width:100%">
-    <h2>Автоматический поиск писем</h2>
-    <p class="small">Jmail сам находит новые письма во «Входящих» за последние сутки. Ничего вручную помечать и фильтры настраивать не нужно. Gemini определяет, есть ли вакансия, а затем оценивает её по вашему профилю.</p>
+    <h2>Получать письма с вакансиями</h2>
+    <p class="small">Используйте этот Gmail при регистрации на сайтах поиска работы и включите уведомления о новых вакансиях. Jmail сам проверяет новые письма — вручную ставить ярлыки и настраивать фильтры не нужно.</p>
   </div></div></section>
 
   <section class="panel"><div class="step"><span class="num">5</span><div style="width:100%">
-    <h2>Проверить работу</h2>
-    <p class="small">Нажмите кнопку: Jmail сам проверит новые письма во «Входящих» за последние сутки.</p>
-    <button onclick="runTest()">Обработать тестовое письмо</button>
+    <h2>Проверить и включить автоматизацию</h2>
+    <p class="small">Сначала нажмите «Проверить новые письма». Убедитесь, что результат в таблице и папке верный, затем включите ежедневный запуск.</p>
+    <button onclick="runTest()">Проверить новые письма</button>
     <button class="secondary" onclick="setDaily(true)">Включить ежедневный запуск</button>
     <button class="secondary" onclick="setDaily(false)">Остановить запуск</button>
+    <div id="runSummary" class="run-summary"></div>
   </div></div></section>
   <div class="status" id="status" role="status" aria-live="polite"></div>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.9.0/mammoth.browser.min.js"></script>
 <script>
   const statusNode=document.getElementById("status");
-  function say(text){statusNode.textContent=text||""}
+  const translations={
+    en:{"Настройте помощника по вакансиям в своём Google-аккаунте.":"Set up your job-search assistant in your Google account.","Язык":"Language","Тёмная тема":"Dark theme","Светлая тема":"Light theme","Используйте отдельный Gmail для поиска работы.":"Use a separate Gmail account for job searching.","Подключить Google и создать рабочие материалы":"Connect Google and create your workspace","Загрузить резюме и задать критерии":"Upload your CV and set your criteria","Получать письма с вакансиями":"Receive job-alert emails","Проверить и включить автоматизацию":"Check and enable automation","Создать папку и таблицу":"Create my folder and spreadsheet","Подключить Gemini":"Connect Gemini","Получить ключ Gemini":"Get a Gemini key","Ключ Gemini":"Gemini key","Проверить и сохранить ключ":"Verify and save key","Резюме (PDF, DOCX или TXT, до 15 000 символов)":"CV (PDF, DOCX or TXT, up to 15,000 characters)","Имя":"Name","Почта для откликов":"Application email","Телефон":"Phone","Город или индекс отправления":"Home city or postcode","Какие вакансии искать и что учитывать":"Jobs and criteria","Минимальная оценка (0–100)":"Minimum score (0–100)","Максимальная дорога, минут":"Maximum commute, minutes","Сформировать профиль для проверки":"Build profile for review","Подтвердить профиль":"Confirm profile","Получать письма с вакансиями":"Receive job-alert emails","Проверить новые письма":"Check new emails","Включить ежедневный запуск":"Enable daily run","Остановить запуск":"Stop daily run","Текст извлекается в браузере. Он отправится в Apps Script и Google Gemini только после нажатия «Сформировать профиль».":"Text is extracted in your browser. It is sent to Apps Script and Google Gemini only after you choose Build profile.","Получить ключ Gemini":"Get Gemini key"},
+    de:{"Настройте помощника по вакансиям в своём Google-аккаунте.":"Richten Sie Ihren Job-Assistenten in Ihrem Google-Konto ein.","Язык":"Sprache","Тёмная тема":"Dunkles Design","Светлая тема":"Helles Design","Используйте отдельный Gmail для поиска работы.":"Verwenden Sie ein separates Gmail-Konto für die Jobsuche.","Подключить Google и создать рабочие материалы":"Google verbinden und Arbeitsbereich erstellen","Загрузить резюме и задать критерии":"Lebenslauf hochladen und Kriterien festlegen","Получать письма с вакансиями":"Stellenbenachrichtigungen empfangen","Проверить и включить автоматизацию":"Automatisierung prüfen und aktivieren","Создать папку и таблицу":"Ordner und Tabelle erstellen","Подключить Gemini":"Gemini verbinden","Получить ключ Gemini":"Gemini-Schlüssel abrufen","Ключ Gemini":"Gemini-Schlüssel","Проверить и сохранить ключ":"Schlüssel prüfen und speichern","Резюме (PDF, DOCX или TXT, до 15 000 символов)":"Lebenslauf (PDF, DOCX oder TXT, max. 15.000 Zeichen)","Имя":"Name","Почта для откликов":"E-Mail für Bewerbungen","Телефон":"Telefon","Город или индекс отправления":"Wohnort oder Postleitzahl","Какие вакансии искать и что учитывать":"Stellen und Kriterien","Минимальная оценка (0–100)":"Mindestbewertung (0–100)","Максимальная дорога, минут":"Maximale Pendelzeit in Minuten","Сформировать профиль для проверки":"Profil zur Prüfung erstellen","Подтвердить профиль":"Profil bestätigen","Проверить новые письма":"Neue E-Mails prüfen","Включить ежедневный запуск":"Täglichen Lauf aktivieren","Остановить запуск":"Lauf stoppen","Текст извлекается в браузере. Он отправится в Apps Script и Google Gemini только после нажатия «Сформировать профиль».":"Der Text wird im Browser ausgelesen und erst nach Klick auf „Profil erstellen“ an Apps Script und Google Gemini gesendet."}
+  };
+  let currentLanguage="ru";
+  const textNodes=[];const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode())textNodes.push({node:walker.currentNode,source:walker.currentNode.nodeValue.trim(),leading:walker.currentNode.nodeValue.match(/^\s*/)[0],trailing:walker.currentNode.nodeValue.match(/\s*$/)[0]});
+  function translate(text){return translations[currentLanguage]?.[text]||text}
+  function applyLanguage(lang){currentLanguage=lang;document.documentElement.lang=lang;textNodes.forEach(x=>{if(x.source)x.node.nodeValue=x.leading+translate(x.source)+x.trailing});document.getElementById("themeBtn").textContent=document.body.dataset.theme==="dark"?translate("Светлая тема"):translate("Тёмная тема");localStorage.setItem("jmail-language",lang)}
+  function say(text){statusNode.textContent=translate(text)||""}
   function fail(err){say(err&&err.message?err.message:String(err))}
+  function setTheme(theme){document.body.dataset.theme=theme;localStorage.setItem("jmail-theme",theme);document.getElementById("themeBtn").textContent=translate(theme==="dark"?"Светлая тема":"Тёмная тема")}
+  document.getElementById("language").addEventListener("change",e=>applyLanguage(e.target.value));
+  document.getElementById("themeBtn").addEventListener("click",()=>setTheme(document.body.dataset.theme==="dark"?"light":"dark"));
+  applyLanguage(localStorage.getItem("jmail-language")||"ru");
+  setTheme(localStorage.getItem("jmail-theme")||"light");
+
   function refresh(){
     google.script.run.withSuccessHandler(s=>{
       const box=document.getElementById("resourceLinks");box.innerHTML="";
       if(s.spreadsheetUrl)box.innerHTML+='<a class="button secondary" target="_blank" rel="noopener" href="'+s.spreadsheetUrl+'">Открыть таблицу вакансий</a>';
       if(s.folderUrl)box.innerHTML+='<a class="button secondary" target="_blank" rel="noopener" href="'+s.folderUrl+'">Открыть папку документов</a>';
-      document.getElementById("setupBtn").textContent=s.ready?"Показать мои ресурсы Google":"Создать папку и таблицу";
-      if(s.ready)say("Google-ресурсы готовы. "+(s.hasApiKey?"Gemini подключён. ":"Добавьте бесплатный ключ Gemini. ")+(s.hasProfile?"Профиль подтверждён. ":"Добавьте и подтвердите профиль. ")+(s.dailyEnabled?"Ежедневный запуск включён.":""));
+      document.getElementById("setupBtn").textContent=s.ready?translate("Показать мои ресурсы Google"):translate("Создать папку и таблицу");
+      const summary=document.getElementById("runSummary");
+      if(s.lastRun){summary.style.display="block";summary.textContent="Последний запуск: "+(s.lastRun.status||"")+". Писем: "+(s.lastRun.threadsSeen||0)+", вакансий оценено: "+(s.lastRun.vacanciesDetected||0)+", документов создано: "+(s.lastRun.completed||0)+", в корзину: "+((s.lastRun.nonJobs||0)+(s.lastRun.rejected||0))+"."}
+      if(s.ready)say("Google-ресурсы готовы. "+(s.hasApiKey?"Gemini подключён. ":"Добавьте ключ Gemini. ")+(s.hasProfile?"Профиль подтверждён. ":"Добавьте и подтвердите профиль. ")+(s.dailyEnabled?"Ежедневный запуск включён.":""));
     }).withFailureHandler(fail).getJmailSetupStatus();
   }
-  function setup(){const b=document.getElementById("setupBtn");b.disabled=true;say("Создаю папку и таблицу…");google.script.run.withSuccessHandler(()=>{b.disabled=false;refresh();say("Готово. Рабочие материалы созданы в вашем Google-аккаунте.")}).withFailureHandler(e=>{b.disabled=false;fail(e)}).setupJmail();}
+  function setup(){const b=document.getElementById("setupBtn");b.disabled=true;say("Создаю папку и таблицу…");google.script.run.withSuccessHandler(r=>{b.disabled=false;refresh();say("Готово. Рабочие материалы созданы в вашем Google-аккаунте.")}).withFailureHandler(e=>{b.disabled=false;fail(e)}).setupJmail();}
   function saveKey(){const key=document.getElementById("apiKey").value;if(!key.trim()){say("Вставьте ключ Gemini.");return}say("Проверяю ключ у Google…");google.script.run.withSuccessHandler(m=>{document.getElementById("apiKey").value="";say(m);refresh()}).withFailureHandler(fail).saveJmailGeminiApiKey(key);}
+  async function extractResume(file){
+    const ext=file.name.split(".").pop().toLowerCase();
+    if(ext==="txt")return await file.text();
+    if(ext==="docx"){
+      if(!window.mammoth)throw new Error("Не удалось загрузить модуль для чтения DOCX.");
+      const result=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});return result.value||"";
+    }
+    if(ext==="pdf"){
+      const pdfjs=await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
+      pdfjs.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+      const pdf=await pdfjs.getDocument({data:await file.arrayBuffer()}).promise;const pages=[];
+      for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const c=await page.getTextContent();pages.push(c.items.map(x=>x.str).join(" "))}
+      return pages.join("\n");
+    }
+    throw new Error("Используйте PDF, DOCX или TXT.");
+  }
   async function prepareProfile(){
-    const file=document.getElementById("resume").files[0];if(!file){say("Выберите TXT-файл резюме.");return}
-    const resumeText=(await file.text()).slice(0,15000);if(!resumeText.trim()){say("Файл пуст.");return}
-    const payload={resumeText,sender:{name:document.getElementById("name").value,email:document.getElementById("email").value,phone:document.getElementById("phone").value,city:document.getElementById("city").value},settings:{jobCriteria:document.getElementById("criteria").value,minMatchScore:Number(document.getElementById("score").value),maxCommuteMinutes:Number(document.getElementById("commute").value),userEmail:document.getElementById("email").value}};
-    say("Проверяю сведения резюме и формирую профиль…");
-    google.script.run.withSuccessHandler(r=>{document.getElementById("preview").textContent=r.preview;document.getElementById("preview").style.display="block";document.getElementById("approveBtn").style.display="inline-block";say("Проверьте профиль. Неподтверждённые текстом сведения не добавлены.")}).withFailureHandler(fail).saveJmailProfileDraft(payload);
+    const file=document.getElementById("resume").files[0];if(!file){say("Выберите файл резюме.");return}
+    say("Извлекаю текст резюме в браузере…");
+    try{
+      const resumeText=(await extractResume(file)).slice(0,15000);if(!resumeText.trim())throw new Error("В файле не найден текст. Если PDF — это скан, сохраните его как TXT.");
+      const payload={resumeText,sender:{name:document.getElementById("name").value,email:document.getElementById("email").value,phone:document.getElementById("phone").value,city:document.getElementById("city").value},settings:{jobCriteria:document.getElementById("criteria").value,minMatchScore:Number(document.getElementById("score").value),maxCommuteMinutes:Number(document.getElementById("commute").value),userEmail:document.getElementById("email").value}};
+      say("Проверяю факты резюме и формирую профиль…");
+      google.script.run.withSuccessHandler(r=>{document.getElementById("preview").textContent=r.preview;document.getElementById("preview").style.display="block";document.getElementById("approveBtn").style.display="inline-block";say("Проверьте профиль. Неподтверждённые текстом сведения не добавлены.")}).withFailureHandler(fail).saveJmailProfileDraft(payload);
+    }catch(e){fail(e)}
   }
   function approveProfile(){say("Сохраняю подтверждённый профиль…");google.script.run.withSuccessHandler(m=>{document.getElementById("preview").style.display="none";document.getElementById("approveBtn").style.display="none";say(m);refresh()}).withFailureHandler(fail).approveJmailProfile();}
-  function runTest(){say("Проверяю новые письма во «Входящих»…");google.script.run.withSuccessHandler(r=>{say(r?"Результат:\n"+JSON.stringify(r,null,2):"Запуск завершён. Проверьте таблицу и папку Google Drive.");refresh()}).withFailureHandler(fail).processJobEmails();}
+  function runTest(){
+    say("Проверяю новые письма во «Входящих»…");
+    google.script.run.withSuccessHandler(r=>{
+      if(r&&r.status==="setup_incomplete"){say("Сначала завершите шаги 1–3: папка/таблица, Gemini и подтверждение профиля.");return}
+      if(r&&r.status==="no_emails"){say("За последние сутки новых писем нет. Включите оповещения о вакансиях и повторите проверку.");return}
+      if(r&&r.status==="already_running"){say("Обработка уже идёт. Дождитесь её завершения.");return}
+      say(r?"Готово. Обработано писем: "+(r.threadsSeen||0)+", найдено вакансий: "+(r.vacanciesDetected||0)+", подходящих обработано: "+(r.completed||0)+", отправлено в корзину: "+((r.nonJobs||0)+(r.rejected||0))+".":"Запуск завершён.");
+      refresh();
+    }).withFailureHandler(fail).processJobEmails();
+  }
   function setDaily(enabled){
-    say(enabled?"Включаю ежедневный запуск…":"Останавливаю ежедневный запуск…");
+    say(enabled?"Включаю ежедневный запуск…":"Останавливаю запуск…");
     const runner=google.script.run.withSuccessHandler(m=>{say(m);refresh()}).withFailureHandler(fail);
     if(enabled)runner.installJmailDailyTrigger();else runner.removeJmailDailyTrigger();
   }
@@ -97,4 +148,3 @@
 </script>
 </body>
 </html>
-

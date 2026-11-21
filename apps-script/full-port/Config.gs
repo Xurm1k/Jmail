@@ -1,9 +1,8 @@
 // User-specific values and secrets are kept in the accessing users private User Properties.
 // User Properties keep each account's key, profile, settings, and IDs isolated in the shared web app.
 function jmailProps_() {
-  return PropertiesService.getUserProperties
-    ? PropertiesService.getUserProperties()
-    : PropertiesService.getScriptProperties();
+  if (!PropertiesService.getUserProperties) throw new Error("User Properties are required for account isolation.");
+  return PropertiesService.getUserProperties();
 }
 function readJmailJson_(key, fallback) {
   const raw = jmailProps_().getProperty(key);

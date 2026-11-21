@@ -2,6 +2,10 @@
 // MAIN.GS — ОСНОВНОЙ ОРКЕСТРАТОР ПРОЦЕССА
 // ==========================================
 function processJobEmails() {
+  const props = jmailProps_();
+  const required = ["SPREADSHEET_ID", "PDF_FOLDER_ID", "GEMINI_API_KEY", "CAREER_PROFILE_JSON"];
+  const missing = required.filter(key => !props.getProperty(key));
+  if (missing.length) return {status: "setup_incomplete", missing: missing};
   const lock = LockService.getUserLock ? LockService.getUserLock() : LockService.getScriptLock();
   if (!lock.tryLock(5000)) {
     Logger.log("Пропуск запуска: другой экземпляр обработки уже работает.");
@@ -23,6 +27,8 @@ function processJobEmailsUnlocked() {
     completed: 0,
     rejected: 0,
     review: 0,
+    nonJobs: 0,
+    vacanciesDetected: 0,
     errors: 0,
     stoppedForTime: false,
     status: "running"
@@ -92,9 +98,10 @@ function processJobEmailsUnlocked() {
       if (aiResponse.is_job_related === false) {
         thread.addLabel(processedLabel);
         thread.moveToTrash();
-        stats.nonJobs = (stats.nonJobs || 0) + 1;
+        stats.nonJobs++;
         continue;
       }
+      stats.vacanciesDetected++;
 
       const eligibility = evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, stats);
       if (eligibility.status === "defer") continue;

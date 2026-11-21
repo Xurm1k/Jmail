@@ -2,9 +2,8 @@
 // User-specific values and secrets are kept in the accessing users private User Properties.
 // User Properties keep each account's key, profile, settings, and IDs isolated in the shared web app.
 function jmailProps_() {
-  return PropertiesService.getUserProperties
-    ? PropertiesService.getUserProperties()
-    : PropertiesService.getScriptProperties();
+  if (!PropertiesService.getUserProperties) throw new Error("User Properties are required for account isolation.");
+  return PropertiesService.getUserProperties();
 }
 function readJmailJson_(key, fallback) {
   const raw = jmailProps_().getProperty(key);
@@ -56,37 +55,39 @@ function setupJmail() {
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
   const processedName = settings.processedLabel || "Jmail/Обработано";
   const reviewName = settings.reviewLabel || "Jmail/Проверить";
-  const existingId = p.getProperty("SPREADSHEET_ID");
-  if (existingId) {
-    try {
-      const existing = SpreadsheetApp.openById(existingId);
-      console.log("Jmail spreadsheet: " + existing.getUrl());
-      const folderId = p.getProperty("PDF_FOLDER_ID");
-      console.log("Setup was already completed. No duplicate resources were created.");
-      return {spreadsheetUrl: existing.getUrl(), folderUrl: folderId ? DriveApp.getFolderById(folderId).getUrl() : ""};
-    } catch (e) {
-      p.deleteProperty("SPREADSHEET_ID");
-    }
+  let ss = null;
+  const savedSpreadsheetId = p.getProperty("SPREADSHEET_ID");
+  if (savedSpreadsheetId) {
+    try { ss = SpreadsheetApp.openById(savedSpreadsheetId); }
+    catch (e) { p.deleteProperty("SPREADSHEET_ID"); }
   }
-  const ss = SpreadsheetApp.create("Jmail — вакансии");
-  const sheet = ss.getSheets()[0];
-  sheet.setName("Vorlage");
-  sheet.appendRow(["Datum", "Firma", "Bereich", "Quelle", "Status", "Kanal", "Match Score", "CV-Vorlage", "Kontakt E-Mail"]);
-  const folder = DriveApp.createFolder("Jmail — Bewerbungsunterlagen");
-  p.setProperty("SPREADSHEET_ID", ss.getId());
-  p.setProperty("PDF_FOLDER_ID", folder.getId());
+  if (!ss) {
+    ss = SpreadsheetApp.create("Jmail — вакансии");
+    const sheet = ss.getSheets()[0];
+    sheet.setName("Vorlage");
+    sheet.appendRow(["Datum", "Firma", "Bereich", "Quelle", "Status", "Kanal", "Match Score", "CV-Vorlage", "Kontakt E-Mail"]);
+    p.setProperty("SPREADSHEET_ID", ss.getId());
+  }
+  let folder = null;
+  const savedFolderId = p.getProperty("PDF_FOLDER_ID");
+  if (savedFolderId) {
+    try { folder = DriveApp.getFolderById(savedFolderId); }
+    catch (e) { p.deleteProperty("PDF_FOLDER_ID"); }
+  }
+  if (!folder) {
+    folder = DriveApp.createFolder("Jmail — Bewerbungsunterlagen");
+    p.setProperty("PDF_FOLDER_ID", folder.getId());
+  }
   [processedName, reviewName].forEach(n => {
     if (!GmailApp.getUserLabelByName(n)) GmailApp.createLabel(n);
   });
-  ScriptApp.newTrigger("onOpen").forSpreadsheet(ss).onOpen().create();
-  ScriptApp.newTrigger("onEdit").forSpreadsheet(ss).onEdit().create();
-  console.log("Jmail spreadsheet: " + ss.getUrl());
-  console.log("Jmail Drive folder: " + folder.getUrl());
-  console.log("Setup complete. Open the spreadsheet and use Job Automation → Настроить профиль и критерии.");
+  const triggers = ScriptApp.getProjectTriggers();
+  if (!triggers.some(t => t.getHandlerFunction() === "onOpen" && t.getTriggerSourceId() === ss.getId()))
+    ScriptApp.newTrigger("onOpen").forSpreadsheet(ss).onOpen().create();
+  if (!triggers.some(t => t.getHandlerFunction() === "onEdit" && t.getTriggerSourceId() === ss.getId()))
+    ScriptApp.newTrigger("onEdit").forSpreadsheet(ss).onEdit().create();
   return {spreadsheetUrl: ss.getUrl(), folderUrl: folder.getUrl()};
 }
-
-/** Validates a user's own free Gemini API key before saving it to private User Properties. */
 function saveJmailGeminiApiKey(apiKey) {
   const key = String(apiKey || "").trim();
   if (key.length < 20 || key.length > 200) throw new Error("Проверьте ключ Gemini: его длина выглядит неверно.");
@@ -359,7 +360,7 @@ function approveJmailProfile() {
   if (!draft) throw new Error("No profile draft. Prepare a profile first.");
   p.setProperty("CAREER_PROFILE_JSON", draft);
   p.deleteProperty("CAREER_PROFILE_DRAFT_JSON");
-  return "Профиль сохранён. Теперь проверьте письмо на одном тестовом ярлыке.";
+  return "Профиль сохранён. Теперь можно проверить новые письма во Входящих.";
 }
 
 /* ===== WebApp.gs ===== */
@@ -379,29 +380,24 @@ function getJmailSetupStatus() {
   const folderId = p.getProperty("PDF_FOLDER_ID") || "";
   let spreadsheetUrl = "";
   let folderUrl = "";
-  if (spreadsheetId) {
-    try { spreadsheetUrl = SpreadsheetApp.openById(spreadsheetId).getUrl(); } catch (e) {}
-  }
-  if (folderId) {
-    try { folderUrl = DriveApp.getFolderById(folderId).getUrl(); } catch (e) {}
-  }
+  if (spreadsheetId) { try { spreadsheetUrl = SpreadsheetApp.openById(spreadsheetId).getUrl(); } catch (e) {} }
+  if (folderId) { try { folderUrl = DriveApp.getFolderById(folderId).getUrl(); } catch (e) {} }
   return {
     ready: Boolean(spreadsheetUrl && folderUrl),
     spreadsheetUrl: spreadsheetUrl,
     folderUrl: folderUrl,
     hasApiKey: Boolean(p.getProperty("GEMINI_API_KEY")),
     hasProfile: Boolean(p.getProperty("CAREER_PROFILE_JSON")),
-    dailyEnabled: ScriptApp.getProjectTriggers().some(t =>
-      t.getHandlerFunction() === "processJobEmails" && t.getEventType() === ScriptApp.EventType.CLOCK
-    )
+    dailyEnabled: ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === "processJobEmails" && t.getEventType() === ScriptApp.EventType.CLOCK),
+    lastRun: readJmailJson_("last_run_stats", null),
+    lastRunAt: p.getProperty("last_run_timestamp") || ""
   };
 }
-
-/* ===== Main.gs ===== */
-// ==========================================
-// MAIN.GS — ОСНОВНОЙ ОРКЕСТРАТОР ПРОЦЕССА
-// ==========================================
 function processJobEmails() {
+  const props = jmailProps_();
+  const required = ["SPREADSHEET_ID", "PDF_FOLDER_ID", "GEMINI_API_KEY", "CAREER_PROFILE_JSON"];
+  const missing = required.filter(key => !props.getProperty(key));
+  if (missing.length) return {status: "setup_incomplete", missing: missing};
   const lock = LockService.getUserLock ? LockService.getUserLock() : LockService.getScriptLock();
   if (!lock.tryLock(5000)) {
     Logger.log("Пропуск запуска: другой экземпляр обработки уже работает.");
@@ -423,6 +419,8 @@ function processJobEmailsUnlocked() {
     completed: 0,
     rejected: 0,
     review: 0,
+    nonJobs: 0,
+    vacanciesDetected: 0,
     errors: 0,
     stoppedForTime: false,
     status: "running"
@@ -492,9 +490,10 @@ function processJobEmailsUnlocked() {
       if (aiResponse.is_job_related === false) {
         thread.addLabel(processedLabel);
         thread.moveToTrash();
-        stats.nonJobs = (stats.nonJobs || 0) + 1;
+        stats.nonJobs++;
         continue;
       }
+      stats.vacanciesDetected++;
 
       const eligibility = evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, stats);
       if (eligibility.status === "defer") continue;
@@ -1506,15 +1505,22 @@ function generateAnschreibenPDF(aiData) {
 // ==========================================
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('🤖 Job Automation')
-    .addItem('⚙️ Настроить профиль и критерии', 'showJmailProfileSetup')
-    .addItem('🚀 Запустить обработку вакансий', 'processJobEmails')
-    .addItem('⏰ Включить ежедневный запуск', 'installJmailDailyTriggerFromSheet')
-    .addItem('⏸️ Остановить ежедневный запуск', 'removeJmailDailyTriggerFromSheet')
-    .addItem('🧹 Очистить неподтвержденные строки и архив', 'manualCleanupAction')
+  ui.createMenu("🤖 Jmail")
+    .addItem("Открыть приложение Jmail", "showJmailWebAppLink")
+    .addItem("Проверить новые письма", "processJobEmails")
+    .addItem("Включить ежедневный запуск", "installJmailDailyTriggerFromSheet")
+    .addItem("Остановить ежедневный запуск", "removeJmailDailyTriggerFromSheet")
     .addToUi();
 }
-
+function showJmailWebAppLink() {
+  const url = ScriptApp.getService().getUrl();
+  if (!url) {
+    SpreadsheetApp.getUi().alert("Сначала владелец должен развернуть Jmail как веб-приложение.");
+    return;
+  }
+  const html = HtmlService.createHtmlOutput('<p>Настройки и профиль Jmail:</p><p><a target="_blank" href="' + url + '">Открыть Jmail</a></p>');
+  SpreadsheetApp.getUi().showModalDialog(html, "Jmail");
+}
 function installJmailDailyTriggerFromSheet() {
   installJmailDailyTrigger();
   SpreadsheetApp.getUi().alert("Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.");

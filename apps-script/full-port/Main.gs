@@ -234,12 +234,12 @@ function evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, sta
   const physical = aiResponse.physical_demand;
   const effort = aiResponse.application_effort;
 
-  if (role === "data_analyst") {
+  if ((CONFIG.EXCLUDED_ROLE_FAMILIES || ["data_analyst"]).includes(role)) {
     return evidenceIsPresent(sourceText, evidence.role)
       ? { status: "reject", reason: "роль Data Analyst исключена" }
       : { status: "review", reason: "тип роли не подтвержден текстом письма" };
   }
-  if (physical === "heavy" || physical === "prolonged_standing") {
+  if ((CONFIG.EXCLUDED_PHYSICAL_DEMANDS || ["heavy", "prolonged_standing"]).includes(physical)) {
     return evidenceIsPresent(sourceText, evidence.physical)
       ? { status: "reject", reason: "тяжелая физическая работа или длительная работа стоя" }
       : { status: "review", reason: "физические требования не подтверждены текстом письма" };
@@ -250,9 +250,9 @@ function evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, sta
       : { status: "review", reason: "сложность отклика не подтверждена текстом письма" };
   }
 
-  if (!["office_admin", "quality_control", "customer_service", "supervisor", "other"].includes(role) ||
-      !["desk", "light"].includes(physical) ||
-      !["simple", "moderate"].includes(effort)) {
+  if (!(CONFIG.ALLOWED_ROLE_FAMILIES || ["office_admin", "quality_control", "customer_service", "supervisor", "other"]).includes(role) ||
+      !(CONFIG.ALLOWED_PHYSICAL_DEMANDS || ["desk", "light"]).includes(physical) ||
+      !(CONFIG.ALLOWED_APPLICATION_EFFORTS || ["simple", "moderate"]).includes(effort)) {
     return { status: "review", reason: "не удалось уверенно определить профиль, нагрузку или сложность отклика" };
   }
 

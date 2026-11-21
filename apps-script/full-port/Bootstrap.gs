@@ -3,7 +3,7 @@
  * Run setupJmail() once; inspect the created spreadsheet/folder links in Executions.
  */
 function setupJmail() {
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
   const inputName = settings.inputLabel || "Jmail/Вакансии";
   const processedName = settings.processedLabel || "Jmail/Обработано";
@@ -13,8 +13,9 @@ function setupJmail() {
     try {
       const existing = SpreadsheetApp.openById(existingId);
       console.log("Jmail spreadsheet: " + existing.getUrl());
+      const folderId = p.getProperty("PDF_FOLDER_ID");
       console.log("Setup was already completed. No duplicate resources were created.");
-      return;
+      return {spreadsheetUrl: existing.getUrl(), folderUrl: folderId ? DriveApp.getFolderById(folderId).getUrl() : ""};
     } catch (e) {
       p.deleteProperty("SPREADSHEET_ID");
     }
@@ -34,9 +35,10 @@ function setupJmail() {
   console.log("Jmail spreadsheet: " + ss.getUrl());
   console.log("Jmail Drive folder: " + folder.getUrl());
   console.log("Setup complete. Open the spreadsheet and use Job Automation → Настроить профиль и критерии.");
+  return {spreadsheetUrl: ss.getUrl(), folderUrl: folder.getUrl()};
 }
 
-/** Validates a user's own free Gemini API key before saving it to private Script Properties. */
+/** Validates a user's own free Gemini API key before saving it to private User Properties. */
 function saveJmailGeminiApiKey(apiKey) {
   const key = String(apiKey || "").trim();
   if (key.length < 20 || key.length > 200) throw new Error("Проверьте ключ Gemini: его длина выглядит неверно.");
@@ -50,7 +52,7 @@ function saveJmailGeminiApiKey(apiKey) {
   );
   if (response.getResponseCode() < 200 || response.getResponseCode() >= 300)
     throw new Error("Gemini не принял ключ (HTTP " + response.getResponseCode() + "). Проверьте ключ и доступность бесплатной модели.");
-  PropertiesService.getScriptProperties().setProperty("GEMINI_API_KEY", key);
+  jmailProps_().setProperty("GEMINI_API_KEY", key);
   return "Бесплатный Gemini API подключён. Ключ сохранён в закрытых настройках этого Apps Script.";
 }
 
@@ -77,18 +79,23 @@ function createJmailGmailFilters(senderList) {
 }
 
 function installJmailDailyTrigger() {
+  const p = jmailProps_();
+  if (!p.getProperty("SPREADSHEET_ID") || !p.getProperty("PDF_FOLDER_ID"))
+    throw new Error("Сначала создайте папку и таблицу.");
+  if (!p.getProperty("GEMINI_API_KEY") || !p.getProperty("CAREER_PROFILE_JSON"))
+    throw new Error("Сначала подключите Gemini и подтвердите профиль.");
   ScriptApp.getProjectTriggers()
     .filter(t => t.getHandlerFunction() === "processJobEmails")
     .forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger("processJobEmails").timeBased().everyDays(1).atHour(8).create();
-  SpreadsheetApp.getUi().alert("Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.");
+  return "Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.";
 }
 
 function removeJmailDailyTrigger() {
   ScriptApp.getProjectTriggers()
     .filter(t => t.getHandlerFunction() === "processJobEmails")
     .forEach(t => ScriptApp.deleteTrigger(t));
-  SpreadsheetApp.getUi().alert("Ежедневный запуск остановлен.");
+  return "Ежедневный запуск остановлен.";
 }
 
 /**
@@ -96,11 +103,11 @@ function removeJmailDailyTrigger() {
  * Only exact source phrases are retained as claims, skills, education, or language evidence.
  */
 function buildCareerProfileFromResume(resumeInput, outputProperty) {
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const resume = typeof resumeInput === "string" ? resumeInput : (p.getProperty("CAREER_RESUME_TEXT") || "");
   const key = p.getProperty("GEMINI_API_KEY") || "";
   if (!resume.trim()) throw new Error("No resume text. Upload a text resume in the setup sidebar first.");
-  if (!key) throw new Error("Set GEMINI_API_KEY in Script Properties first.");
+  if (!key) throw new Error("Connect your personal Gemini API key in the Jmail setup wizard first.");
   if (resume.length > 15000) throw new Error("Resume text exceeds the 15,000 character limit. Shorten it and try again.");
 
   const prompt = [
@@ -170,7 +177,7 @@ function buildCareerProfileFromResume(resumeInput, outputProperty) {
     ? Object.assign({}, candidate.optionalCareerTransition, {optional:true}) : null;
   const profile = {experiences, militaryService:military, education, languages, skills, optionalCareerTransition:transition};
   const json = JSON.stringify(profile);
-  if (json.length > 8500 || Utilities.newBlob(json).getBytes().length > 8000) throw new Error("Generated profile is too large for Script Properties. No profile was saved.");
+  if (json.length > 8500 || Utilities.newBlob(json).getBytes().length > 8000) throw new Error("Generated profile is too large for private user storage. No profile was saved.");
   p.setProperty(outputProperty || "CAREER_PROFILE_JSON", json);
   if (typeof resumeInput !== "string") p.deleteProperty("CAREER_RESUME_TEXT");
   return "Profile ready: " + experiences.length + " experience entries, " +
@@ -265,7 +272,7 @@ function jmailProfileSetupHtml_() {
 function saveJmailProfileDraft(payload) {
   if (!payload || !payload.resumeText || payload.resumeText.length > 15000)
     throw new Error("Resume text is empty or too long.");
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const previousProfile = p.getProperty("CAREER_PROFILE_JSON");
   const settings = Object.assign(
     readJmailJson_("JMAIL_SETTINGS_JSON", {}),
@@ -299,7 +306,7 @@ function careerProfilePreview_(profile) {
 }
 
 function approveJmailProfile() {
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const draft = p.getProperty("CAREER_PROFILE_DRAFT_JSON");
   if (!draft) throw new Error("No profile draft. Prepare a profile first.");
   p.setProperty("CAREER_PROFILE_JSON", draft);

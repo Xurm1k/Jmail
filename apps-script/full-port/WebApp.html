@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{--ink:#17251f;--muted:#68756e;--line:#e3e8e2;--paper:#fff;--canvas:#f5f7f3;--green:#176b4b;--greenbg:#e6f3eb;--amber:#fff3d6}
+    *{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{max-width:820px;margin:0 auto;padding:26px 18px 60px}header{margin-bottom:20px}h1{margin:0;color:var(--green);font-size:28px}header p{color:var(--muted);margin:5px 0}
+    .note,.panel{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:18px;margin:14px 0}.note{background:var(--amber);font-size:13px}
+    h2{font-size:18px;margin:0 0 12px}.step{display:flex;gap:12px;align-items:flex-start}.num{background:var(--greenbg);color:var(--green);font-weight:800;border-radius:50%;width:30px;height:30px;display:grid;place-items:center;flex:none}
+    label{display:block;font-weight:700;font-size:13px;margin:13px 0 5px}input,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;background:white;color:var(--ink)}textarea{min-height:90px}
+    button,.button{display:inline-block;border:0;border-radius:9px;padding:10px 14px;background:var(--green);color:white;font-weight:750;text-decoration:none;margin:10px 8px 0 0;cursor:pointer}
+    button.secondary,.button.secondary{background:white;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.55;cursor:wait}
+    .status{white-space:pre-wrap;color:var(--muted);font-size:13px;margin-top:10px;min-height:20px}.links{display:flex;gap:10px;flex-wrap:wrap}
+    .small{font-size:12px;color:var(--muted)}.preview{display:none;background:#f1f5f2;border-radius:9px;padding:12px;white-space:pre-wrap;margin-top:12px;font-size:13px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:600px){.row{grid-template-columns:1fr}main{padding:18px 12px 40px}}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>Jmail</h1><p>Настройте помощника по вакансиям в своём Google-аккаунте.</p></header>
+  <div class="note"><b>Используйте отдельный Gmail.</b> Автоматизация может ошибаться и перемещать письма. Jmail не отправляет отклики без вашего действия. Текст резюме и вакансий передаётся Google Gemini для анализа.</div>
+
+  <section class="panel"><div class="step"><span class="num">1</span><div>
+    <h2>Подключить Google и создать рабочие материалы</h2>
+    <p class="small">Google покажет разрешения перед первым использованием. Подтверждайте доступ только если согласны предоставить Jmail доступ к Gmail, Drive и таблицам этого аккаунта.</p>
+    <button id="setupBtn" onclick="setup()">Создать папку, таблицу и ярлыки</button>
+    <div class="links" id="resourceLinks"></div>
+  </div></div></section>
+
+  <section class="panel"><div class="step"><span class="num">2</span><div style="width:100%">
+    <h2>Подключить бесплатный Gemini</h2>
+    <p class="small">Создайте личный ключ в Google AI Studio. Не включайте оплату и никому не отправляйте ключ.</p>
+    <a class="button secondary" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Получить бесплатный ключ</a>
+    <label for="apiKey">Ваш Gemini API key</label><input id="apiKey" type="password" autocomplete="new-password">
+    <button onclick="saveKey()">Проверить и сохранить ключ</button>
+  </div></div></section>
+
+  <section class="panel"><div class="step"><span class="num">3</span><div style="width:100%">
+    <h2>Задать профиль и критерии</h2>
+    <label for="resume">Текст резюме (.txt, до 15 000 символов)</label><input id="resume" type="file" accept=".txt,text/plain">
+    <p class="small">PDF/DOCX можно распознать локально на странице Jmail, затем загрузить сюда текстовый файл.</p>
+    <div class="row"><div><label for="name">Имя</label><input id="name" autocomplete="name"></div><div><label for="email">Почта для откликов</label><input id="email" type="email" autocomplete="email"></div></div>
+    <div class="row"><div><label for="phone">Телефон</label><input id="phone" autocomplete="tel"></div><div><label for="city">Город или индекс</label><input id="city"></div></div>
+    <label for="criteria">Какие вакансии искать и что учитывать</label><textarea id="criteria" placeholder="Должности, язык, формат, занятость, зарплата и другие критерии"></textarea>
+    <div class="row"><div><label for="score">Минимальная оценка (0–100)</label><input id="score" type="number" min="0" max="100" value="85"></div><div><label for="commute">Максимальная дорога, минут</label><input id="commute" type="number" min="0" max="240" value="60"></div></div>
+    <button onclick="prepareProfile()">Сформировать профиль для проверки</button>
+    <div id="preview" class="preview"></div><button id="approveBtn" style="display:none" onclick="approveProfile()">Подтвердить профиль</button>
+  </div></div></section>
+
+  <section class="panel"><div class="step"><span class="num">4</span><div style="width:100%">
+    <h2>Автоматически настроить фильтр Gmail</h2>
+    <label for="senders">Адрес отправителя вакансий</label><input id="senders" placeholder="jobs@example.com, alerts@example.org">
+    <p class="small">Скопируйте адрес из письма с вакансией. Можно указать несколько адресов через запятую. Фильтр добавляет ярлык, не удаляя и не пересылая письма.</p>
+    <button onclick="createFilters()">Создать фильтр Gmail</button>
+  </div></div></section>
+
+  <section class="panel"><div class="step"><span class="num">5</span><div style="width:100%">
+    <h2>Проверить работу</h2>
+    <p class="small">Для немедленного теста добавьте ярлык Jmail/Вакансии одному письму в Gmail, затем нажмите кнопку. Оставьте во входном ярлыке одно тестовое письмо.</p>
+    <button onclick="runTest()">Обработать тестовое письмо</button>
+    <button class="secondary" onclick="setDaily(true)">Включить ежедневный запуск</button>
+    <button class="secondary" onclick="setDaily(false)">Остановить запуск</button>
+  </div></div></section>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+</main>
+<script>
+  const statusNode=document.getElementById("status");
+  function say(text){statusNode.textContent=text||""}
+  function fail(err){say(err&&err.message?err.message:String(err))}
+  function refresh(){
+    google.script.run.withSuccessHandler(s=>{
+      const box=document.getElementById("resourceLinks");box.innerHTML="";
+      if(s.spreadsheetUrl)box.innerHTML+='<a class="button secondary" target="_blank" rel="noopener" href="'+s.spreadsheetUrl+'">Открыть таблицу вакансий</a>';
+      if(s.folderUrl)box.innerHTML+='<a class="button secondary" target="_blank" rel="noopener" href="'+s.folderUrl+'">Открыть папку документов</a>';
+      document.getElementById("setupBtn").textContent=s.ready?"Показать мои ресурсы Google":"Создать папку, таблицу и ярлыки";
+      if(s.ready)say("Google-ресурсы готовы. "+(s.hasApiKey?"Gemini подключён. ":"Добавьте бесплатный ключ Gemini. ")+(s.hasProfile?"Профиль подтверждён. ":"Добавьте и подтвердите профиль. ")+(s.dailyEnabled?"Ежедневный запуск включён.":""));
+    }).withFailureHandler(fail).getJmailSetupStatus();
+  }
+  function setup(){const b=document.getElementById("setupBtn");b.disabled=true;say("Создаю папку, таблицу и ярлыки…");google.script.run.withSuccessHandler(()=>{b.disabled=false;refresh();say("Готово. Рабочие материалы созданы в вашем Google-аккаунте.")}).withFailureHandler(e=>{b.disabled=false;fail(e)}).setupJmail();}
+  function saveKey(){const key=document.getElementById("apiKey").value;if(!key.trim()){say("Вставьте ключ Gemini.");return}say("Проверяю ключ у Google…");google.script.run.withSuccessHandler(m=>{document.getElementById("apiKey").value="";say(m);refresh()}).withFailureHandler(fail).saveJmailGeminiApiKey(key);}
+  async function prepareProfile(){
+    const file=document.getElementById("resume").files[0];if(!file){say("Выберите TXT-файл резюме.");return}
+    const resumeText=(await file.text()).slice(0,15000);if(!resumeText.trim()){say("Файл пуст.");return}
+    const payload={resumeText,sender:{name:document.getElementById("name").value,email:document.getElementById("email").value,phone:document.getElementById("phone").value,city:document.getElementById("city").value},settings:{jobCriteria:document.getElementById("criteria").value,minMatchScore:Number(document.getElementById("score").value),maxCommuteMinutes:Number(document.getElementById("commute").value),userEmail:document.getElementById("email").value}};
+    say("Проверяю сведения резюме и формирую профиль…");
+    google.script.run.withSuccessHandler(r=>{document.getElementById("preview").textContent=r.preview;document.getElementById("preview").style.display="block";document.getElementById("approveBtn").style.display="inline-block";say("Проверьте профиль. Неподтверждённые текстом сведения не добавлены.")}).withFailureHandler(fail).saveJmailProfileDraft(payload);
+  }
+  function approveProfile(){say("Сохраняю подтверждённый профиль…");google.script.run.withSuccessHandler(m=>{document.getElementById("preview").style.display="none";document.getElementById("approveBtn").style.display="none";say(m);refresh()}).withFailureHandler(fail).approveJmailProfile();}
+  function createFilters(){say("Создаю фильтр Gmail…");google.script.run.withSuccessHandler(m=>{say(m);refresh()}).withFailureHandler(fail).createJmailGmailFilters(document.getElementById("senders").value);}
+  function runTest(){say("Обрабатываю письмо с ярлыком Jmail/Вакансии…");google.script.run.withSuccessHandler(r=>{say(r?"Результат:\n"+JSON.stringify(r,null,2):"Запуск завершён. Проверьте таблицу и папку Google Drive.");refresh()}).withFailureHandler(fail).processJobEmails();}
+  function setDaily(enabled){
+    say(enabled?"Включаю ежедневный запуск…":"Останавливаю ежедневный запуск…");
+    const runner=google.script.run.withSuccessHandler(m=>{say(m);refresh()}).withFailureHandler(fail);
+    if(enabled)runner.installJmailDailyTrigger();else runner.removeJmailDailyTrigger();
+  }
+  refresh();
+</script>
+</body>
+</html>
+

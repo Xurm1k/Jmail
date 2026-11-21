@@ -106,6 +106,7 @@
     <button type="button" onclick="enterStep5AndRun()">Проверить новые письма</button>
   </div></div></section>
   <div class="status" id="status" role="status" aria-live="polite"></div>
+  <footer class="small" style="margin-top:22px"><a href="https://xurm1k.github.io/Jmail/privacy.html" target="_blank" rel="noopener">Privacy notice / Datenschutzhinweis / Политика конфиденциальности</a></footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.9.0/mammoth.browser.min.js"></script>
 <script>
@@ -227,6 +228,7 @@
   async function prepareProfile(){
     if(consentPending||!document.getElementById("geminiDataConsent").checked){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
     const file=document.getElementById("resume").files[0];if(!file){say("Выберите файл резюме.");return}
+    document.getElementById("preview").style.display="none";document.getElementById("approveBtn").style.display="none";
     say("Извлекаю текст резюме в браузере…");
     try{
       const resumeText=(await extractResume(file)).slice(0,15000);if(!resumeText.trim())throw new Error("В файле не найден текст. Если PDF — это скан, сохраните его как TXT.");

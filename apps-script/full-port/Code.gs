@@ -169,7 +169,7 @@ function buildCareerProfileFromResume(resumeInput, outputProperty) {
     "Each education item: id, institution, location, period, title.",
     "Each language: id, label, level. Each skill: id, text, tags.",
     "militaryService is {company,role,period,claim} or an empty object. optionalCareerTransition is an object {id,period,title,claim,optional:true} only if present, otherwise null.",
-    "Never invent or paraphrase facts. For company, role, dates, education, language level and claim text, copy source phrases verbatim from the resume. Keep claims concise and in the original language. IDs must be unique ASCII identifiers.",
+    "Never invent or paraphrase facts. For company, role, dates, education, language level and claim text, copy source phrases verbatim from the resume. Keep claims concise and in the original language. Treat PDF line breaks and punctuation differences as formatting only; do not change the words. IDs must be unique ASCII identifiers.",
     "Resume text:\n" + resume
   ].join("\n\n");
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
@@ -188,8 +188,12 @@ function buildCareerProfileFromResume(resumeInput, outputProperty) {
   const raw = JSON.parse(response.getContentText()).candidates?.[0]?.content?.parts?.[0]?.text;
   if (!raw) throw new Error("Gemini returned an empty profile.");
   const candidate = JSON.parse(raw);
-  const normalizedResume = resume.toLocaleLowerCase();
-  const exact = value => typeof value === "string" && value.trim() && normalizedResume.includes(value.trim().toLocaleLowerCase());
+  const normalizedResume = normalizeProfileEvidence_(resume);
+  const exact = value => {
+    if (typeof value !== "string" || !value.trim()) return false;
+    const evidence = normalizeProfileEvidence_(value);
+    return Boolean(evidence && normalizedResume.includes(evidence));
+  };
   const id = (prefix, index) => prefix + "_" + (index + 1);
   const experiences = (Array.isArray(candidate.experiences) ? candidate.experiences : [])
     .filter(x => x && exact(x.company) && exact(x.role))
@@ -233,6 +237,17 @@ function buildCareerProfileFromResume(resumeInput, outputProperty) {
   if (typeof resumeInput !== "string") p.deleteProperty("CAREER_RESUME_TEXT");
   return "Profile ready: " + experiences.length + " experience entries, " +
     experiences.reduce((n,x)=>n+x.claims.length,0) + " verified claims, " + skills.length + " skills. Review the result in the generated CV before enabling the daily trigger.";
+}
+
+function normalizeProfileEvidence_(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .replace(/\u00ad/g, "")
+    .replace(/ß/g, "ss")
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 
@@ -338,12 +353,16 @@ function saveJmailProfileDraft(payload) {
   const sender = payload.sender || {};
   sender.address = sender.city || "";
   p.setProperty("JMAIL_SENDER_JSON", JSON.stringify(sender));
+  p.deleteProperty("CAREER_PROFILE_DRAFT_JSON");
   try {
     buildCareerProfileFromResume(payload.resumeText, "CAREER_PROFILE_JSON");
     const draft = p.getProperty("CAREER_PROFILE_JSON");
     if (!draft) throw new Error("Profile draft was not created.");
     p.setProperty("CAREER_PROFILE_DRAFT_JSON", draft);
     return {preview: careerProfilePreview_(JSON.parse(draft))};
+  } catch (e) {
+    const detail = e && e.message ? e.message : String(e);
+    throw new Error("Настройки сопоставления, времени в пути и контактов сохранены; действующий профиль не изменён. Новый профиль не создан: " + detail);
   } finally {
     p.deleteProperty("CAREER_RESUME_TEXT");
     if (previousProfile) p.setProperty("CAREER_PROFILE_JSON", previousProfile);

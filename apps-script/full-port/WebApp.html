@@ -185,7 +185,7 @@
       document.getElementById("dailyState").textContent=translate(s.dailyEnabled?"Ежедневный запуск включён":"Ежедневный запуск выключен");
       document.getElementById("geminiDataConsent").checked=Boolean(s.hasDataConsent);
       document.getElementById("dashboardConsent").checked=Boolean(s.hasDataConsent);
-      const dashboardReady=Boolean(s.hasApiKey&&s.lastRunAt);
+      const dashboardReady=Boolean(s.hasApiKey&&(s.dashboardUnlocked||s.lastRunAt));
       document.getElementById("dashboard").hidden=!(dashboardReady&&!editingSettings);
       document.getElementById("backToDashboard").hidden=!(dashboardReady&&editingSettings);
       document.querySelectorAll(".wizard-step").forEach(step=>{
@@ -234,16 +234,19 @@
   }
   function approveProfile(){say("Сохраняю подтверждённый профиль…");google.script.run.withSuccessHandler(m=>{document.getElementById("preview").style.display="none";document.getElementById("approveBtn").style.display="none";editingSettings=false;say(m);refresh()}).withFailureHandler(fail).approveJmailProfile();}
   function runTest(){
-    if(!document.getElementById("geminiDataConsent").checked){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
-    say("Проверяю новые письма во «Входящих»…");
-    google.script.run.withSuccessHandler(r=>{
-      if(r&&r.status==="consent_required"){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
-      if(r&&r.status==="setup_incomplete"){say("Сначала завершите шаги 1–3: папка/таблица, Gemini и подтверждение профиля.");return}
-      if(r&&r.status==="no_emails"){say("За последние сутки новых писем нет. Включите оповещения о вакансиях и повторите проверку.");return}
-      if(r&&r.status==="already_running"){say("Обработка уже идёт. Дождитесь её завершения.");return}
-      say(r?renderRunSummary(r):"Запуск завершён.");
+    google.script.run.withSuccessHandler(()=>{
       refresh();
-    }).withFailureHandler(fail).processJobEmails();
+      if(!document.getElementById("geminiDataConsent").checked){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
+      say("Проверяю новые письма во «Входящих»…");
+      google.script.run.withSuccessHandler(r=>{
+        refresh();
+        if(r&&r.status==="consent_required"){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
+        if(r&&r.status==="setup_incomplete"){say("Сначала завершите шаги 1–3: папка/таблица, Gemini и подтверждение профиля.");return}
+        if(r&&r.status==="no_emails"){say("За последние сутки новых писем нет. Включите оповещения о вакансиях и повторите проверку.");return}
+        if(r&&r.status==="already_running"){say("Обработка уже идёт. Дождитесь её завершения.");return}
+        say(r?renderRunSummary(r):"Запуск завершён.");
+      }).withFailureHandler(err=>{refresh();fail(err)}).processJobEmails();
+    }).withFailureHandler(fail).markJmailDashboardUnlocked();
   }
   function setDaily(enabled){
     if(enabled&&!document.getElementById("geminiDataConsent").checked){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
@@ -266,6 +269,7 @@
 </script>
 </body>
 </html>
+
 
 
 

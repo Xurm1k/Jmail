@@ -30,7 +30,7 @@
   <div class="note"><b>Используйте отдельный Gmail для поиска работы.</b> Jmail проверяет новые письма во «Входящих» за последние сутки. ИИ автоматически решает, добавлять ли вакансию в список; остальные письма и вакансии перемещаются в корзину. При техническом сбое письмо остаётся для следующего запуска. Отклики автоматически не отправляются. Текст писем, резюме и критерии передаются Google Gemini.</div>
 
   <section class="panel" id="dashboard" hidden>
-    <h2>Ваша автоматизация</h2>
+    <h2>Шаг 5. Управление автоматизацией</h2>
     <p class="small">Настройка завершена. Запускайте проверку, управляйте ежедневным расписанием и открывайте свои материалы.</p>
     <p><span class="state-pill" id="dailyState">Ежедневный запуск выключен</span></p>
     <div class="links" id="dashboardLinks"></div>
@@ -39,10 +39,23 @@
       <button class="secondary" type="button" onclick="setDaily(true)">Включить ежедневную проверку</button>
       <button class="secondary" type="button" onclick="setDaily(false)">Остановить ежедневную проверку</button>
       <button class="secondary" type="button" onclick="editSettings()">Изменить настройки</button>
+      <button class="secondary" type="button" onclick="confirmDeleteJmail()">Удалить мои данные и отключить Jmail</button>
     </div>
+    <label class="consent-row"><input id="dashboardConsent" type="checkbox"><span>Я согласен(-на) отправлять профиль, критерии и тексты писем Google Gemini для анализа.</span></label>
     <div id="dashboardRunSummary" class="run-summary"></div>
   </section>
+  <dialog id="deleteJmailDialog" aria-labelledby="deleteJmailTitle">
+    <h2 id="deleteJmailTitle">Удалить данные Jmail?</h2>
+    <p>Будут удалены сохранённые профиль, критерии, API-ключ и настройки; ежедневный запуск и фильтры Jmail будут отключены. Таблица и папка Jmail переместятся в корзину Google Диска. Письма Gmail не удаляются. Доступ Jmail к Google будет отозван.</p>
+    <button type="button" onclick="deleteJmailData()">Удалить и отключить</button>
+    <button class="secondary" type="button" onclick="document.getElementById('deleteJmailDialog').close()">Отмена</button>
+  </dialog>
   <button id="backToDashboard" class="secondary" type="button" onclick="backToDashboard()" hidden>Вернуться к автоматизации</button>
+  <section class="panel" id="deleteComplete" hidden>
+    <h2>Jmail отключён</h2>
+    <p>Ваши сохранённые данные удалены, автоматический запуск остановлен. Письма Gmail не затронуты.</p>
+    <a class="button secondary" href="https://xurm1k.github.io/Jmail/">Вернуться на сайт Jmail</a>
+  </section>
 
   <section class="panel wizard-step"><div class="step"><span class="num">1</span><div>
     <h2>Подключить Google и создать рабочие материалы</h2>
@@ -74,7 +87,7 @@
     <a class="button" data-guide-key="open" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Открыть Google AI Studio</a>
   </dialog>
 
-  <section class="panel wizard-step"><div class="step"><span class="num">3</span><div style="width:100%">
+  <section class="panel wizard-step profile-step"><div class="step"><span class="num">3</span><div style="width:100%">
     <h2>Загрузить резюме и задать критерии</h2>
     <label for="resume">Резюме (PDF, DOCX или TXT, до 15 000 символов)</label><input id="resume" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain">
     <p class="small">Текст извлекается в браузере. Он отправится в Apps Script и Google Gemini только после нажатия «Сформировать профиль».</p>
@@ -117,9 +130,9 @@
   });
   Object.assign(translations.en,{"Я согласен(-на), что мой профиль, критерии и тексты писем и вакансий отправляются Google Gemini. Google указывает, что данные бесплатного API могут использоваться для улучшения продуктов.":"I agree that my profile, criteria, and job email text will be sent to Google Gemini. Google states that free API data may be used to improve its products.","Подробнее об условиях Gemini API":"Read Gemini API terms","Согласие можно отозвать здесь; ежедневный запуск будет остановлен.":"You can withdraw consent here; the daily run will stop.","Согласие сохранено для этого Google-аккаунта.":"Consent saved for this Google account.","Согласие отозвано; ежедневный запуск остановлен.":"Consent withdrawn; daily runs stopped.","Jmail/Processed означает, что письмо уже автоматически оценено и не будет повторно проверяться. Подходящие письма архивируются, неподходящие перемещаются в корзину. Ярлык проверки больше не используется; старые письма с ним будут автоматически обработаны при следующем запуске.":"Jmail/Processed means the email was automatically evaluated and will not be checked again. Suitable emails are archived; unsuitable emails go to Trash. The review label is no longer used; older emails with it will be automatically processed on the next run.","Сначала подтвердите обработку резюме и писем в Google Gemini.":"First confirm that your profile and email data may be processed by Google Gemini."});
   Object.assign(translations.de,{"Я согласен(-на), что мой профиль, критерии и тексты писем и вакансий отправляются Google Gemini. Google указывает, что данные бесплатного API могут использоваться для улучшения продуктов.":"Ich stimme zu, dass mein Profil, meine Kriterien sowie E-Mail- und Stelleninhalte an Google Gemini gesendet werden. Google weist darauf hin, dass Daten der kostenlosen API zur Verbesserung seiner Produkte verwendet werden können.","Подробнее об условиях Gemini API":"Gemini-API-Bedingungen lesen","Согласие можно отозвать здесь; ежедневный запуск будет остановлен.":"Sie können die Zustimmung hier widerrufen; der tägliche Lauf wird gestoppt.","Согласие сохранено для этого Google-аккаунта.":"Zustimmung für dieses Google-Konto gespeichert.","Согласие отозвано; ежедневный запуск остановлен.":"Zustimmung widerrufen; tägliche Läufe gestoppt.","Jmail/Processed означает, что письмо уже автоматически оценено и не будет повторно проверяться. Подходящие письма архивируются, неподходящие перемещаются в корзину. Ярлык проверки больше не используется; старые письма с ним будут автоматически обработаны при следующем запуске.":"Jmail/Processed kennzeichnet automatisch bewertete E-Mails, die nicht erneut geprüft werden. Passende E-Mails werden archiviert, unpassende in den Papierkorb verschoben. Das Prüf-Label wird nicht mehr verwendet; ältere E-Mails damit werden beim nächsten Lauf automatisch verarbeitet.","Сначала подтвердите обработку резюме и писем в Google Gemini.":"Bestätigen Sie zuerst die Verarbeitung Ihrer Profildaten und E-Mails durch Google Gemini."});
-  let currentLanguage="ru";
-  let editingSettings=false;
-  let consentPending=false;
+  Object.assign(translations.en,{"Шаг 5. Управление автоматизацией":"Step 5. Manage your automation","Удалить мои данные и отключить Jmail":"Delete my data and disconnect Jmail","Я согласен(-на) отправлять профиль, критерии и тексты писем Google Gemini для анализа.":"I agree to send my profile, criteria, and email text to Google Gemini for analysis.","Удалить данные Jmail?":"Delete Jmail data?","Будут удалены сохранённые профиль, критерии, API-ключ и настройки; ежедневный запуск и фильтры Jmail будут отключены. Таблица и папка Jmail переместятся в корзину Google Диска. Письма Gmail не удаляются. Доступ Jmail к Google будет отозван.":"Your saved profile, criteria, API key, and settings will be deleted. Jmail's schedule and filters will be removed. Its spreadsheet and Drive folder will be moved to Google Drive Trash. Gmail messages will not be deleted. Jmail access to Google will be revoked.","Удалить и отключить":"Delete and disconnect","Отмена":"Cancel","Jmail отключён":"Jmail disconnected","Ваши сохранённые данные удалены, автоматический запуск остановлен. Письма Gmail не затронуты.":"Your saved data was deleted and automation stopped. Gmail messages were not changed.","Данные Jmail удалены, ежедневный запуск остановлен, доступ отозван. Письма Gmail сохранены.":"Jmail data was deleted, automation stopped, and access revoked. Gmail messages were kept.","Вернуться на сайт Jmail":"Return to Jmail"});
+  Object.assign(translations.de,{"Шаг 5. Управление автоматизацией":"Schritt 5. Automatisierung verwalten","Удалить мои данные и отключить Jmail":"Meine Daten löschen und Jmail trennen","Я согласен(-на) отправлять профиль, критерии и тексты писем Google Gemini для анализа.":"Ich bin einverstanden, dass mein Profil, meine Kriterien und E-Mail-Texte zur Analyse an Google Gemini gesendet werden.","Удалить данные Jmail?":"Jmail-Daten löschen?","Будут удалены сохранённые профиль, критерии, API-ключ и настройки; ежедневный запуск и фильтры Jmail будут отключены. Таблица и папка Jmail переместятся в корзину Google Диска. Письма Gmail не удаляются. Доступ Jmail к Google будет отозван.":"Gespeichertes Profil, Kriterien, API-Schlüssel und Einstellungen werden gelöscht. Jmail-Zeitplan und Filter werden entfernt. Tabelle und Drive-Ordner werden in den Google-Papierkorb verschoben. Gmail-Nachrichten bleiben erhalten. Der Google-Zugriff von Jmail wird widerrufen.","Удалить и отключить":"Löschen und trennen","Отмена":"Abbrechen","Jmail отключён":"Jmail getrennt","Ваши сохранённые данные удалены, автоматический запуск остановлен. Письма Gmail не затронуты.":"Ihre gespeicherten Daten wurden gelöscht und die Automatisierung gestoppt. Gmail-Nachrichten bleiben unverändert.","Данные Jmail удалены, ежедневный запуск остановлен, доступ отозван. Письма Gmail сохранены.":"Jmail-Daten wurden gelöscht, Automatisierung gestoppt und Zugriff widerrufen. Gmail-Nachrichten bleiben erhalten.","Вернуться на сайт Jmail":"Zurück zur Jmail-Website"});
+  let currentLanguage="ru", editingSettings=false, profileEditorLoaded=false, consentPending=false;
   const guideTranslations={
     ru:{title:"Получить и подключить Gemini API key",account:"Откройте AI Studio под тем же отдельным Google-аккаунтом, который используется для Jmail. Не используйте основную почту.",switch:"Если открылся основной аккаунт, нажмите на аватар Google и переключитесь на отдельный рабочий аккаунт.",create:"Нажмите «Create API key».",project:"Если появится выбор проекта, оставьте проект по умолчанию. Новый проект создавать не нужно; не подключайте оплату — используйте бесплатный вариант.",paste:"Скопируйте ключ. Закройте это окно, вставьте его в поле «Ключ Gemini» прямо под инструкцией и нажмите «Проверить и сохранить ключ».",open:"Открыть Google AI Studio"},
     en:{title:"Get and connect a Gemini API key",account:"Open AI Studio with the same separate Google account used for Jmail. Do not use your primary email.",switch:"If your primary account opens, click the Google profile picture and switch to your separate job-search account.",create:"Click Create API key.",project:"If asked to choose a project, keep the default project. Do not create a new one or enable billing; use the free option.",paste:"Copy the key, close this guide, paste it into the Gemini key field below, and click Verify and save key.",open:"Open Google AI Studio"},
@@ -147,6 +160,10 @@
     consentPending=true;e.target.disabled=true;
     google.script.run.withSuccessHandler(message=>{consentPending=false;e.target.disabled=false;say(message);refresh()}).withFailureHandler(err=>{consentPending=false;e.target.disabled=false;fail(err);refresh()}).setJmailDataConsent(e.target.checked);
   });
+  document.getElementById("dashboardConsent").addEventListener("change",e=>{
+    consentPending=true;e.target.disabled=true;
+    google.script.run.withSuccessHandler(message=>{consentPending=false;e.target.disabled=false;say(message);refresh()}).withFailureHandler(err=>{consentPending=false;e.target.disabled=false;fail(err);refresh()}).setJmailDataConsent(e.target.checked);
+  });
   applyLanguage(localStorage.getItem("jmail-language")||"ru");
   setTheme(localStorage.getItem("jmail-theme")||"light");
 
@@ -163,11 +180,21 @@
       if(s.lastRun){dashboardSummary.style.display="block";dashboardSummary.textContent=renderRunSummary(s.lastRun)}
       document.getElementById("dailyState").textContent=translate(s.dailyEnabled?"Ежедневный запуск включён":"Ежедневный запуск выключен");
       document.getElementById("geminiDataConsent").checked=Boolean(s.hasDataConsent);
-      const configured=Boolean(s.ready&&s.hasApiKey&&s.hasProfile&&s.hasDataConsent);
-      document.getElementById("dashboard").hidden=!(configured&&!editingSettings);
-      document.getElementById("backToDashboard").hidden=!(configured&&editingSettings);
-      document.querySelectorAll(".wizard-step").forEach(step=>{step.hidden=configured&&!editingSettings});
-      if(s.ready&&!configured)say("Google-ресурсы готовы. "+(s.hasApiKey?"Gemini подключён. ":"Добавьте ключ Gemini. ")+(s.hasProfile?"Профиль подтверждён. ":"Добавьте и подтвердите профиль. "));
+      document.getElementById("dashboardConsent").checked=Boolean(s.hasDataConsent);
+      const dashboardReady=Boolean(s.hasApiKey&&s.lastRunAt);
+      document.getElementById("dashboard").hidden=!(dashboardReady&&!editingSettings);
+      document.getElementById("backToDashboard").hidden=!(dashboardReady&&editingSettings);
+      document.querySelectorAll(".wizard-step").forEach(step=>{
+        step.hidden=dashboardReady?(!editingSettings||!step.classList.contains("profile-step")):false;
+      });
+      if(dashboardReady&&!profileEditorLoaded&&s.profileSettings){
+        const f=s.profileSettings;
+        document.getElementById("name").value=f.name||"";document.getElementById("email").value=f.email||"";
+        document.getElementById("phone").value=f.phone||"";document.getElementById("city").value=f.city||"";
+        document.getElementById("criteria").value=f.jobCriteria||"";document.getElementById("score").value=f.minMatchScore||85;
+        document.getElementById("commute").value=f.maxCommuteMinutes||60;profileEditorLoaded=true;
+      }
+      if(s.ready&&!dashboardReady)say("Google-ресурсы готовы. "+(s.hasApiKey?"Gemini подключён. ":"Добавьте ключ Gemini. ")+(s.hasProfile?"Профиль подтверждён. ":"Добавьте и подтвердите профиль. "));
     }).withFailureHandler(fail).getJmailSetupStatus();
   }
   function editSettings(){editingSettings=true;refresh();window.scrollTo({top:0,behavior:"smooth"})}
@@ -220,10 +247,22 @@
     const runner=google.script.run.withSuccessHandler(m=>{say(m);refresh()}).withFailureHandler(fail);
     if(enabled)runner.installJmailDailyTrigger();else runner.removeJmailDailyTrigger();
   }
+  function confirmDeleteJmail(){document.getElementById("deleteJmailDialog").showModal()}
+  function deleteJmailData(){
+    const buttons=document.querySelectorAll("#deleteJmailDialog button");buttons.forEach(button=>button.disabled=true);
+    say("Удаляю данные Jmail и отключаю доступ…");
+    google.script.run.withSuccessHandler(result=>{
+      document.getElementById("deleteJmailDialog").close();
+      const warnings=result&&result.warnings||[];
+      statusNode.textContent=warnings.length?"Данные Jmail удалены. Проверьте: "+warnings.join(" "):translate("Данные Jmail удалены, ежедневный запуск остановлен, доступ отозван. Письма Gmail сохранены.");
+      document.getElementById("dashboard").hidden=true;document.getElementById("deleteComplete").hidden=false;document.querySelectorAll(".wizard-step").forEach(step=>step.hidden=true);
+    }).withFailureHandler(err=>{buttons.forEach(button=>button.disabled=false);fail(err)}).deleteJmailUserData();
+  }
   refresh();
 </script>
 </body>
 </html>
+
 
 
 

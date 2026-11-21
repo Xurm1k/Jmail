@@ -21,6 +21,12 @@ const CONFIG = (function () {
     GMAIL_LABEL_PROCESSED: settings.processedLabel || "Jmail/Обработано",
     GMAIL_LABEL_REVIEW: settings.reviewLabel || "Jmail/Проверить",
     MIN_MATCH_SCORE: Number(settings.minMatchScore || 85),
+    JOB_CRITERIA: settings.jobCriteria || "",
+    EXCLUDED_ROLE_FAMILIES: Array.isArray(settings.excludedRoleFamilies) ? settings.excludedRoleFamilies : ["data_analyst"],
+    EXCLUDED_PHYSICAL_DEMANDS: Array.isArray(settings.excludedPhysicalDemands) ? settings.excludedPhysicalDemands : ["heavy", "prolonged_standing"],
+    ALLOWED_ROLE_FAMILIES: Array.isArray(settings.allowedRoleFamilies) ? settings.allowedRoleFamilies : ["office_admin", "quality_control", "customer_service", "supervisor", "other"],
+    ALLOWED_PHYSICAL_DEMANDS: Array.isArray(settings.allowedPhysicalDemands) ? settings.allowedPhysicalDemands : ["desk", "light"],
+    ALLOWED_APPLICATION_EFFORTS: Array.isArray(settings.allowedApplicationEfforts) ? settings.allowedApplicationEfforts : ["simple", "moderate"],
     MAX_RUNTIME_SECONDS: Number(settings.maxRuntimeSeconds || 300),
     MIN_SECONDS_TO_START_JOB: Number(settings.minSecondsToStartJob || 150),
     THREADS_PAGE_SIZE: Number(settings.threadsPageSize || 100),
@@ -319,12 +325,12 @@ function evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, sta
   const physical = aiResponse.physical_demand;
   const effort = aiResponse.application_effort;
 
-  if (role === "data_analyst") {
+  if ((CONFIG.EXCLUDED_ROLE_FAMILIES || ["data_analyst"]).includes(role)) {
     return evidenceIsPresent(sourceText, evidence.role)
       ? { status: "reject", reason: "роль Data Analyst исключена" }
       : { status: "review", reason: "тип роли не подтвержден текстом письма" };
   }
-  if (physical === "heavy" || physical === "prolonged_standing") {
+  if ((CONFIG.EXCLUDED_PHYSICAL_DEMANDS || ["heavy", "prolonged_standing"]).includes(physical)) {
     return evidenceIsPresent(sourceText, evidence.physical)
       ? { status: "reject", reason: "тяжелая физическая работа или длительная работа стоя" }
       : { status: "review", reason: "физические требования не подтверждены текстом письма" };
@@ -335,9 +341,9 @@ function evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, sta
       : { status: "review", reason: "сложность отклика не подтверждена текстом письма" };
   }
 
-  if (!["office_admin", "quality_control", "customer_service", "supervisor", "other"].includes(role) ||
-      !["desk", "light"].includes(physical) ||
-      !["simple", "moderate"].includes(effort)) {
+  if (!(CONFIG.ALLOWED_ROLE_FAMILIES || ["office_admin", "quality_control", "customer_service", "supervisor", "other"]).includes(role) ||
+      !(CONFIG.ALLOWED_PHYSICAL_DEMANDS || ["desk", "light"]).includes(physical) ||
+      !(CONFIG.ALLOWED_APPLICATION_EFFORTS || ["simple", "moderate"]).includes(effort)) {
     return { status: "review", reason: "не удалось уверенно определить профиль, нагрузку или сложность отклика" };
   }
 
@@ -499,16 +505,16 @@ ${JSON.stringify(recentApplications)}
 Если входящая вакансия совпадает И по компании, И по схожей должности — вердикт СТРОГИЙ SKIP (match_score = 0).
 
 ОЦЕНКА МАТЧА И ПРИОРИТЕТОВ:
-- Базовый порог соответствия — 85%.
+- Базовый порог соответствия — ${CONFIG.MIN_MATCH_SCORE}%.
 - "is_perfect_match": true, если вакансия является идеальным, стопроцентным попаданием в административный профиль, QA или офис без нареканий.
 - "salary_attractiveness_bonus": true, если вакансия предлагает существенно более высокую зарплату (например, хорошие позиции в продажах/ритейле с окладом 40к+ в год или выгодные условия), что делает её приоритетной даже при небольшом отклонении от чисто офисного профиля.
 - Определи, является ли письмо дайджестом ("is_newsletter": true/false).
 
-ГЕОГРАФИЯ И ЛОГИСТИКА:
+КРИТЕРИИ КАНДИДАТА, ВВЕДЁННЫЕ ПОЛЬЗОВАТЕЛЕМ:\n${CONFIG.JOB_CRITERIA || 'Пользователь не указал дополнительных критериев.'}\n\nГЕОГРАФИЯ И ЛОГИСТИКА:
 - Укажи формат работы: on_site, hybrid, remote или unknown.
 - Для onsite/hybrid верни job_location как короткую локацию из письма (город/индекс/адрес). Не вычисляй время поездки — это сделает скрипт через Google Maps.
 - Полностью remote допустим. Hybrid требует проверки маршрута так же, как onsite.
-- Категорический SKIP для Data Analyst, тяжелого физического труда и длительной работы стоя.
+- Учитывай пользовательские ограничения и критерии ниже; не вводи собственные запреты.
 - physical_demand: desk (преимущественно офисная работа), light (обычная легкая активность без длительного стояния), prolonged_standing, heavy или unknown.
 - role_family: office_admin, quality_control, customer_service, supervisor, data_analyst, other или unknown.
 

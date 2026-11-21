@@ -1,11 +1,17 @@
-// User-specific values and secrets are read from Script Properties, never committed here.
+// User-specific values and secrets are kept in the accessing users private User Properties.
+// User Properties keep each account's key, profile, settings, and IDs isolated in the shared web app.
+function jmailProps_() {
+  return PropertiesService.getUserProperties
+    ? PropertiesService.getUserProperties()
+    : PropertiesService.getScriptProperties();
+}
 function readJmailJson_(key, fallback) {
-  const raw = PropertiesService.getScriptProperties().getProperty(key);
+  const raw = jmailProps_().getProperty(key);
   if (!raw) return fallback;
   try { return JSON.parse(raw); } catch (e) { throw new Error("Invalid JSON in Script Property: " + key); }
 }
 const CONFIG = (function () {
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
   const sender = readJmailJson_("JMAIL_SENDER_JSON", {});
   return {

@@ -96,7 +96,7 @@ function checkAndSendMonthlyCareerReport() {
     const now = new Date();
     if (now.getDate() > 7) return;
 
-    const scriptProps = PropertiesService.getScriptProperties();
+    const scriptProps = jmailProps_();
     const currentMonthKey = now.getFullYear() + "-" + (now.getMonth() + 1);
     if (scriptProps.getProperty("LAST_CAREER_REPORT_MONTH") === currentMonthKey) return;
 
@@ -133,4 +133,5 @@ function getPastMonthDataFromSheet(now) {
     return [];
   }
 }
+
 

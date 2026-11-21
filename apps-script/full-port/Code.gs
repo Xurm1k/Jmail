@@ -491,6 +491,7 @@ function processJobEmailsUnlocked() {
         stats.analyzed++;
       if (aiResponse.is_job_related === false) {
         thread.addLabel(processedLabel);
+        thread.moveToTrash();
         stats.nonJobs = (stats.nonJobs || 0) + 1;
         continue;
       }
@@ -499,7 +500,7 @@ function processJobEmailsUnlocked() {
       if (eligibility.status === "defer") continue;
       if (eligibility.status === "reject") {
         thread.addLabel(processedLabel);
-        thread.moveToArchive();
+        thread.moveToTrash();
         stats.rejected++;
         continue;
       }

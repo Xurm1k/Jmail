@@ -13,7 +13,7 @@
 ## Первичная установка
 
 1. Создать Apps Script проект под отдельным Gmail аккаунтом, который будет использоваться для вакансий.
-2. Добавить в проект файлы из этой папки: `Config.gs`, `CareerProfile.gs`, `Bootstrap.gs`, `Main.gs`, `GeminiService.gs`, `GmailManager.gs`, `SheetManager.gs`, `PDFGenerator.gs`, `UI.gs`. Включить показ файла манифеста и вставить `appsscript.json`.
+2. Добавить один файл `Code.gs` и скопировать в него содержимое [`full-port/Code.gs`](./Code.gs). Включить показ файла манифеста и вставить [`appsscript.json`](./appsscript.json). Отдельные `.gs` файлы в папке оставлены для чтения и ревью.
 3. В Project Settings → Script Properties добавить:
    - `GEMINI_API_KEY`: личный ключ Gemini;
    - `CAREER_PROFILE_JSON`: объект профиля в формате, описанном ниже;

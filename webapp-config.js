@@ -1,2 +1,2 @@
 // Public Google Apps Script Web App used by the Jmail landing page.
-window.JMAIL_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzQWF52e_qDuF8k7hCmvRfllOBdXoNW66wQhwYWFjeAo22guXGV89_1N1xY-tMoscPuqA/exec";
+window.JMAIL_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx4B6hV7BOyQUZyjkj-XzRWctw-b0e-jWUbwpksudO6V5_NiwHPHeMFOsAQO4Q_CqTRjw/exec";

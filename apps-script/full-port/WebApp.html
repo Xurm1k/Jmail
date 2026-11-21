@@ -5,8 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    :root{--ink:#17251f;--muted:#68756e;--line:#e3e8e2;--paper:#fff;--canvas:#f5f7f3;--green:#176b4b;--greenbg:#e6f3eb;--amber:#fff3d6}
-    [data-theme="dark"]{--ink:#e5eee8;--muted:#a5b3aa;--line:#34443a;--paper:#1d2921;--canvas:#121a15;--green:#74c69d;--greenbg:#233b2d;--amber:#40351d}
+    :root{--ink:#17251f;--muted:#68756e;--line:#e3e8e2;--paper:#fff;--canvas:#f5f7f3;--green:#176b4b;--greenbg:#e6f3eb;--amber:#fff3d6;--danger:#a52b35;--dangerbg:#fff0f1;--dangerline:#e5a5aa}
+    [data-theme="dark"]{--ink:#e5eee8;--muted:#a5b3aa;--line:#34443a;--paper:#1d2921;--canvas:#121a15;--green:#74c69d;--greenbg:#233b2d;--amber:#40351d;--danger:#ffb9bf;--dangerbg:#3b2427;--dangerline:#74434a}
     *{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
     main{max-width:850px;margin:0 auto;padding:22px 18px 60px}header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:12px}h1{margin:0;color:var(--green);font-size:28px}header p{color:var(--muted);margin:5px 0}.tools{display:flex;gap:8px;align-items:center}.tools select,.tools button{font:inherit;padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink)}
     .note,.panel{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:18px;margin:14px 0}.note{background:var(--amber);font-size:13px}
@@ -17,7 +17,7 @@
     .status{white-space:pre-wrap;color:var(--muted);font-size:13px;margin-top:10px;min-height:20px}.links{display:flex;gap:10px;flex-wrap:wrap}
     .small{font-size:12px;color:var(--muted)}.preview,.run-summary{display:none;background:var(--canvas);border:1px solid var(--line);border-radius:9px;padding:12px;white-space:pre-wrap;margin-top:12px;font-size:13px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    [hidden]{display:none!important}.dashboard-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.dashboard-actions button{margin-right:0}.state-pill{display:inline-block;border-radius:999px;padding:4px 10px;background:var(--greenbg);color:var(--green);font-size:12px;font-weight:700}.consent-row{display:flex;align-items:flex-start;gap:9px;font-weight:400!important;line-height:1.45}.consent-row input{width:auto;flex:none;margin-top:5px}
+    [hidden]{display:none!important}.dashboard-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.dashboard-actions button{margin-right:0}.action-enable{background:var(--greenbg);color:var(--green);border:1px solid #9dcbb0}.action-stop{background:var(--amber);color:#745514;border:1px solid #e6d39c}.action-settings{background:var(--paper);color:var(--ink);border:1px solid var(--line)}.action-danger{background:var(--dangerbg);color:var(--danger);border:1px solid var(--dangerline)}.action-danger:hover{background:var(--dangerline);color:#fff}.action-danger-confirm{background:#a52b35;color:#fff;border:1px solid #8e2029}.action-danger-confirm:hover{background:#8e2029}[data-theme="dark"] .action-enable{border-color:#446c55}[data-theme="dark"] .action-stop{color:#f1d18a;border-color:#66532c}[data-theme="dark"] .action-danger:hover{color:#211719}[data-theme="dark"] .action-danger-confirm{background:#b83b45;border-color:#cf6770}[data-theme="dark"] .action-danger-confirm:hover{background:#d14a55}.dashboard-actions button:focus-visible,dialog button:focus-visible{outline:3px solid #4c8be8;outline-offset:2px}.state-pill{display:inline-block;border-radius:999px;padding:4px 10px;background:var(--greenbg);color:var(--green);font-size:12px;font-weight:700}.consent-row{display:flex;align-items:flex-start;gap:9px;font-weight:400!important;line-height:1.45}.consent-row input{width:auto;flex:none;margin-top:5px}
     dialog{max-width:620px;width:calc(100% - 32px);border:1px solid var(--line);border-radius:15px;background:var(--paper);color:var(--ink);padding:22px}dialog::backdrop{background:#101812aa}dialog h2{margin-bottom:12px}dialog li{margin:8px 0}
     @media(max-width:600px){.row{grid-template-columns:1fr}main{padding:18px 12px 40px}header{align-items:flex-start;flex-direction:column}}
   </style>
@@ -36,10 +36,10 @@
     <div class="links" id="dashboardLinks"></div>
     <div class="dashboard-actions">
       <button type="button" onclick="runTest()">Проверить письма сейчас</button>
-      <button class="secondary" type="button" onclick="setDaily(true)">Включить ежедневную проверку</button>
-      <button class="secondary" type="button" onclick="setDaily(false)">Остановить ежедневную проверку</button>
-      <button class="secondary" type="button" onclick="editSettings()">Изменить настройки</button>
-      <button class="secondary" type="button" onclick="confirmDeleteJmail()">Удалить мои данные и отключить Jmail</button>
+      <button class="action-enable" type="button" onclick="setDaily(true)">Включить ежедневную проверку</button>
+      <button class="action-stop" type="button" onclick="setDaily(false)">Остановить ежедневную проверку</button>
+      <button class="action-settings" type="button" onclick="editSettings()">Изменить настройки</button>
+      <button class="action-danger" type="button" onclick="confirmDeleteJmail()">Удалить мои данные и отключить Jmail</button>
     </div>
     <label class="consent-row"><input id="dashboardConsent" type="checkbox"><span>Я согласен(-на) отправлять профиль, критерии и тексты писем Google Gemini для анализа.</span></label>
     <div id="dashboardRunSummary" class="run-summary"></div>
@@ -47,7 +47,7 @@
   <dialog id="deleteJmailDialog" aria-labelledby="deleteJmailTitle">
     <h2 id="deleteJmailTitle">Удалить данные Jmail?</h2>
     <p>Будут удалены сохранённые профиль, критерии, API-ключ и настройки; ежедневный запуск и фильтры Jmail будут отключены. Все письма с ярлыками Jmail вернутся во «Входящие», в том числе письма из корзины. После этого ярлыки удалятся. Таблица и папка Jmail переместятся в корзину Google Диска. Письма и черновики Gmail не удаляются. Доступ Jmail к Google будет отозван.</p>
-    <button type="button" onclick="deleteJmailData()">Удалить и отключить</button>
+    <button class="action-danger-confirm" type="button" onclick="deleteJmailData()">Удалить и отключить</button>
     <button class="secondary" type="button" onclick="document.getElementById('deleteJmailDialog').close()">Отмена</button>
   </dialog>
   <button id="backToDashboard" class="secondary" type="button" onclick="backToDashboard()" hidden>Вернуться к автоматизации</button>
@@ -270,6 +270,7 @@
 </script>
 </body>
 </html>
+
 
 
 

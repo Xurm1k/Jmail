@@ -2,13 +2,13 @@
 // MAIN.GS — ОСНОВНОЙ ОРКЕСТРАТОР ПРОЦЕССА
 // ==========================================
 function processJobEmails() {
-  const lock = LockService.getScriptLock();
+  const lock = LockService.getUserLock ? LockService.getUserLock() : LockService.getScriptLock();
   if (!lock.tryLock(5000)) {
     Logger.log("Пропуск запуска: другой экземпляр обработки уже работает.");
-    return;
+    return {status: "already_running"};
   }
   try {
-    processJobEmailsUnlocked();
+    return processJobEmailsUnlocked();
   } finally {
     lock.releaseLock();
   }
@@ -29,16 +29,16 @@ function processJobEmailsUnlocked() {
   };
 
   try {
-    if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячные задачи")) return;
+    if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячные задачи")) return stats;
     checkAndCreateMonthlySheet();
-    if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячный отчет")) return;
+    if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячный отчет")) return stats;
     checkAndSendMonthlyCareerReport();
 
     const inputLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_INPUT);
     if (!inputLabel) {
       stats.status = "input_label_missing";
       Logger.log("Не найден входной ярлык; проверьте его название в настройках.");
-      return;
+      return stats;
     }
 
     let processedLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PROCESSED);
@@ -64,15 +64,15 @@ function processJobEmailsUnlocked() {
   
     if (threads.length === 0 && snapshotComplete) {
       const noJobsDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd.MM.yyyy");
-      PropertiesService.getScriptProperties().setProperty("no_jobs_since", noJobsDate);
+      jmailProps_().setProperty("no_jobs_since", noJobsDate);
       stats.status = "no_emails";
       Logger.log('Во входном ярлыке нет писем. Записана информационная отметка no_jobs_since; триггер не отключается.');
-      return;
+      return stats;
     }
-    if (threads.length > 0) PropertiesService.getScriptProperties().deleteProperty("no_jobs_since");
+    if (threads.length > 0) jmailProps_().deleteProperty("no_jobs_since");
     if (threads.length === 0) {
       stats.status = "time_budget_reached";
-      return;
+      return stats;
     }
 
     const currentDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd.MM.yyyy");
@@ -136,7 +136,7 @@ function processJobEmailsUnlocked() {
           ? "time_budget_reached"
           : (stats.rejected > 0 || stats.review > 0 ? "no_eligible_jobs" : "no_valid_analysis");
       }
-      return;
+      return stats;
     }
 
     if (!shouldContinueProcessing(startTime, CONFIG.MIN_SECONDS_TO_START_JOB, stats, "отбор вакансий")) {
@@ -199,7 +199,7 @@ function processJobEmailsUnlocked() {
     stats.runtimeSeconds = Math.round(elapsed * 10) / 10;
     Logger.log("Итог запуска: " + JSON.stringify(stats));
     try {
-      const props = PropertiesService.getScriptProperties();
+      const props = jmailProps_();
       props.setProperty("last_runtime_seconds", String(stats.runtimeSeconds));
       props.setProperty("last_run_timestamp", new Date().toISOString());
       props.setProperty("last_run_status", stats.status);
@@ -208,6 +208,7 @@ function processJobEmailsUnlocked() {
       Logger.log("Не удалось сохранить метрики запуска: " + metricsError.toString());
     }
   }
+  return stats;
 }
 
 function shouldContinueProcessing(startTime, reserveSeconds, stats, phase) {
@@ -393,5 +394,6 @@ function authorizeMapsService() {
     .getDirections();
   Logger.log("Maps Service authorization check: " + (directions.status || "no status"));
 }
+
 
 

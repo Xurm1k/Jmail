@@ -61,7 +61,7 @@ ${JSON.stringify(recentApplications)}
   const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", headers:{"x-goog-api-key":CONFIG.GEMINI_API_KEY}, payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
-    Logger.log("Gemini analysis HTTP " + responseCode + ": " + response.getContentText().slice(0, 800));
+    Logger.log("Gemini analysis request failed with HTTP " + responseCode + ". Response body omitted for privacy.");
     return null; // Оставляем письмо на входном ярлыке для следующего обычного запуска.
   }
   
@@ -208,7 +208,7 @@ ${String(jobData.job_description || "").slice(0, 16000)}
   });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
-    Logger.log("Gemini document generation HTTP " + responseCode + ": " + response.getContentText().slice(0, 600));
+    Logger.log("Gemini document request failed with HTTP " + responseCode + ". Response body omitted for privacy.");
     return null;
   }
 
@@ -320,7 +320,7 @@ function generateCareerAdviceWithGemini(pastData) {
   const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", headers:{"x-goog-api-key":CONFIG.GEMINI_API_KEY}, payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
-    Logger.log("Gemini career report HTTP " + responseCode + ": " + response.getContentText().slice(0, 800));
+    Logger.log("Gemini career report request failed with HTTP " + responseCode + ". Response body omitted for privacy.");
     return null;
   }
   try {
@@ -330,5 +330,6 @@ function generateCareerAdviceWithGemini(pastData) {
     return null;
   }
 }
+
 
 

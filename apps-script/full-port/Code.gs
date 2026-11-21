@@ -19,9 +19,9 @@ const CONFIG = (function () {
     GEMINI_DOCUMENTS_MODEL: settings.geminiDocumentsModel || "gemini-3.1-flash-lite",
     SPREADSHEET_ID: p.getProperty("SPREADSHEET_ID") || "",
     USER_EMAIL: settings.userEmail || Session.getEffectiveUser().getEmail() || "",
-    GMAIL_LABEL_INPUT: settings.inputLabel || "Jmail/Вакансии",
-    GMAIL_LABEL_PROCESSED: settings.processedLabel || "Jmail/Обработано",
-    GMAIL_LABEL_REVIEW: settings.reviewLabel || "Jmail/Проверить",
+    GMAIL_LABEL_INPUT: settings.inputLabel || "Jmail/Jobs",
+    GMAIL_LABEL_PROCESSED: settings.processedLabel || "Jmail/Processed",
+    GMAIL_LABEL_REVIEW: settings.reviewLabel || "Jmail/Review",
     MIN_MATCH_SCORE: Number(settings.minMatchScore || 85),
     JOB_CRITERIA: settings.jobCriteria || "",
     EXCLUDED_ROLE_FAMILIES: Array.isArray(settings.excludedRoleFamilies) ? settings.excludedRoleFamilies : ["data_analyst"],
@@ -53,8 +53,8 @@ const CAREER_PROFILE = readJmailJson_("CAREER_PROFILE_JSON", {
 function setupJmail() {
   const p = jmailProps_();
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
-  const processedName = settings.processedLabel || "Jmail/Обработано";
-  const reviewName = settings.reviewLabel || "Jmail/Проверить";
+  const processedName = settings.processedLabel || "Jmail/Processed";
+  const reviewName = settings.reviewLabel || "Jmail/Review";
   let ss = null;
   const savedSpreadsheetId = p.getProperty("SPREADSHEET_ID");
   if (savedSpreadsheetId) {
@@ -75,7 +75,7 @@ function setupJmail() {
     catch (e) { p.deleteProperty("PDF_FOLDER_ID"); }
   }
   if (!folder) {
-    folder = DriveApp.createFolder("Jmail — Bewerbungsunterlagen");
+    folder = DriveApp.createFolder("Jmail Application Documents");
     p.setProperty("PDF_FOLDER_ID", folder.getId());
   }
   [processedName, reviewName].forEach(n => {
@@ -111,7 +111,7 @@ function createJmailGmailFilters(senderList) {
   if (!senders.length) throw new Error("Укажите хотя бы один адрес отправителя вакансий.");
   if (senders.length > 20 || senders.some(x => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))
     throw new Error("Проверьте адреса отправителей. За один раз можно добавить до 20 адресов.");
-  const labelName = readJmailJson_("JMAIL_SETTINGS_JSON", {}).inputLabel || "Jmail/Вакансии";
+  const labelName = readJmailJson_("JMAIL_SETTINGS_JSON", {}).inputLabel || "Jmail/Jobs";
   const labels = Gmail.Users.Labels.list("me").labels || [];
   const label = labels.find(x => x.name === labelName);
   if (!label) throw new Error("Ярлык " + labelName + " не найден. Сначала выполните настройку Jmail.");
@@ -327,9 +327,9 @@ function saveJmailProfileDraft(payload) {
     readJmailJson_("JMAIL_SETTINGS_JSON", {}),
     payload.settings || {}
   );
-  settings.inputLabel = settings.inputLabel || "Jmail/Вакансии";
-  settings.processedLabel = settings.processedLabel || "Jmail/Обработано";
-  settings.reviewLabel = settings.reviewLabel || "Jmail/Проверить";
+  settings.inputLabel = settings.inputLabel === "Jmail/Вакансии" || !settings.inputLabel ? "Jmail/Jobs" : settings.inputLabel;
+  settings.processedLabel = settings.processedLabel === "Jmail/Обработано" || !settings.processedLabel ? "Jmail/Processed" : settings.processedLabel;
+  settings.reviewLabel = settings.reviewLabel === "Jmail/Проверить" || !settings.reviewLabel ? "Jmail/Review" : settings.reviewLabel;
   p.setProperty("JMAIL_SETTINGS_JSON", JSON.stringify(settings));
   const sender = payload.sender || {};
   sender.address = sender.city || "";
@@ -374,8 +374,41 @@ function doGet() {
     .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
+function migrateJmailResourceNames_() {
+  const p = jmailProps_();
+  if (p.getProperty("JMAIL_RESOURCE_NAMES_MIGRATED_V1") === "yes") return;
+  const folderId = p.getProperty("PDF_FOLDER_ID");
+  if (folderId) {
+    try { DriveApp.getFolderById(folderId).setName("Jmail Application Documents"); } catch (e) {}
+  }
+  const mapping = {"Jmail/Вакансии":"Jmail/Jobs", "Jmail/Обработано":"Jmail/Processed", "Jmail/Проверить":"Jmail/Review"};
+  const labels = Gmail.Users.Labels.list("me").labels || [];
+  Object.keys(mapping).forEach(oldName => {
+    const item = labels.find(label => label.name === oldName);
+    const destination = GmailApp.getUserLabelByName(mapping[oldName]);
+    if (item && destination) {
+      const source = GmailApp.getUserLabelByName(oldName);
+      for (let offset = 0; ; offset += 100) {
+        const batch = source.getThreads(offset, 100);
+        if (!batch.length) break;
+        destination.addToThreads(batch);
+        if (batch.length < 100) break;
+      }
+      source.deleteLabel();
+    } else if (item) Gmail.Users.Labels.update({name:mapping[oldName]}, "me", item.id);
+  });
+  const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
+  Object.keys(mapping).forEach(key => {
+    const field = key.endsWith("Вакансии") ? "inputLabel" : (key.endsWith("Обработано") ? "processedLabel" : "reviewLabel");
+    if (!settings[field] || settings[field] === key) settings[field] = mapping[key];
+  });
+  p.setProperty("JMAIL_SETTINGS_JSON", JSON.stringify(settings));
+  p.setProperty("JMAIL_RESOURCE_NAMES_MIGRATED_V1", "yes");
+}
+
 function getJmailSetupStatus() {
   const p = jmailProps_();
+  migrateJmailResourceNames_();
   const spreadsheetId = p.getProperty("SPREADSHEET_ID") || "";
   const folderId = p.getProperty("PDF_FOLDER_ID") || "";
   let spreadsheetUrl = "";
@@ -852,7 +885,7 @@ ${JSON.stringify(recentApplications)}
   const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", headers:{"x-goog-api-key":CONFIG.GEMINI_API_KEY}, payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
-    Logger.log("Gemini analysis HTTP " + responseCode + ": " + response.getContentText().slice(0, 800));
+    Logger.log("Gemini analysis request failed with HTTP " + responseCode + ". Response body omitted for privacy.");
     return null; // Оставляем письмо на входном ярлыке для следующего обычного запуска.
   }
   
@@ -999,7 +1032,7 @@ ${String(jobData.job_description || "").slice(0, 16000)}
   });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
-    Logger.log("Gemini document generation HTTP " + responseCode + ": " + response.getContentText().slice(0, 600));
+    Logger.log("Gemini document request failed with HTTP " + responseCode + ". Response body omitted for privacy.");
     return null;
   }
 
@@ -1111,7 +1144,7 @@ function generateCareerAdviceWithGemini(pastData) {
   const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", headers:{"x-goog-api-key":CONFIG.GEMINI_API_KEY}, payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
-    Logger.log("Gemini career report HTTP " + responseCode + ": " + response.getContentText().slice(0, 800));
+    Logger.log("Gemini career report request failed with HTTP " + responseCode + ". Response body omitted for privacy.");
     return null;
   }
   try {
@@ -1599,5 +1632,6 @@ function manualCleanupAction() {
     SpreadsheetApp.getUi().alert("❌ Ошибка при очистке: " + err.toString());
   }
 }
+
 
 

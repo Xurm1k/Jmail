@@ -5,8 +5,8 @@
 function setupJmail() {
   const p = jmailProps_();
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
-  const processedName = settings.processedLabel || "Jmail/Обработано";
-  const reviewName = settings.reviewLabel || "Jmail/Проверить";
+  const processedName = settings.processedLabel || "Jmail/Processed";
+  const reviewName = settings.reviewLabel || "Jmail/Review";
   let ss = null;
   const savedSpreadsheetId = p.getProperty("SPREADSHEET_ID");
   if (savedSpreadsheetId) {
@@ -27,7 +27,7 @@ function setupJmail() {
     catch (e) { p.deleteProperty("PDF_FOLDER_ID"); }
   }
   if (!folder) {
-    folder = DriveApp.createFolder("Jmail — Bewerbungsunterlagen");
+    folder = DriveApp.createFolder("Jmail Application Documents");
     p.setProperty("PDF_FOLDER_ID", folder.getId());
   }
   [processedName, reviewName].forEach(n => {
@@ -63,7 +63,7 @@ function createJmailGmailFilters(senderList) {
   if (!senders.length) throw new Error("Укажите хотя бы один адрес отправителя вакансий.");
   if (senders.length > 20 || senders.some(x => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))
     throw new Error("Проверьте адреса отправителей. За один раз можно добавить до 20 адресов.");
-  const labelName = readJmailJson_("JMAIL_SETTINGS_JSON", {}).inputLabel || "Jmail/Вакансии";
+  const labelName = readJmailJson_("JMAIL_SETTINGS_JSON", {}).inputLabel || "Jmail/Jobs";
   const labels = Gmail.Users.Labels.list("me").labels || [];
   const label = labels.find(x => x.name === labelName);
   if (!label) throw new Error("Ярлык " + labelName + " не найден. Сначала выполните настройку Jmail.");
@@ -279,9 +279,9 @@ function saveJmailProfileDraft(payload) {
     readJmailJson_("JMAIL_SETTINGS_JSON", {}),
     payload.settings || {}
   );
-  settings.inputLabel = settings.inputLabel || "Jmail/Вакансии";
-  settings.processedLabel = settings.processedLabel || "Jmail/Обработано";
-  settings.reviewLabel = settings.reviewLabel || "Jmail/Проверить";
+  settings.inputLabel = settings.inputLabel === "Jmail/Вакансии" || !settings.inputLabel ? "Jmail/Jobs" : settings.inputLabel;
+  settings.processedLabel = settings.processedLabel === "Jmail/Обработано" || !settings.processedLabel ? "Jmail/Processed" : settings.processedLabel;
+  settings.reviewLabel = settings.reviewLabel === "Jmail/Проверить" || !settings.reviewLabel ? "Jmail/Review" : settings.reviewLabel;
   p.setProperty("JMAIL_SETTINGS_JSON", JSON.stringify(settings));
   const sender = payload.sender || {};
   sender.address = sender.city || "";
@@ -314,4 +314,5 @@ function approveJmailProfile() {
   p.deleteProperty("CAREER_PROFILE_DRAFT_JSON");
   return "Профиль сохранён. Теперь можно проверить новые письма во Входящих.";
 }
+
 

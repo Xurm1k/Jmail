@@ -18,9 +18,9 @@ const CONFIG = (function () {
     GEMINI_DOCUMENTS_MODEL: settings.geminiDocumentsModel || "gemini-3.1-flash-lite",
     SPREADSHEET_ID: p.getProperty("SPREADSHEET_ID") || "",
     USER_EMAIL: settings.userEmail || Session.getEffectiveUser().getEmail() || "",
-    GMAIL_LABEL_INPUT: settings.inputLabel || "Jmail/Вакансии",
-    GMAIL_LABEL_PROCESSED: settings.processedLabel || "Jmail/Обработано",
-    GMAIL_LABEL_REVIEW: settings.reviewLabel || "Jmail/Проверить",
+    GMAIL_LABEL_INPUT: settings.inputLabel || "Jmail/Jobs",
+    GMAIL_LABEL_PROCESSED: settings.processedLabel || "Jmail/Processed",
+    GMAIL_LABEL_REVIEW: settings.reviewLabel || "Jmail/Review",
     MIN_MATCH_SCORE: Number(settings.minMatchScore || 85),
     JOB_CRITERIA: settings.jobCriteria || "",
     EXCLUDED_ROLE_FAMILIES: Array.isArray(settings.excludedRoleFamilies) ? settings.excludedRoleFamilies : ["data_analyst"],
@@ -37,4 +37,5 @@ const CONFIG = (function () {
     SENDER_INFO: sender
   };
 })();
+
 

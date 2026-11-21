@@ -54,11 +54,13 @@ function getJmailSetupStatus() {
     spreadsheetUrl: spreadsheetUrl,
     folderUrl: folderUrl,
     hasApiKey: Boolean(p.getProperty("GEMINI_API_KEY")),
+    hasDataConsent: p.getProperty("GEMINI_DATA_CONSENT") === "yes",
     hasProfile: Boolean(p.getProperty("CAREER_PROFILE_JSON")),
     dailyEnabled: ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === "processJobEmails" && t.getEventType() === ScriptApp.EventType.CLOCK),
     lastRun: readJmailJson_("last_run_stats", null),
     lastRunAt: p.getProperty("last_run_timestamp") || ""
   };
 }
+
 
 

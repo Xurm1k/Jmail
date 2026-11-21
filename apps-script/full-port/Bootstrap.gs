@@ -6,7 +6,6 @@ function setupJmail() {
   const p = jmailProps_();
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
   const processedName = settings.processedLabel || "Jmail/Processed";
-  const reviewName = settings.reviewLabel || "Jmail/Review";
   let ss = null;
   const savedSpreadsheetId = p.getProperty("SPREADSHEET_ID");
   if (savedSpreadsheetId) {
@@ -30,7 +29,7 @@ function setupJmail() {
     folder = DriveApp.createFolder("Jmail Application Documents");
     p.setProperty("PDF_FOLDER_ID", folder.getId());
   }
-  [processedName, reviewName].forEach(n => {
+  [processedName].forEach(n => {
     if (!GmailApp.getUserLabelByName(n)) GmailApp.createLabel(n);
   });
   const triggers = ScriptApp.getProjectTriggers();
@@ -81,6 +80,8 @@ function createJmailGmailFilters(senderList) {
 
 function installJmailDailyTrigger() {
   const p = jmailProps_();
+  if (p.getProperty("GEMINI_DATA_CONSENT") !== "yes")
+    throw new Error("Сначала подтвердите обработку данных в Google Gemini.");
   if (!p.getProperty("SPREADSHEET_ID") || !p.getProperty("PDF_FOLDER_ID"))
     throw new Error("Сначала создайте папку и таблицу.");
   if (!p.getProperty("GEMINI_API_KEY") || !p.getProperty("CAREER_PROFILE_JSON"))
@@ -271,6 +272,8 @@ function jmailProfileSetupHtml_() {
 }
 
 function saveJmailProfileDraft(payload) {
+  if (jmailProps_().getProperty("GEMINI_DATA_CONSENT") !== "yes")
+    throw new Error("Сначала подтвердите отправку резюме и писем в Google Gemini.");
   if (!payload || !payload.resumeText || payload.resumeText.length > 15000)
     throw new Error("Resume text is empty or too long.");
   const p = jmailProps_();
@@ -299,6 +302,17 @@ function saveJmailProfileDraft(payload) {
   }
 }
 
+function setJmailDataConsent(accepted) {
+  const p = jmailProps_();
+  if (accepted === true) {
+    p.setProperty("GEMINI_DATA_CONSENT", "yes");
+    return "Согласие сохранено для этого Google-аккаунта.";
+  }
+  p.deleteProperty("GEMINI_DATA_CONSENT");
+  removeJmailDailyTrigger();
+  return "Согласие отозвано; ежедневный запуск остановлен.";
+}
+
 function careerProfilePreview_(profile) {
   return profile.experiences.map(x =>
     x.role + (x.company ? " — " + x.company : "") + "\n" +
@@ -314,5 +328,6 @@ function approveJmailProfile() {
   p.deleteProperty("CAREER_PROFILE_DRAFT_JSON");
   return "Профиль сохранён. Теперь можно проверить новые письма во Входящих.";
 }
+
 
 

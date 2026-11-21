@@ -3,6 +3,7 @@
 // ==========================================
 function processJobEmails() {
   const props = jmailProps_();
+  if (props.getProperty("GEMINI_DATA_CONSENT") !== "yes") return {status: "consent_required"};
   const required = ["SPREADSHEET_ID", "PDF_FOLDER_ID", "GEMINI_API_KEY", "CAREER_PROFILE_JSON"];
   const missing = required.filter(key => !props.getProperty(key));
   if (missing.length) return {status: "setup_incomplete", missing: missing};
@@ -42,8 +43,8 @@ function processJobEmailsUnlocked() {
 
     let processedLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PROCESSED);
     if (!processedLabel) processedLabel = GmailApp.createLabel(CONFIG.GMAIL_LABEL_PROCESSED);
-    let reviewLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_REVIEW);
-    if (!reviewLabel) reviewLabel = GmailApp.createLabel(CONFIG.GMAIL_LABEL_REVIEW);
+    // Existing Review labels are legacy only; their threads are re-evaluated automatically.
+    const legacyReviewLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_REVIEW);
 
     const recentApplications = getRecentApplicationsFromSheet(90);
     // Автоматически проверяем свежие письма во Входящих; входной ярлык вручную ставить не нужно.
@@ -52,7 +53,7 @@ function processJobEmailsUnlocked() {
     let snapshotComplete = false;
     for (let offset = 0; ; offset += CONFIG.THREADS_PAGE_SIZE) {
       if (!shouldContinueProcessing(startTime, 60, stats, "чтение писем")) break;
-      const query = 'in:inbox newer_than:1d -label:"' + CONFIG.GMAIL_LABEL_PROCESSED + '" -label:"' + CONFIG.GMAIL_LABEL_REVIEW + '"';
+      const query = 'in:inbox newer_than:1d -label:"' + CONFIG.GMAIL_LABEL_PROCESSED + '"';
       const page = GmailApp.search(query, offset, CONFIG.THREADS_PAGE_SIZE);
       threads.push.apply(threads, page);
       if (page.length < CONFIG.THREADS_PAGE_SIZE) {
@@ -80,6 +81,7 @@ function processJobEmailsUnlocked() {
 
   // Шаг 1: Анализ всех писем батча через Gemini
   for (let i = 0; i < threads.length; i++) {
+      if (jmailProps_().getProperty("GEMINI_DATA_CONSENT") !== "yes") { stats.status = "consent_revoked"; break; }
       if (!shouldContinueProcessing(startTime, 60, stats, "анализ писем")) break;
 
     const thread = threads[i];
@@ -91,6 +93,7 @@ function processJobEmailsUnlocked() {
     const emailHtml = lastMessage.getBody();
 
     try {
+      if (legacyReviewLabel) legacyReviewLabel.removeFromThread(thread);
       Utilities.sleep(1000);
       const aiResponse = analyzeJobWithGemini(emailBody, currentDate, recentApplications, emailHtml);
         if (!aiResponse) continue;
@@ -111,13 +114,6 @@ function processJobEmailsUnlocked() {
         stats.rejected++;
         continue;
       }
-      if (eligibility.status === "review") {
-        thread.addLabel(reviewLabel);
-        stats.review++;
-        Logger.log("Письмо автоматически отложено для проверки: " + eligibility.reason);
-        continue;
-      }
-
       aiResponse.thread = thread;
       aiResponse.emailSubject = emailSubject;
       aiResponse.tracker_data.date = currentDate;
@@ -126,15 +122,16 @@ function processJobEmailsUnlocked() {
 
     } catch (e) {
         stats.errors++;
-        Logger.log("Ошибка анализа письма: " + e.toString());
+        Logger.log("Email analysis failed; the message will be retried automatically.");
     }
   }
 
+    if (stats.status === "consent_revoked") return stats;
     if (analyzedJobs.length === 0) {
       if (stats.status === "running") {
         stats.status = stats.stoppedForTime
           ? "time_budget_reached"
-          : (stats.rejected > 0 || stats.review > 0 ? "no_eligible_jobs" : "no_valid_analysis");
+          : (stats.rejected > 0 ? "no_eligible_jobs" : "no_valid_analysis");
       }
       return stats;
     }
@@ -150,6 +147,7 @@ function processJobEmailsUnlocked() {
 
   // Шаг 3: Обработка отобранных вакансий
     for (let j = 0; j < jobsToProcess.length; j++) {
+      if (jmailProps_().getProperty("GEMINI_DATA_CONSENT") !== "yes") { stats.status = "consent_revoked"; break; }
       if (!shouldContinueProcessing(startTime, CONFIG.MIN_SECONDS_TO_START_JOB, stats, "обработка вакансий")) break;
     const aiResponse = jobsToProcess[j];
     
@@ -182,7 +180,7 @@ function processJobEmailsUnlocked() {
       stats.completed++;
     } catch (procErr) {
         stats.errors++;
-        Logger.log("Ошибка обработки вакансии: " + procErr.toString());
+        Logger.log("Job processing failed; the message will be retried automatically.");
     }
     }
     if (stats.status === "running") {
@@ -191,7 +189,7 @@ function processJobEmailsUnlocked() {
   } catch (err) {
     stats.status = "error";
     stats.errors++;
-    Logger.log("Критическая ошибка запуска: " + err.toString());
+    Logger.log("Critical processing failure; check execution status.");
     throw err;
   } finally {
     const elapsed = (Date.now() - startTime) / 1000;
@@ -235,44 +233,38 @@ function evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, sta
   const effort = aiResponse.application_effort;
 
   if ((CONFIG.EXCLUDED_ROLE_FAMILIES || ["data_analyst"]).includes(role)) {
-    return evidenceIsPresent(sourceText, evidence.role)
-      ? { status: "reject", reason: "роль Data Analyst исключена" }
-      : { status: "review", reason: "тип роли не подтвержден текстом письма" };
+      return { status: "reject", reason: evidenceIsPresent(sourceText, evidence.role) ? "роль Data Analyst исключена" : "тип роли не подтвержден текстом письма" };
   }
   if ((CONFIG.EXCLUDED_PHYSICAL_DEMANDS || ["heavy", "prolonged_standing"]).includes(physical)) {
-    return evidenceIsPresent(sourceText, evidence.physical)
-      ? { status: "reject", reason: "тяжелая физическая работа или длительная работа стоя" }
-      : { status: "review", reason: "физические требования не подтверждены текстом письма" };
+    return { status: "reject", reason: evidenceIsPresent(sourceText, evidence.physical) ? "тяжелая физическая работа или длительная работа стоя" : "физические требования не подтверждены текстом письма" };
   }
   if (effort === "complex") {
-    return evidenceIsPresent(sourceText, evidence.application)
-      ? { status: "reject", reason: "сложный процесс подачи заявки" }
-      : { status: "review", reason: "сложность отклика не подтверждена текстом письма" };
+    return { status: "reject", reason: evidenceIsPresent(sourceText, evidence.application) ? "сложный процесс подачи заявки" : "сложность отклика не подтверждена текстом письма" };
   }
 
   if (!(CONFIG.ALLOWED_ROLE_FAMILIES || ["office_admin", "quality_control", "customer_service", "supervisor", "other"]).includes(role) ||
       !(CONFIG.ALLOWED_PHYSICAL_DEMANDS || ["desk", "light"]).includes(physical) ||
       !(CONFIG.ALLOWED_APPLICATION_EFFORTS || ["simple", "moderate"]).includes(effort)) {
-    return { status: "review", reason: "не удалось уверенно определить профиль, нагрузку или сложность отклика" };
+    return { status: "reject", reason: "не удалось уверенно определить профиль, нагрузку или сложность отклика" };
   }
 
   if (!evidenceIsPresent(sourceText, evidence.role) ||
       !evidenceIsPresent(sourceText, evidence.physical) ||
       !evidenceIsPresent(sourceText, evidence.application)) {
-    return { status: "review", reason: "не удалось сверить объяснение модели с исходным письмом" };
+    return { status: "reject", reason: "не удалось сверить объяснение модели с исходным письмом" };
   }
 
   if (aiResponse.work_mode === "remote") {
     return evidenceIsPresent(sourceText, evidence.location)
       ? { status: "pass", reason: "удаленная работа подтверждена" }
-      : { status: "review", reason: "удаленный формат не подтвержден текстом письма" };
+      : { status: "reject", reason: "удаленный формат не подтвержден текстом письма" };
   }
 
   if (!["on_site", "hybrid"].includes(aiResponse.work_mode) ||
       !aiResponse.job_location ||
       !evidenceIsPresent(sourceText, evidence.location) ||
       !locationMatchesEvidence(aiResponse.job_location, evidence.location)) {
-    return { status: "review", reason: "не удалось подтвердить адрес или формат работы по тексту письма" };
+    return { status: "reject", reason: "не удалось подтвердить адрес или формат работы по тексту письма" };
   }
 
   if (!shouldContinueProcessing(startTime, 90, stats, "проверка маршрута")) {
@@ -280,7 +272,7 @@ function evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, sta
   }
   const commute = getCommuteMinutes(aiResponse.job_location);
   if (!commute.available) {
-    return { status: "review", reason: "не удалось рассчитать маршрут до указанной локации" };
+    return { status: "reject", reason: "не удалось рассчитать маршрут до указанной локации" };
   }
   if (commute.minutes > CONFIG.MAX_COMMUTE_MINUTES) {
     return { status: "reject", reason: "дорога превышает установленный лимит" };
@@ -393,6 +385,7 @@ function authorizeMapsService() {
     .getDirections();
   Logger.log("Maps Service authorization check: " + (directions.status || "no status"));
 }
+
 
 
 

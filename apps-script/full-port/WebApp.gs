@@ -29,7 +29,7 @@ function migrateJmailResourceNames_() {
         if (batch.length < 100) break;
       }
       source.deleteLabel();
-    } else if (item) Gmail.Users.Labels.update({name:mapping[oldName]}, "me", item.id);
+    } else if (item) Gmail.Users.Labels.update(Object.assign({}, item, {name:mapping[oldName]}), "me", item.id);
   });
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
   Object.keys(mapping).forEach(key => {
@@ -60,4 +60,5 @@ function getJmailSetupStatus() {
     lastRunAt: p.getProperty("last_run_timestamp") || ""
   };
 }
+
 

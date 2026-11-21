@@ -439,6 +439,7 @@ function getJmailSetupStatus() {
     hasApiKey: Boolean(p.getProperty("GEMINI_API_KEY")),
     hasDataConsent: p.getProperty("GEMINI_DATA_CONSENT") === "yes",
     hasProfile: Boolean(p.getProperty("CAREER_PROFILE_JSON")),
+    dashboardUnlocked: p.getProperty("JMAIL_DASHBOARD_UNLOCKED") === "yes",
     dailyEnabled: ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === "processJobEmails" && t.getEventType() === ScriptApp.EventType.CLOCK),
     lastRun: readJmailJson_("last_run_stats", null),
     lastRunAt: p.getProperty("last_run_timestamp") || "",
@@ -449,6 +450,11 @@ function getJmailSetupStatus() {
       maxCommuteMinutes: Number(settings.maxCommuteMinutes || 60)
     }
   };
+}
+
+function markJmailDashboardUnlocked() {
+  jmailProps_().setProperty("JMAIL_DASHBOARD_UNLOCKED", "yes");
+  return true;
 }
 
 /** Removes this user's Jmail data, resources, labels, filters, triggers, and script authorization. */
@@ -518,6 +524,7 @@ function deleteJmailUserData() {
 }
 function processJobEmails() {
   const props = jmailProps_();
+  props.setProperty("JMAIL_DASHBOARD_UNLOCKED", "yes");
   if (props.getProperty("GEMINI_DATA_CONSENT") !== "yes") return {status: "consent_required"};
   const required = ["SPREADSHEET_ID", "PDF_FOLDER_ID", "GEMINI_API_KEY", "CAREER_PROFILE_JSON"];
   const missing = required.filter(key => !props.getProperty(key));
@@ -1719,6 +1726,7 @@ function manualCleanupAction() {
     SpreadsheetApp.getUi().alert("❌ Ошибка при очистке: " + err.toString());
   }
 }
+
 
 
 

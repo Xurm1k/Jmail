@@ -462,11 +462,33 @@ function deleteJmailUserData() {
     .filter(t => t.getHandlerFunction() === "processJobEmails")
     .forEach(t => ScriptApp.deleteTrigger(t));
 
+  let restoreComplete = true;
   try {
     const labels = Gmail.Users.Labels.list("me").labels || [];
     const jmailLabels = labels.filter(label => ["Jmail/Jobs", "Jmail/Processed", "Jmail/Review"].includes(label.name));
-    const labelIds = jmailLabels.map(label => label.id);
-    if (labelIds.length) {
+    const threadIds = new Set();
+    jmailLabels.forEach(label => {
+      let pageToken = null;
+      do {
+        const options = {labelIds:[label.id], includeSpamTrash:true, maxResults:100};
+        if (pageToken) options.pageToken = pageToken;
+        const page = Gmail.Users.Threads.list("me", options);
+        (page.threads || []).forEach(thread => threadIds.add(thread.id));
+        pageToken = page.nextPageToken || null;
+      } while (pageToken);
+    });
+    let restoreFailures = 0;
+    threadIds.forEach(threadId => {
+      try {
+        Gmail.Users.Threads.modify({addLabelIds:["INBOX"], removeLabelIds:["TRASH"]}, "me", threadId);
+      } catch (e) { restoreFailures++; }
+    });
+    if (restoreFailures) {
+      restoreComplete = false;
+      warnings.push("Не удалось вернуть " + restoreFailures + " писем во «Входящие». Ярлыки Jmail оставлены, чтобы их можно было найти и восстановить.");
+    }
+    if (restoreComplete && jmailLabels.length) {
+      const labelIds = jmailLabels.map(label => label.id);
       const filters = Gmail.Users.Settings.Filters.list("me").filter || [];
       filters.filter(filter => (filter.action && (filter.action.addLabelIds || []).some(id => labelIds.includes(id))))
         .forEach(filter => Gmail.Users.Settings.Filters.remove("me", filter.id));
@@ -475,7 +497,10 @@ function deleteJmailUserData() {
         if (userLabel) userLabel.deleteLabel();
       });
     }
-  } catch (e) { warnings.push("Не удалось удалить некоторые ярлыки или фильтры Gmail."); }
+  } catch (e) {
+    restoreComplete = false;
+    warnings.push("Не удалось полностью восстановить письма или удалить фильтры Gmail. Ярлыки Jmail оставлены для восстановления.");
+  }
 
   if (spreadsheetId) {
     try { DriveApp.getFileById(spreadsheetId).setTrashed(true); }
@@ -1694,6 +1719,7 @@ function manualCleanupAction() {
     SpreadsheetApp.getUi().alert("❌ Ошибка при очистке: " + err.toString());
   }
 }
+
 
 
 

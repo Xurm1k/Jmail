@@ -1,7 +1,4 @@
-
-
 /* ===== Config.gs ===== */
-
 // User-specific values and secrets are read from Script Properties, never committed here.
 function readJmailJson_(key, fallback) {
   const raw = PropertiesService.getScriptProperties().getProperty(key);
@@ -14,7 +11,7 @@ const CONFIG = (function () {
   const sender = readJmailJson_("JMAIL_SENDER_JSON", {});
   return {
     GEMINI_API_KEY: p.getProperty("GEMINI_API_KEY") || "",
-    GEMINI_DOCUMENTS_MODEL: settings.geminiDocumentsModel || "gemini-3.5-flash",
+    GEMINI_DOCUMENTS_MODEL: settings.geminiDocumentsModel || "gemini-3.1-flash-lite",
     SPREADSHEET_ID: p.getProperty("SPREADSHEET_ID") || "",
     USER_EMAIL: settings.userEmail || Session.getEffectiveUser().getEmail() || "",
     GMAIL_LABEL_INPUT: settings.inputLabel || "Jmail/Вакансии",
@@ -38,15 +35,12 @@ const CONFIG = (function () {
 })();
 
 /* ===== CareerProfile.gs ===== */
-
 // Keep personal profile data in the user's private Apps Script properties, not in Git.
 const CAREER_PROFILE = readJmailJson_("CAREER_PROFILE_JSON", {
   experiences: [], militaryService: {}, education: [], languages: [], skills: [],
   optionalCareerTransition: null
 });
-
 /* ===== Bootstrap.gs ===== */
-
 /**
  * First-run setup for the per-user full workflow.
  * Run setupJmail() once; inspect the created spreadsheet/folder links in Executions.
@@ -57,6 +51,17 @@ function setupJmail() {
   const inputName = settings.inputLabel || "Jmail/Вакансии";
   const processedName = settings.processedLabel || "Jmail/Обработано";
   const reviewName = settings.reviewLabel || "Jmail/Проверить";
+  const existingId = p.getProperty("SPREADSHEET_ID");
+  if (existingId) {
+    try {
+      const existing = SpreadsheetApp.openById(existingId);
+      console.log("Jmail spreadsheet: " + existing.getUrl());
+      console.log("Setup was already completed. No duplicate resources were created.");
+      return;
+    } catch (e) {
+      p.deleteProperty("SPREADSHEET_ID");
+    }
+  }
   const ss = SpreadsheetApp.create("Jmail — вакансии");
   const sheet = ss.getSheets()[0];
   sheet.setName("Vorlage");
@@ -71,7 +76,47 @@ function setupJmail() {
   ScriptApp.newTrigger("onEdit").forSpreadsheet(ss).onEdit().create();
   console.log("Jmail spreadsheet: " + ss.getUrl());
   console.log("Jmail Drive folder: " + folder.getUrl());
-  console.log("Setup complete. Next: set private profile/key/settings, then run processJobEmails manually.");
+  console.log("Setup complete. Open the spreadsheet and use Job Automation → Настроить профиль и критерии.");
+}
+
+/** Validates a user's own free Gemini API key before saving it to private Script Properties. */
+function saveJmailGeminiApiKey(apiKey) {
+  const key = String(apiKey || "").trim();
+  if (key.length < 20 || key.length > 200) throw new Error("Проверьте ключ Gemini: его длина выглядит неверно.");
+  const response = UrlFetchApp.fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
+    {
+      method: "post", contentType: "application/json", muteHttpExceptions: true,
+      headers: {"x-goog-api-key": key},
+      payload: JSON.stringify({contents:[{parts:[{text:"Reply with OK."}]}],generationConfig:{maxOutputTokens:8}})
+    }
+  );
+  if (response.getResponseCode() < 200 || response.getResponseCode() >= 300)
+    throw new Error("Gemini не принял ключ (HTTP " + response.getResponseCode() + "). Проверьте ключ и доступность бесплатной модели.");
+  PropertiesService.getScriptProperties().setProperty("GEMINI_API_KEY", key);
+  return "Бесплатный Gemini API подключён. Ключ сохранён в закрытых настройках этого Apps Script.";
+}
+
+/** Creates Gmail filters that apply the Jmail input label to selected alert senders. */
+function createJmailGmailFilters(senderList) {
+  const senders = Array.from(new Set(String(senderList || "").split(/[\s,;]+/).map(x => x.trim().toLowerCase()).filter(Boolean)));
+  if (!senders.length) throw new Error("Укажите хотя бы один адрес отправителя вакансий.");
+  if (senders.length > 20 || senders.some(x => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))
+    throw new Error("Проверьте адреса отправителей. За один раз можно добавить до 20 адресов.");
+  const labelName = readJmailJson_("JMAIL_SETTINGS_JSON", {}).inputLabel || "Jmail/Вакансии";
+  const labels = Gmail.Users.Labels.list("me").labels || [];
+  const label = labels.find(x => x.name === labelName);
+  if (!label) throw new Error("Ярлык " + labelName + " не найден. Сначала выполните настройку Jmail.");
+  const existing = Gmail.Users.Settings.Filters.list("me").filter || [];
+  const created = [];
+  senders.forEach(sender => {
+    const exists = existing.some(f => f.criteria && f.criteria.from === sender && f.action && (f.action.addLabelIds || []).includes(label.id));
+    if (!exists) {
+      Gmail.Users.Settings.Filters.create({criteria:{from:sender},action:{addLabelIds:[label.id]}}, "me");
+      created.push(sender);
+    }
+  });
+  return created.length ? "Фильтр Jmail создан для: " + created.join(", ") + ". Новые письма получат ярлык вакансий." : "Такие фильтры уже настроены. Новые письма будут получать ярлык вакансий.";
 }
 
 function installJmailDailyTrigger() {
@@ -79,12 +124,14 @@ function installJmailDailyTrigger() {
     .filter(t => t.getHandlerFunction() === "processJobEmails")
     .forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger("processJobEmails").timeBased().everyDays(1).atHour(8).create();
+  SpreadsheetApp.getUi().alert("Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.");
 }
 
 function removeJmailDailyTrigger() {
   ScriptApp.getProjectTriggers()
     .filter(t => t.getHandlerFunction() === "processJobEmails")
     .forEach(t => ScriptApp.deleteTrigger(t));
+  SpreadsheetApp.getUi().alert("Ежедневный запуск остановлен.");
 }
 
 /**
@@ -111,10 +158,11 @@ function buildCareerProfileFromResume(resumeInput, outputProperty) {
     "Resume text:\n" + resume
   ].join("\n\n");
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
-  const model = settings.geminiProfileModel || "gemini-3.5-flash-lite";
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + encodeURIComponent(key);
+  const model = settings.geminiProfileModel || "gemini-3.1-flash-lite";
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent";
   const response = UrlFetchApp.fetch(url, {
     method: "post", contentType: "application/json", muteHttpExceptions: true,
+    headers: {"x-goog-api-key": key},
     payload: JSON.stringify({
       contents: [{parts: [{text: prompt}]}],
       generationConfig: {responseMimeType: "application/json"}
@@ -184,6 +232,13 @@ function jmailProfileSetupHtml_() {
   <style>body{font:14px Arial,sans-serif;color:#202923;padding:16px}label{display:block;font-weight:600;margin:12px 0 5px}input,textarea{box-sizing:border-box;width:100%;padding:9px;border:1px solid #cbd5ce;border-radius:7px;font:inherit}textarea{min-height:75px}button{border:0;border-radius:8px;padding:10px 14px;background:#176b4b;color:#fff;font-weight:700;cursor:pointer;margin-top:14px}button:disabled{opacity:.5}.note{background:#fff3d6;padding:10px;border-radius:8px;font-size:12px}.status{white-space:pre-wrap;font-size:12px;margin-top:12px}.preview{background:#f3f6f3;padding:10px;border-radius:8px;white-space:pre-wrap;font-size:12px;display:none}</style></head><body>
   <h2>Профиль и критерии</h2>
   <p class="note">Используйте отдельный Gmail для поиска работы. Текст резюме обрабатывается этим скриптом и Gemini, сохраняется только проверенный профиль. Перед сохранением просмотрите найденные факты. Не подключайте основную почту.</p>
+  <label for="apiKey">Бесплатный Gemini API key</label><input id="apiKey" type="password" autocomplete="new-password" placeholder="Вставьте ключ из Google AI Studio">
+  <button id="saveKey" type="button">Проверить и подключить ключ</button>
+  <p><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Открыть Google AI Studio и получить ключ</a></p>
+  <p>Ключ проверяется Google и сохраняется в закрытых настройках вашего Apps Script; он не записывается в таблицу, браузер или Jmail.</p>
+  <label for="senders">Отправители писем с вакансиями</label><input id="senders" type="text" placeholder="jobs@example.com, alerts@example.org">
+  <button id="createFilter" type="button">Создать фильтр Gmail</button>
+  <p>Укажите адрес из письма с вакансией. Можно перечислить несколько адресов через запятую. Фильтр применяет только ярлык Jmail; он не удаляет и не пересылает письма.</p>
   <label for="resume">Резюме (PDF, DOCX или TXT)</label><input id="file" type="file" accept=".pdf,.docx,.txt">
   <p id="fileState">Файл читается в браузере Google Apps Script и передаётся этому скрипту.</p>
   <label for="name">Имя</label><input id="name" autocomplete="name">
@@ -200,6 +255,21 @@ function jmailProfileSetupHtml_() {
   <script>
     let resumeText="";
     const status=document.getElementById("status"), preview=document.getElementById("preview");
+    document.getElementById("saveKey").addEventListener("click",()=>{
+      const key=document.getElementById("apiKey").value;
+      if(!key.trim()){status.textContent="Сначала вставьте ключ Gemini.";return;}
+      status.textContent="Проверяю ключ у Google…";
+      google.script.run.withSuccessHandler(message=>{status.textContent=message;document.getElementById("apiKey").value="";})
+        .withFailureHandler(err=>{status.textContent=err.message||String(err);})
+        .saveJmailGeminiApiKey(key);
+    });
+    document.getElementById("createFilter").addEventListener("click",()=>{
+      const senders=document.getElementById("senders").value;
+      status.textContent="Настраиваю фильтр Gmail…";
+      google.script.run.withSuccessHandler(message=>{status.textContent=message;})
+        .withFailureHandler(err=>{status.textContent=err.message||String(err);})
+        .createJmailGmailFilters(senders);
+    });
     document.getElementById("file").addEventListener("change",async e=>{
       const file=e.target.files&&e.target.files[0]; if(!file)return;
       try {
@@ -280,9 +350,7 @@ function approveJmailProfile() {
   return "Профиль сохранён. Теперь проверьте письмо на одном тестовом ярлыке.";
 }
 
-
 /* ===== Main.gs ===== */
-
 // ==========================================
 // MAIN.GS — ОСНОВНОЙ ОРКЕСТРАТОР ПРОЦЕССА
 // ==========================================
@@ -681,14 +749,12 @@ function authorizeMapsService() {
 
 
 
-
 /* ===== GeminiService.gs ===== */
-
 // ==========================================
 // GEMINISERVICE.GS — ВЗАИМОДЕЙСТВИЕ С GEMINI API
 // ==========================================
 function analyzeJobWithGemini(emailContent, currentDate, recentApplications, emailHtml) {
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + CONFIG.GEMINI_API_KEY;
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
 
   const systemInstruction = `
 Ты — экспертный ИИ-аналитик вакансий. Используй только факты из личного профиля кандидата, переданного ниже.
@@ -742,7 +808,7 @@ ${JSON.stringify(recentApplications)}
   `;
 
   const payload = { contents: [{ role: "user", parts: [{ text: systemInstruction + "\n\nHTML письма:\n" + emailHtml + "\n\nТекст вакансии:\n" + emailContent }] }], generationConfig: { responseMimeType: "application/json", responseSchema: getJobAnalysisResponseSchema() } };
-  const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
+  const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", headers:{"x-goog-api-key":CONFIG.GEMINI_API_KEY}, payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
     Logger.log("Gemini analysis HTTP " + responseCode + ": " + response.getContentText().slice(0, 800));
@@ -828,8 +894,8 @@ function getJobAnalysisResponseSchema() {
 }
 
 function generateJobApplicationDocumentsWithGemini(jobData) {
-  const model = CONFIG.GEMINI_DOCUMENTS_MODEL || "gemini-3.5-flash";
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + CONFIG.GEMINI_API_KEY;
+  const model = CONFIG.GEMINI_DOCUMENTS_MODEL || "gemini-3.1-flash-lite";
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent";
   const profileForModel = {
     experiences: CAREER_PROFILE.experiences.map(job => ({
       id: job.id, company: job.company, role: job.role, location: job.location, period: job.period,
@@ -884,6 +950,7 @@ ${String(jobData.job_description || "").slice(0, 16000)}
   const response = UrlFetchApp.fetch(url, {
     method: "post",
     contentType: "application/json",
+    headers: {"x-goog-api-key": CONFIG.GEMINI_API_KEY},
     payload: JSON.stringify(payload),
     muteHttpExceptions: true,
     timeoutSeconds: 60
@@ -996,10 +1063,10 @@ function getJobDocumentsResponseSchema() {
 }
 
 function generateCareerAdviceWithGemini(pastData) {
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + CONFIG.GEMINI_API_KEY;
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
   const prompt = `Ты — экспертный карьерный советник. Анализируй только агрегированные данные пользователя. Проанализируй отклики: ${JSON.stringify(pastData)}. Дай практические советы.`;
   const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "text/plain" } };
-  const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
+  const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", headers:{"x-goog-api-key":CONFIG.GEMINI_API_KEY}, payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
     Logger.log("Gemini career report HTTP " + responseCode + ": " + response.getContentText().slice(0, 800));
@@ -1014,9 +1081,7 @@ function generateCareerAdviceWithGemini(pastData) {
 }
 
 
-
 /* ===== GmailManager.gs ===== */
-
 // Gmail helpers for classifying and handling job-alert messages.
 function escapeHtmlForEmail(value) {
   return String(value == null ? "" : value)
@@ -1069,9 +1134,7 @@ function createGmailDraftWithUniqueCV(aiData, originalSubject) {
 }
 
 
-
 /* ===== SheetManager.gs ===== */
-
 // ==========================================
 // SHEETMANAGER.GS — РАБОТА С GOOGLE SHEETS
 // ==========================================
@@ -1209,9 +1272,7 @@ function getPastMonthDataFromSheet(now) {
 }
 
 
-
 /* ===== PDFGenerator.gs ===== */
-
 function escapeHtml(value) {
   return String(value == null ? "" : value)
     .replace(/&/g, "&amp;")
@@ -1396,9 +1457,7 @@ function generateAnschreibenPDF(aiData) {
 
 
 
-
 /* ===== UI.gs ===== */
-
 // ==========================================
 // UI.GS — МЕНЮ, ТРИГГЕРЫ И ОЧИСТКА
 // ==========================================
@@ -1407,6 +1466,8 @@ function onOpen() {
   ui.createMenu('🤖 Job Automation')
     .addItem('⚙️ Настроить профиль и критерии', 'showJmailProfileSetup')
     .addItem('🚀 Запустить обработку вакансий', 'processJobEmails')
+    .addItem('⏰ Включить ежедневный запуск', 'installJmailDailyTrigger')
+    .addItem('⏸️ Остановить ежедневный запуск', 'removeJmailDailyTrigger')
     .addItem('🧹 Очистить неподтвержденные строки и архив', 'manualCleanupAction')
     .addToUi();
 }
@@ -1479,3 +1540,5 @@ function manualCleanupAction() {
     SpreadsheetApp.getUi().alert("❌ Ошибка при очистке: " + err.toString());
   }
 }
+
+

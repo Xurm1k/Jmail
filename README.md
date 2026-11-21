@@ -26,4 +26,4 @@
 Сравнение архитектур и этапы продукта: [ARCHITECTURE.md](./ARCHITECTURE.md).
 ### Проверка без Google аккаунта
 
-Для раннего упрощённого worker: `node apps-script/synthetic_test.mjs` (успех и ошибки Gemini/сети). Для перенесённой логики отбора Job Automation: `node apps-script/full-port/synthetic_test.mjs` (8 решений по порогу, доказательствам, типу вакансии и маршруту). Оба набора работают на синтетических данных; Google OAuth, реальные письма и Gemini не вызываются.
+Для раннего упрощённого worker: `node apps-script/synthetic_test.mjs`. Для полного порта: `node apps-script/full-port/profile_builder_test.mjs`, `node apps-script/full-port/synthetic_test.mjs` и `node apps-script/full-port/integration_test.mjs`. Все три набора работают на синтетических данных; Google OAuth, реальные письма и Gemini не вызываются.

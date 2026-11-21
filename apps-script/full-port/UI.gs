@@ -6,10 +6,20 @@ function onOpen() {
   ui.createMenu('🤖 Job Automation')
     .addItem('⚙️ Настроить профиль и критерии', 'showJmailProfileSetup')
     .addItem('🚀 Запустить обработку вакансий', 'processJobEmails')
-    .addItem('⏰ Включить ежедневный запуск', 'installJmailDailyTrigger')
-    .addItem('⏸️ Остановить ежедневный запуск', 'removeJmailDailyTrigger')
+    .addItem('⏰ Включить ежедневный запуск', 'installJmailDailyTriggerFromSheet')
+    .addItem('⏸️ Остановить ежедневный запуск', 'removeJmailDailyTriggerFromSheet')
     .addItem('🧹 Очистить неподтвержденные строки и архив', 'manualCleanupAction')
     .addToUi();
+}
+
+function installJmailDailyTriggerFromSheet() {
+  installJmailDailyTrigger();
+  SpreadsheetApp.getUi().alert("Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.");
+}
+
+function removeJmailDailyTriggerFromSheet() {
+  removeJmailDailyTrigger();
+  SpreadsheetApp.getUi().alert("Ежедневный запуск остановлен.");
 }
 
 /**

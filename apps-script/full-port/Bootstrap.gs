@@ -5,7 +5,6 @@
 function setupJmail() {
   const p = jmailProps_();
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
-  const inputName = settings.inputLabel || "Jmail/Вакансии";
   const processedName = settings.processedLabel || "Jmail/Обработано";
   const reviewName = settings.reviewLabel || "Jmail/Проверить";
   const existingId = p.getProperty("SPREADSHEET_ID");
@@ -27,7 +26,7 @@ function setupJmail() {
   const folder = DriveApp.createFolder("Jmail — Bewerbungsunterlagen");
   p.setProperty("SPREADSHEET_ID", ss.getId());
   p.setProperty("PDF_FOLDER_ID", folder.getId());
-  [inputName, processedName, reviewName].forEach(n => {
+  [processedName, reviewName].forEach(n => {
     if (!GmailApp.getUserLabelByName(n)) GmailApp.createLabel(n);
   });
   ScriptApp.newTrigger("onOpen").forSpreadsheet(ss).onOpen().create();

@@ -42,13 +42,13 @@ function removeJmailDailyTrigger() {
  * Converts locally supplied resume text to the profile schema used by the CV generator.
  * Only exact source phrases are retained as claims, skills, education, or language evidence.
  */
-function buildCareerProfileFromResume() {
+function buildCareerProfileFromResume(resumeInput, outputProperty) {
   const p = PropertiesService.getScriptProperties();
-  const resume = p.getProperty("CAREER_RESUME_TEXT") || "";
+  const resume = typeof resumeInput === "string" ? resumeInput : (p.getProperty("CAREER_RESUME_TEXT") || "");
   const key = p.getProperty("GEMINI_API_KEY") || "";
   if (!resume.trim()) throw new Error("No resume text. Download the setup file from Jmail and run installJmailUserSetup() first.");
   if (!key) throw new Error("Set GEMINI_API_KEY in Script Properties first.");
-  if (resume.length > 8500) throw new Error("Resume text exceeds the safe profile limit. Shorten it in the browser and download the setup file again.");
+  if (resume.length > 15000) throw new Error("Resume text exceeds the 15,000 character limit. Shorten it and try again.");
 
   const prompt = [
     "Convert the resume text into a compact factual profile for job matching and tailored CV documents.",
@@ -116,9 +116,9 @@ function buildCareerProfileFromResume() {
     ? Object.assign({}, candidate.optionalCareerTransition, {optional:true}) : null;
   const profile = {experiences, militaryService:military, education, languages, skills, optionalCareerTransition:transition};
   const json = JSON.stringify(profile);
-  if (json.length > 8500) throw new Error("Generated profile is too large for Script Properties. No profile was saved.");
-  p.setProperty("CAREER_PROFILE_JSON", json);
-  p.deleteProperty("CAREER_RESUME_TEXT");
+  if (json.length > 8500 || Utilities.newBlob(json).getBytes().length > 8000) throw new Error("Generated profile is too large for Script Properties. No profile was saved.");
+  p.setProperty(outputProperty || "CAREER_PROFILE_JSON", json);
+  if (typeof resumeInput !== "string") p.deleteProperty("CAREER_RESUME_TEXT");
   return "Profile ready: " + experiences.length + " experience entries, " +
     experiences.reduce((n,x)=>n+x.claims.length,0) + " verified claims, " + skills.length + " skills. Review the result in the generated CV before enabling the daily trigger.";
 }
@@ -202,9 +202,8 @@ function saveJmailProfileDraft(payload) {
   const sender = payload.sender || {};
   sender.address = sender.city || "";
   p.setProperty("JMAIL_SENDER_JSON", JSON.stringify(sender));
-  p.setProperty("CAREER_RESUME_TEXT", payload.resumeText);
   try {
-    buildCareerProfileFromResume();
+    buildCareerProfileFromResume(payload.resumeText, "CAREER_PROFILE_JSON");
     const draft = p.getProperty("CAREER_PROFILE_JSON");
     if (!draft) throw new Error("Profile draft was not created.");
     p.setProperty("CAREER_PROFILE_DRAFT_JSON", draft);

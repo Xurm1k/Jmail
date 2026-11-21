@@ -1,167 +1,47 @@
-# Переосмысление Jmail: продукт и рекомендуемая архитектура
+# Jmail architecture and product decisions
 
-## Короткий вывод
+## Current user journey
 
-Самый реалистичный путь к пользовательскому приложению — не пытаться сделать один публичный веб-сервис, который получает полный доступ ко всей почте каждого пользователя и бесплатно оплачивает всем Gemini. Лучше сделать два чётко разделённых слоя:
+The public GitHub Pages site introduces Jmail and links to a shared Google Apps Script web app. The Apps Script runs as the Google account currently authorizing it. Each user then configures their own Gemini key, profile, match threshold, commute limit, spreadsheet, Drive folder, and daily trigger.
 
-1. **Пользовательский продукт** — понятный веб-интерфейс с настройкой профиля, критериями, прозрачными результатами, ручной проверкой и управлением доступом.
-2. **Персональный исполнитель Google-автоматизации** — небольшой проект Apps Script, работающий в аккаунте самого пользователя и создающий ему таблицу, папки, ярлыки и расписание после одного понятного запуска и согласия Google.
+The onboarding UI is a wizard with four sections. The last section now has an **Apply** action. Applying saves the current criteria and contact fields, validates that Google resources, Gemini, consent, and a confirmed profile are ready, then switches the same app to its final automation page. It does not start email processing. A changed CV must be extracted, reviewed, and confirmed before applying; users can instead keep the already saved profile while changing criteria.
 
-Для ИИ на первом этапе — два режима: **локальная/правиловая проверка без ИИ** для демонстрации и частичного использования либо **ключ пользователя** с честным объяснением, почему он нужен. Позже можно добавить общий управляемый ИИ-план с лимитами и расходами. Не следует прятать общий ключ в публичный веб-код или зашивать его в скрипты пользователей.
+The final page is the ongoing control surface: run a check now, enable or stop daily checks, open the user's spreadsheet and folder, edit the profile or criteria, and delete Jmail data and disconnect. The action colors communicate intent: green for running/enabling, amber for stopping, blue for editing, red for deletion.
 
-Это оставляет продукт похожим на приложение, но не обещает невозможное: автоматический вход в Gmail не может быть бесшовным и одновременно обходить согласие Google и расходы на ИИ.
+## Data boundary
 
-## Что увидел в исходных проектах
+- Google Apps Script User Properties keep each Google account's configuration, API key, profile, and resource IDs separate.
+- The user's spreadsheet, folder, and generated files are created in that user's Google Drive.
+- Jmail sends the CV text during profile setup and job email content during analysis to Google Gemini, using the user's own key and following the in-app consent.
+- The Gmail worker checks recent Inbox messages, records suitable jobs, archives suitable messages, and moves other or below-threshold messages to Trash. A processing error should leave the message available for another run.
+- Jmail can create application material and drafts. It does not automatically submit applications to employers.
+- The delete flow stops triggers, clears saved properties, attempts to remove Jmail filters and labels, restores messages with Jmail labels to Inbox, and moves the Jmail folder and spreadsheet to Drive Trash. It cannot recall requests already sent to Gemini or delete external provider records.
 
-### Текущий Jmail
+## Why Google Apps Script is the current executor
 
-Локальный `index.html` — большой одностраничный Vue-мастер из шести шагов. Он уже даёт настройку критериев, Gmail-ярлыков, профиля, языка, Drive-папки и столбцов, после чего собирает длинный Apps Script для копирования. Это не просто форма, но результат для пользователя всё ещё сводится к получению кода и ручной настройке Google-сервисов.
+It lets each user authorize the Google automation in their own account and keeps execution close to their Gmail and Drive. It avoids operating a Jmail server that stores every user's Gmail data. The trade-off is a visible Google authorization flow, OAuth policy requirements for public distribution, Apps Script quotas, and a less seamless URL transition than a fully hosted app.
 
-В HTML одновременно находятся интерфейс, переводы, логика хранения формы и кодогенератор. Профиль и ключ раньше записывались в `localStorage`, а сгенерированный код помещал API-ключ в текст скрипта. Кодогенератор отдельно воспроизводит часть логики рабочего Job Automation, поэтому два источника кода могут разойтись. Кроме того, сформированные столбцы не всегда гарантируют совпадающую структуру записываемого ряда. Эти причины важнее косметического обновления мастера.
+A hosted backend could offer a more unified interface, but would require a carefully designed token vault, account isolation, retention/deletion controls, monitoring, incident response, and review of Google's restricted-scope policy. A desktop app can keep a database and local model on a user's machine, but setup still includes Google authorization and may require a model download and capable hardware.
 
-В нынешнем варианте Jmail встречается операция удаления писем в корзину для автоответов, чёрного списка и неподходящих вакансий. Ошибка обработки должна вести к ручной проверке и понятному статусу; письмо при этом нужно сохранить. В рабочем Job Automation уже есть обработка сомнительных случаев отдельно от отклонённых, блокировка одновременных запусков, контроль времени и создание черновика Gmail вместо отправки.
+## Product trade-offs and safeguards
 
-### Job Automation
+1. **Automatic sorting versus false positives.** Current Jmail automatically sends messages classified as irrelevant or below the threshold to Trash. That is convenient but consequential. Recommend a separate job-search Gmail and check Trash during a pilot. A later public release should prefer recoverable quarantine or provide a reliable undo path.
+2. **Gemini key.** A user-supplied key avoids putting the maintainer's key in a public client or paying for an unbounded shared service. It adds setup friction and the user's Gemini terms determine how submitted data is handled.
+3. **Profile quality.** CV facts are extracted into a draft and checked against source text. The user reviews the profile before it is saved; exact extraction can still fail on scanned or badly formatted documents.
+4. **Google authorization.** The privacy page explains data use but does not complete Google's OAuth verification. Scope classification, branding, domain ownership, and possible security review must be checked in the production Cloud project.
 
-Рабочий сценарий начинается с писем, которые пользователь сам направил в ярлык вакансий. Скрипт анализирует содержание, оценивает совпадение с профилем, исключает некоторые типы вакансий, создаёт таблицу/документы/черновик. Пользователь лично проверяет и отправляет заявку; автоматической подачи на сайты нет. В исходнике уже есть журнал метрик, защита `LockService` от параллельного запуска и отдельный ярлык для ручной проверки.
+## Public alternatives reviewed
 
-Это хороший прототип бизнес-логики, но не готовый многопользовательский продукт: настройки, шаблон резюме и инфраструктурные идентификаторы привязаны к одному владельцу; скрипт ориентирован на его личный рабочий процесс. Его нельзя напрямую выдавать множеству людей без разделения личных данных, адаптации профиля, проверки OAuth, UX подключения и понятной поддержки ошибок.
+The review is a product comparison, not a code copy. Public projects show three useful patterns:
 
-**Предупреждение по секрету:** при чтении конфигурации исходного Job Automation был обнаружен записанный прямо в файле API-ключ. Значение не повторяю и не переношу в прототип. Его следует отозвать в Google AI Studio/Google Cloud и создать новый. Если этот файл когда-либо был в коммите или отправлялся в чат, удаление из текущего файла не отменяет возможное копирование из старой версии.
+- **ApplyTrail** keeps the tracker in a local SQLite database and offers optional AI. Its documented setup still asks users to configure a Google OAuth client and local environment variables. This is a better local privacy model, but a heavier first-run process for a nontechnical job seeker.
+- **Haolinc/job-tracker** uses a Windows desktop launcher with local Ollama classification, a local database, board/table views, and CSV import/export. It reduces cloud AI data transfer but requires a desktop install, model download, and suitable hardware.
+- **ApplyBoard / JustAJobApp** show the convenience of automatic email classification and a central dashboard. Their hosted model also requires users to trust the operator with inbox access and to meet applicable OAuth and data-handling requirements.
 
-## Что нельзя устранить одним изменением интерфейса
+Jmail's current direction is a compromise: browser-based guided setup, account-owned Google files and triggers, user-owned Gemini key, and one final control page. The main remaining friction is still Google consent and Gemini key setup; the product should not claim those steps disappeared.
 
-### 1. Google должен показать пользователю экран согласия
+## Release verification boundary
 
-Приложение, которое читает письма и создаёт черновики, должно запросить права аккаунта Google. Apps Script сканирует используемые сервисы и определяет набор разрешений; публичный скрипт с чувствительными scopes может показывать предупреждение о непроверенном приложении, пока разработчик не завершит проверку. Google указывает, что проверка требует публичного сайта на подтверждённом домене, страницы политики конфиденциальности и стандартного Cloud-проекта. У непроверенного OAuth-приложения есть предел числа пользователей. Источники: [авторизация Apps Script](https://developers.google.com/apps-script/guides/services/authorization), [проверка OAuth Apps Script](https://developers.google.com/apps-script/guides/client-verification).
+The owner has used the live app with a personal Google account and has reported successful processing attempts. That is useful pilot evidence, not independent verification of account isolation, data deletion, OAuth compliance, or safety against every false positive. The current project should be described as an active pilot, not as OAuth-verified or production-certified.
 
-Для обычной публичной Gmail-интеграции чтение всей почты/поиск писем обычно требует широкого restricted scope. Google предупреждает, что если restricted-scope данные хранятся на стороннем сервере или передаются через него, может понадобиться оценка безопасности. У Gmail add-on есть более узкие scopes для текущего открытого письма, но они не подходят сами по себе для ежедневного фонового чтения произвольного ярлыка. Источники: [список Gmail scopes](https://developers.google.com/workspace/gmail/api/auth/scopes), [ограниченные scopes и требования](https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification).
-
-Значит, нужно проектировать прозрачное согласие и пройти проверку; скрытая автоматизация без разрешения невозможна и была бы плохой практикой.
-
-### 2. Общий AI-ключ не даёт бесплатной и безопасной модели
-
-Общий API-ключ упрощает UX только если он хранится на сервере. В публичной PWA ключ виден посетителю, его можно извлечь и использовать за счёт владельца. Даже если сам сервер размещён на бесплатном тарифе, вычисления Gemini оплачиваются/ограничиваются отдельно. Бесплатный Gemini API имеет ограниченные модели и квоты; Google указывает, что данные Free tier могут использоваться для улучшения продуктов, в то время как Paid tier не использует их так. Источники: [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing), [Cloud Run pricing](https://cloud.google.com/run/pricing).
-
-Серверный общий ключ можно защищать учётными записями, квотами на пользователя, очередью и ограничением стоимости. Очередь сглаживает пиковую нагрузку и rate limits, но не уменьшает токены, цену и обязательства по защите персональных данных. Если через сервер проходит Gmail-данное, появляется более тяжёлый вопрос хранения/передачи restricted data.
-
-Google рекомендует не раскрывать Gemini API key на стороне клиента и выполнять запросы через защищённый сервер: [рекомендации по ключам Gemini](https://discuss.ai.google.dev/t/securing-your-gemini-api-key-is-crucial/106912). Чтобы избежать зависимости от скрытого ключа, можно использовать биллинг пользователя через его ключ, но это снова усложняет регистрацию и переносит риск утечки на него.
-
-### 3. Desktop-установка не убирает разрешения и ключ
-
-Устанавливаемая программа может создать ощущение продукта и хранить локальные настройки, но всё ещё должна запросить Google OAuth. При локальном Gemini всё равно нужны скачиваемая модель, память и подходящее устройство, качество различается; при облачном API всё равно нужен безопасный ключ и бюджет. Упаковка в несколько гигабайт не снимает главную проблему, зато добавляет обновления и поддержку Windows/Mac.
-
-## Сравнение архитектур
-
-| Вариант | Как это выглядит для пользователя | Плюсы | Главный минус | Вывод |
-|---|---|---|---|---|
-| Текущий генератор | Заполнить мастер, скопировать скрипт, создать ресурсы и триггер | Простая статическая публикация; код и данные остаются у пользователя | Много ручных шагов, API key и риск расхождения генератора с рабочим кодом | Хорош как внутренний MVP или экспорт, но слабый массовый UX |
-| Публичная PWA + один общий бэкенд | Войти, подключить Google, задать критерии | Самый гладкий UX | Расходы Gemini, OAuth verification, данные проходят через сервис; нужен антиабьюз и безопасность | Путь к коммерческому сервису, не бесплатная схема «на века» |
-| PWA + персональный Apps Script | Мастер настроек, Google consent, автоматически созданные лист/папка/ярлыки/триггер | Пользовательские почтовые данные обрабатываются в аккаунте пользователя; фоновые запуски без постоянно открытого сайта | Проверка OAuth и первый экран разрешений остаются; AI ключ ещё нужно решить | Лучший компромисс для простого и приватного пилота |
-| Gmail Workspace add-on | Jmail прямо в Gmail, действия на открытом письме | Наиболее «нативный» интерфейс Google; можно ограничивать доступ текущим письмом | Не годится для всего требуемого ежедневного фонового поиска; публикация и review | Возможен позже как интерфейс ручной проверки, не основной исполнитель |
-| Desktop app + local model | Установка, локальные настройки, Google consent | Данные ИИ могут обрабатываться локально | Модель занимает место, требования к ПК, качество/скорость; OAuth всё равно нужен | Не лучший старт для аудитории, которой важна простота |
-
-## Рекомендуемый продукт: Jmail Personal
-
-### Пользовательский путь
-
-1. Пользователь открывает приложение и видит короткое описание: Jmail читает только выбранный ярлык вакансий, оценивает соответствие, сохраняет подходящие вакансии и создаёт черновик; письма не отправляются.
-2. Вводит критерии поиска и выбирает, нужен ли ему AI-анализ. Можно начать с демонстрационных или вручную добавленных вакансий, не давая доступ к почте.
-3. Нажимает **«Подключить Google»**. Google показывает официальный экран прав. После подтверждения установщик в аккаунте пользователя создаёт рабочую таблицу, папки и метки, проверяет конфигурацию и устанавливает дневное расписание.
-4. Пользователь сам задаёт Gmail-фильтр/ярлык вакансий, либо установщик показывает короткий пошаговый помощник; приложение не ищет вакансии по всему почтовому ящику.
-5. При первом запуске он проверяет 2–3 письма вручную. Вакансии с высоким совпадением попадают в таблицу и получают черновик. Сомнительные идут в «Проверить». Явно не подходящие архивируются/маркируются согласно настройке пользователя. Письма не удаляются автоматически.
-6. В обзоре видны последний запуск, ошибки, количество обработанных писем, сколько попало в каждый список, и действие «Исправить подключение».
-
-**Интерфейс:** PWA становится понятной приборной панелью и мастером настройки. Фоновая работа выполняется пользовательским Apps Script. В будущем интерфейс можно расширить Workspace add-on или OAuth web UI, но сперва следует подтвердить работу сквозного сценария.
-
-### Что пользователь делает один раз
-
-- соглашается на конкретные Google-разрешения;
-- выбирает/проверяет Gmail-ярлык;
-- вводит цель, критерии и порог совпадения;
-- выбирает AI-режим и подтверждает обработку содержания вакансии AI-провайдером;
-- проверяет создаваемые документы и разрешает ежедневное расписание.
-
-Не следует просить пользователя вручную создавать таблицу, папку, копировать сотни строк скрипта и отдельно вводить ID файлов. Именно эту часть может автоматизировать мастер установки с Apps Script API/clasp либо короткий deployable Apps Script setup.
-
-## Как решить вопрос AI и бюджета
-
-### Этап 1 — пилот
-
-- Встроенный демонстрационный сценарий и импорт вакансии вручную.
-- Для живого AI пользователь временно использует собственный Gemini API key, но вводит его непосредственно в настройки своего Apps Script, а не в веб-страницу и не в сгенерированный клиентский код. Хранить следует в Script Properties, ограничить по расходам и не логировать. Не вводить ключ в общий репозиторий.
-- Показывать предупреждение о правилах использования бесплатного Gemini API и не отправлять CV/контакты, если оценке вакансии достаточно краткого профиля компетенций.
-
-Это не идеальный UX, но безопасный способ проверить реальный спрос и стоимость без риска, что один общий ключ будет использован кем угодно.
-
-### Этап 2 — управляемая услуга
-
-- Опциональный AI-план с лимитом обработок на пользователя и явным лимитом месячного бюджета владельца.
-- Серверная функция получает только текст конкретного письма, необходимую абстракцию профиля и случайный job ID. Не передавать Gmail OAuth token в Gemini proxy и не хранить текст письма после завершения запроса.
-- Ограничивать аккаунты и частоту: аутентификация, квоты, очередь, размер сообщения, лимит дневных запросов, идемпотентный job ID, таймаут и возможность отменить запрос.
-- До публичного запуска сделать анализ правовых и Google policy требований; транзит restricted Gmail data на сторонний сервер существенно повышает цену соответствия. Возможно, для масштабирования безопаснее оставить чтение и запись в Apps Script пользователя, а AI-вызов сделать отдельным явным переключателем.
-
-Не заявлять «бесплатно навсегда»: бесплатный compute не делает бесплатными инференс, мониторинг, OAuth review, поддержку и обработку инцидентов. Для некоммерческих партнёров можно отдельно договориться о субсидировании фиксированного пула запросов, а не скрывать это в личном ключе разработчика.
-
-## Безопасность, которую надо заложить
-
-- Никогда не класть API keys, OAuth refresh tokens, личные профили или реальные письма в PWA/репозиторий/логи.
-- Не вводить данные владельца Job Automation по умолчанию в шаблон для клиентов; начать с пустого профиля и пустых папок.
-- Давать наименьший возможный набор Google scopes. Публичный доступ к Gmail чтению требует планировать OAuth verification заранее; узкие add-on permissions можно использовать только там, где они не ломают нужную фоновую обработку.
-- Не выполнять `moveToTrash()` на неподходящих вакансиях или при ошибке. Явно неподходящие — метка + архив; неопределённые — ручная проверка; технический сбой — оставить письмо на повторный следующий штатный запуск или пометить ошибку.
-- Не отправлять заявки автоматически; сначала показывать черновик и объяснения сопоставления.
-- Добавить журнал аудита, но сохранять минимум: время, статус, счётчики, job ID. Не хранить полные тела писем.
-- Иметь кнопку отключения автоматизации, отзыва Google-доступа и удаления папок/таблиц, созданных приложением.
-- Отделить обработку вакансий от генерации резюме/письма: документы — дополнительная функция после успешной настройки основного процесса.
-- Поставить тестовый аккаунт и синтетические письма до реального аккаунта. Проверить ошибки API, дубликаты, частично созданные документы и повторный запуск.
-
-## Почему важна очередь, но это не решение бесплатности
-
-Если один серверный AI-ключ обслуживает пользователей, очередь предотвращает пики параллельных запросов и упрощает fairness. Каждое задание хранит только безопасный минимум и имеет статусы `queued → running → done/review/error`; ограничения на пользователя предотвращают монополизацию. Но очередь не даёт бесплатных токенов, не решает Google OAuth и не превращает общий ключ в персональные квоты Google автоматически. Для гарантированного ограничения расходов нужны лимит на пользователя, общий месячный бюджет, circuit breaker и остановка новых заданий при достижении порога.
-
-## Этапы реализации без риска для рабочего Jmail
-
-### Фаза A — UX-проверка (этот прототип)
-
-Показать интерфейс бератору/пользователям и получить ответы: понятно ли, что происходит с письмами; хватает ли причин для оценки; кому нужна генерация документов; сколько готовы пройти шагов настройки. Никакой Google-связи и секретов.
-
-### Фаза B — рабочий личный пилот
-
-Вынести общий движок скрипта в один поддерживаемый шаблон, убрать из шаблона личные данные и зашитый ключ, добавить явный конфигурационный мастер/валидатор и спокойные статусы. Запускать только на отдельном тестовом Gmail/таблице. Сохранить старый проект и бэкап перед любым изменением основного Jmail — отдельная задача, не выполненная этим прототипом.
-
-### Фаза C — установка одним сценарием
-
-Сделать PWA-инструкцию и автоматизированный установщик, который после Google consent создаёт индивидуальный проект Apps Script, таблицу, папку, метки и ежедневный триггер. Создателем триггера остаётся пользователь, поэтому автоматизация продолжает работать от его авторизованного аккаунта. Это существенно сокращает ручные действия, но не убирает экраны Google и проверку OAuth.
-
-### Фаза D — публичный пилот с организациями
-
-Сначала ограниченная группа и документированные правила хранения. Собрать подтверждённые цифры по писем/пользователь/неделю, среднему токен-потреблению, ошибкам и доле ручной проверки. Только затем решать, оплачивает ли AI работодатель/Jobcenter/партнёр, пользователь, грант или бесплатная квота.
-
-### Фаза E — публичный продукт
-
-OAuth verification, privacy policy на проверенном домене, юридическая оценка передачи Gmail данных провайдеру, поддержка пользователя, мониторинг, ограничение расходов и план инцидентов. Только после этого можно открывать self-service регистрацию и общий AI-сервис.
-
-## Что отличается от текущего подхода
-
-Текущий Jmail думает **«как сгенерировать скрипт, который пользователь соберёт сам»**. Предлагаемый Jmail Personal думает **«как показать приложению пользователю результат, а технические Google-ресурсы развернуть за него в его аккаунте»**. Это по-прежнему реалистично в Google Apps Script, но ощущается как приложение и меньше требует копирования/вставки.
-
-Он не убирает первую авторизацию Google и не делает AI бесплатным. Он убирает ручное создание таблицы/папки, ручное копирование исходника, ручной перенос ID и путаницу о том, что произойдёт с письмами. Это самая большая практическая доля UX-проблем, которую можно решить без обещаний обойти внешние правила.
-
-## Что добавлено в демонстрационный интерфейс
-
-- Переключатель светлой и тёмной темы; язык интерфейса можно выбрать на русском, немецком или английском.
-- Загрузка TXT, DOCX и PDF резюме. Текст извлекается в браузере; простые локальные шаблоны пытаются найти имя, адрес электронной почты, телефон и навыки. Это не полноценное ИИ-извлечение: распознавание ориентировочное, его нужно проверить.
-- Извлечённое резюме не записывается в `localStorage` и не отправляется на сервер. Для PDF/DOCX браузер скачивает библиотеки PDF.js и Mammoth с CDN; в браузер передаётся код библиотеки, а не сам файл. Для production-версии правильнее хранить зафиксированные библиотеки в репозитории, сканировать их зависимости и показывать понятное согласие перед загрузкой.
-- Отдельное предупреждение рекомендует завести отдельный Gmail для регистраций на сайтах поиска работы и использования Jmail. Оно прямо говорит, что ошибка автоматизации может переместить или удалить нужное письмо, поэтому не следует подключать основную почту.
-
-Сейчас кнопки остаются демонстрационными: нет Gmail OAuth, реального чтения писем, генерации документов, Gemini-запросов или автоматической установки. Это позволяет оценить UX без доступа к пользовательским данным.
-
-## Официальные источники для проверки перед разработкой
-
-- [Apps Script: запрос разрешений и запуск от имени пользователя](https://developers.google.com/apps-script/guides/services/authorization)
-- [Apps Script: OAuth-проверка, пользовательский лимит и требования](https://developers.google.com/apps-script/guides/client-verification)
-- [Gmail API: scopes и классификация restricted/sensitive](https://developers.google.com/workspace/gmail/api/auth/scopes)
-- [Google: проверка restricted scopes и security assessment](https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification)
-- [Gemini API: бесплатные и платные уровни](https://ai.google.dev/gemini-api/docs/pricing)
-- [Cloud Run: тарификация и бесплатная квота](https://cloud.google.com/run/pricing)
-
+See [`CHANGELOG.md`](./CHANGELOG.md) for the beta-to-current history, [`docs/OPEN_SOURCE_ALTERNATIVES.md`](./docs/OPEN_SOURCE_ALTERNATIVES.md) for dated sources, and [`LIVE_TEST_RU.md`](./LIVE_TEST_RU.md) for the current pilot guide.

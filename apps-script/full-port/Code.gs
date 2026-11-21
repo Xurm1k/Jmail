@@ -23,7 +23,7 @@ const CONFIG = (function () {
     GMAIL_LABEL_INPUT: settings.inputLabel || "Jmail/Jobs",
     GMAIL_LABEL_PROCESSED: settings.processedLabel || "Jmail/Processed",
     GMAIL_LABEL_REVIEW: settings.reviewLabel || "Jmail/Review",
-    MIN_MATCH_SCORE: Number(settings.minMatchScore || 85),
+    MIN_MATCH_SCORE: settings.minMatchScore == null ? 85 : Number(settings.minMatchScore),
     JOB_CRITERIA: settings.jobCriteria || "",
     EXCLUDED_ROLE_FAMILIES: Array.isArray(settings.excludedRoleFamilies) ? settings.excludedRoleFamilies : ["data_analyst"],
     EXCLUDED_PHYSICAL_DEMANDS: Array.isArray(settings.excludedPhysicalDemands) ? settings.excludedPhysicalDemands : ["heavy", "prolonged_standing"],
@@ -33,7 +33,7 @@ const CONFIG = (function () {
     MAX_RUNTIME_SECONDS: Number(settings.maxRuntimeSeconds || 300),
     MIN_SECONDS_TO_START_JOB: Number(settings.minSecondsToStartJob || 150),
     THREADS_PAGE_SIZE: Number(settings.threadsPageSize || 100),
-    MAX_COMMUTE_MINUTES: Number(settings.maxCommuteMinutes || 60),
+    MAX_COMMUTE_MINUTES: settings.maxCommuteMinutes == null ? 60 : Number(settings.maxCommuteMinutes),
     PDF_FOLDER_ID: p.getProperty("PDF_FOLDER_ID") || "",
     PHOTO_FILE_ID: p.getProperty("PHOTO_FILE_ID") || "",
     SENDER_INFO: sender
@@ -342,17 +342,7 @@ function saveJmailProfileDraft(payload) {
     throw new Error("Resume text is empty or too long.");
   const p = jmailProps_();
   const previousProfile = p.getProperty("CAREER_PROFILE_JSON");
-  const settings = Object.assign(
-    readJmailJson_("JMAIL_SETTINGS_JSON", {}),
-    payload.settings || {}
-  );
-  settings.inputLabel = settings.inputLabel === "Jmail/Вакансии" || !settings.inputLabel ? "Jmail/Jobs" : settings.inputLabel;
-  settings.processedLabel = settings.processedLabel === "Jmail/Обработано" || !settings.processedLabel ? "Jmail/Processed" : settings.processedLabel;
-  settings.reviewLabel = settings.reviewLabel === "Jmail/Проверить" || !settings.reviewLabel ? "Jmail/Review" : settings.reviewLabel;
-  p.setProperty("JMAIL_SETTINGS_JSON", JSON.stringify(settings));
-  const sender = payload.sender || {};
-  sender.address = sender.city || "";
-  p.setProperty("JMAIL_SENDER_JSON", JSON.stringify(sender));
+  saveJmailProfileSettings_(payload);
   p.deleteProperty("CAREER_PROFILE_DRAFT_JSON");
   try {
     buildCareerProfileFromResume(payload.resumeText, "CAREER_PROFILE_JSON");
@@ -368,6 +358,45 @@ function saveJmailProfileDraft(payload) {
     if (previousProfile) p.setProperty("CAREER_PROFILE_JSON", previousProfile);
     else p.deleteProperty("CAREER_PROFILE_JSON");
   }
+}
+
+function saveJmailProfileSettings_(payload) {
+  if (!payload || !payload.settings || !payload.sender)
+    throw new Error("Не удалось прочитать настройки профиля. Проверьте поля и попробуйте снова.");
+  const minMatchScore = Number(payload.settings.minMatchScore);
+  const maxCommuteMinutes = Number(payload.settings.maxCommuteMinutes);
+  if (!Number.isFinite(minMatchScore) || minMatchScore < 0 || minMatchScore > 100)
+    throw new Error("Порог совпадения должен быть числом от 0 до 100.");
+  if (!Number.isFinite(maxCommuteMinutes) || maxCommuteMinutes < 0 || maxCommuteMinutes > 240)
+    throw new Error("Время в пути должно быть числом от 0 до 240 минут.");
+  const settings = Object.assign(
+    readJmailJson_("JMAIL_SETTINGS_JSON", {}),
+    payload.settings || {}
+  );
+  settings.minMatchScore = minMatchScore;
+  settings.maxCommuteMinutes = maxCommuteMinutes;
+  settings.inputLabel = settings.inputLabel === "Jmail/Вакансии" || !settings.inputLabel ? "Jmail/Jobs" : settings.inputLabel;
+  settings.processedLabel = settings.processedLabel === "Jmail/Обработано" || !settings.processedLabel ? "Jmail/Processed" : settings.processedLabel;
+  settings.reviewLabel = settings.reviewLabel === "Jmail/Проверить" || !settings.reviewLabel ? "Jmail/Review" : settings.reviewLabel;
+  const p = jmailProps_();
+  p.setProperty("JMAIL_SETTINGS_JSON", JSON.stringify(settings));
+  const sender = Object.assign({}, payload.sender);
+  sender.address = sender.city || "";
+  p.setProperty("JMAIL_SENDER_JSON", JSON.stringify(sender));
+}
+
+function applyJmailSetup(payload) {
+  saveJmailProfileSettings_(payload);
+  if (jmailProps_().getProperty("GEMINI_DATA_CONSENT") !== "yes")
+    throw new Error("Перед применением подтвердите согласие на обработку данных в разделе Gemini.");
+  const setup = getJmailSetupStatus();
+  const missing = [];
+  if (!setup.ready) missing.push("папку и таблицу Google");
+  if (!setup.hasApiKey) missing.push("ключ Gemini");
+  if (!setup.hasProfile) missing.push("подтверждённый профиль");
+  if (missing.length) throw new Error("Не все шаги завершены. Проверьте, что созданы папка и таблица, подключён Gemini и подтверждён профиль.");
+  jmailProps_().setProperty("JMAIL_DASHBOARD_UNLOCKED", "yes");
+  return {applied:true};
 }
 
 function setJmailDataConsent(accepted) {
@@ -465,8 +494,8 @@ function getJmailSetupStatus() {
     profileSettings: {
       name: sender.name || "", email: sender.email || settings.userEmail || "",
       phone: sender.phone || "", city: sender.city || sender.address || "",
-      jobCriteria: settings.jobCriteria || "", minMatchScore: Number(settings.minMatchScore || 85),
-      maxCommuteMinutes: Number(settings.maxCommuteMinutes || 60)
+      jobCriteria: settings.jobCriteria || "", minMatchScore: settings.minMatchScore == null ? 85 : Number(settings.minMatchScore),
+      maxCommuteMinutes: settings.maxCommuteMinutes == null ? 60 : Number(settings.maxCommuteMinutes)
     }
   };
 }

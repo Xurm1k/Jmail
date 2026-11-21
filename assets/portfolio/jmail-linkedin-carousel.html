@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jmail — LinkedIn carousel</title>
+<style>
+  :root{--ink:#17352a;--green:#176b4b;--mint:#cbe9d8;--cream:#f4f3e9;--paper:#fffef9;--muted:#6d7c73;--amber:#f1dfb5;--blue:#d9e7f5;--red:#f2d5d7}
+  *{box-sizing:border-box}body{margin:0;background:#e8ebe4;color:var(--ink);font-family:Arial,Helvetica,sans-serif}.toolbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;background:#17352a;color:white}.toolbar button{border:0;border-radius:8px;padding:10px 15px;background:#91d4ae;color:#17352a;font-weight:700;cursor:pointer}.toolbar a{color:white}.deck{display:grid;gap:28px;justify-content:center;padding:28px}.slide{position:relative;overflow:hidden;width:min(80vw,720px);aspect-ratio:4/5;padding:8%;border-radius:26px;background:var(--cream);box-shadow:0 16px 50px #17352a22;display:flex;flex-direction:column;justify-content:space-between}.slide.dark{background:#12291f;color:#f4f3e9}.slide.paper{background:var(--paper)}.slide.blue{background:#e8eff5}.eyebrow{font-size:16px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--green)}.dark .eyebrow{color:#93d8af}.headline{font-size:clamp(42px,7vw,76px);line-height:1.02;letter-spacing:-.045em;margin:30px 0 20px;font-weight:750}.subhead{font-size:clamp(21px,3vw,31px);line-height:1.35;max-width:90%;color:#52645a}.dark .subhead{color:#cad9ce}.highlight{color:var(--green)}.dark .highlight{color:#9be2b8}.footer{display:flex;align-items:center;justify-content:space-between;padding-top:18px;border-top:1px solid #8aa08e55;color:var(--muted);font-size:15px;font-weight:700;letter-spacing:.08em}.dark .footer{color:#afc4b6}.visual-orb{position:absolute;width:38%;aspect-ratio:1;border-radius:50%;right:-5%;top:20%;background:var(--mint);opacity:.7}.dark .visual-orb{background:#26563d}.stack{display:grid;gap:14px;margin-top:30px}.step-card{display:grid;grid-template-columns:48px 1fr;align-items:center;gap:16px;padding:17px 20px;border-radius:15px;background:#fffef9;font-size:22px;font-weight:650}.dark .step-card{background:#1e392d}.number{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--mint);color:var(--green);font-size:18px}.tags{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}.tag{padding:13px 17px;border-radius:999px;background:#fffef9;font-size:19px;font-weight:700}.control-list{display:grid;gap:12px;margin:24px 0}.control{display:flex;align-items:center;gap:13px;padding:15px 17px;border-radius:13px;font-size:21px;font-weight:700}.control i{width:15px;height:15px;border-radius:50%;background:currentColor}.run{background:#176b4b;color:white}.enable{background:#dcefe3;color:#176b4b}.stop{background:#f6ebce;color:#7d5b16}.edit{background:#dfeaf5;color:#315a83}.delete{background:#f6e0e2;color:#9e303b}.warning{padding:18px 20px;background:#f6e0e2;border-radius:14px;font-size:20px;line-height:1.4;color:#6e252c}.small{font-size:16px;line-height:1.5;color:var(--muted)}.dark .small{color:#afc4b6}.brand{font-size:22px;font-weight:750;letter-spacing:.04em}.cta{display:inline-block;margin-top:22px;padding:15px 20px;border-radius:12px;background:var(--green);color:white;font-size:20px;font-weight:700}
+  @page{size:8in 10in;margin:0}@media print{body{background:#fff}.toolbar{display:none}.deck{display:block;padding:0}.slide{width:8in;height:10in;aspect-ratio:auto;border-radius:0;box-shadow:none;page-break-after:always;break-after:page;padding:.7in}.slide:last-child{page-break-after:auto;break-after:auto}.headline{font-size:52pt}.subhead{font-size:22pt}.step-card{font-size:16pt}.control{font-size:15pt}}
+</style>
+</head>
+<body>
+<div class="toolbar"><strong>Jmail · 6-slide LinkedIn carousel</strong><button onclick="window.print()">Print / Save as PDF</button><a href="../../">Back to project</a></div>
+<main class="deck">
+  <article class="slide dark">
+    <div><div class="eyebrow">A product UX redesign</div><div class="visual-orb"></div><h1 class="headline">A job-search tool shouldn’t give you <span class="highlight">another job.</span></h1><p class="subhead">How I moved Jmail from “generate a script” toward “set it up, apply, and manage it.”</p></div>
+    <div class="footer"><span>JMAIL · PRODUCT UX × AUTOMATION</span><span>01 / 06</span></div>
+  </article>
+  <article class="slide paper">
+    <div><div class="eyebrow">The beta</div><h2 class="headline">It could generate the script.<br><span class="highlight">Then came the chores.</span></h2><p class="subhead">More screens. More copying. More setup decisions before a job seeker could get to the useful part.</p><div class="stack"><div class="step-card"><span class="number">1</span><span>Find the right Google screen</span></div><div class="step-card"><span class="number">2</span><span>Move code and settings around</span></div><div class="step-card"><span class="number">3</span><span>Hope the pieces connect</span></div></div></div>
+    <div class="footer"><span>THE USER WAS DOING THE ASSEMBLY</span><span>02 / 06</span></div>
+  </article>
+  <article class="slide">
+    <div><div class="eyebrow">The question</div><h2 class="headline">What if setup felt like part of the product?</h2><p class="subhead">This came from my own friction with the beta—not a user study I didn’t run.</p><div class="tags"><span class="tag">Fewer handoffs</span><span class="tag">Clear next step</span><span class="tag">Control after setup</span></div><p class="subhead" style="margin-top:36px">The goal: get from “help me sort job alerts” to a usable workspace without asking the user to assemble an app.</p></div>
+    <div class="footer"><span>START WITH THE JOB TO BE DONE</span><span>03 / 06</span></div>
+  </article>
+  <article class="slide dark">
+    <div><div class="eyebrow">The new flow</div><h2 class="headline">Four steps. Then one clear <span class="highlight">Apply.</span></h2><div class="stack"><div class="step-card"><span class="number">1</span><span>Connect your own Google account</span></div><div class="step-card"><span class="number">2</span><span>Add your Gemini key</span></div><div class="step-card"><span class="number">3</span><span>Upload and review your CV profile</span></div><div class="step-card"><span class="number">4</span><span>Set job-fit and commute criteria</span></div></div><p class="small">Apply saves settings and opens the workspace. It does not silently start an email scan.</p></div>
+    <div class="footer"><span>GUIDED SETUP, USER-OWNED GOOGLE FILES</span><span>04 / 06</span></div>
+  </article>
+  <article class="slide blue">
+    <div><div class="eyebrow">After setup</div><h2 class="headline">A workspace for the work that continues.</h2><div class="control-list"><div class="control run"><i></i>Check emails now</div><div class="control enable"><i></i>Enable daily checks</div><div class="control stop"><i></i>Stop the schedule</div><div class="control edit"><i></i>Edit CV or criteria</div><div class="control delete"><i></i>Delete data & disconnect</div></div><p class="small">The colors show intent. The page is separate from the setup wizard.</p></div>
+    <div class="footer"><span>RUN · SCHEDULE · EDIT · LEAVE</span><span>05 / 06</span></div>
+  </article>
+  <article class="slide dark">
+    <div><div class="eyebrow">Still a pilot</div><h2 class="headline">Less setup.<br>Clearer <span class="highlight">trade-offs.</span></h2><div class="warning"><strong>AI can be wrong.</strong> Jmail moves messages it rejects to Trash. Use a separate job-search account and check Trash during the pilot.</div><p class="subhead" style="margin-top:28px">Google consent and a personal Gemini key still remain. Email content goes to Gemini with consent. Applications are never sent automatically.</p><p class="small">No invented test cohort. No accuracy claim. The next step is a fresh-account walkthrough and safer recovery.</p><span class="cta">Build automation that respects the person using it.</span></div>
+    <div class="footer"><span>PRODUCT UX · PRACTICAL AUTOMATION · APPLIED AI</span><span>06 / 06</span></div>
+  </article>
+</main>
+</body>
+</html>

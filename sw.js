@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jmail-static-v1';
+const CACHE_NAME = 'jmail-static-v2';
 const CORE_FILES = ['./', './index.html', './manifest.json', './jmail-icon.svg'];
 
 self.addEventListener('install', event => {

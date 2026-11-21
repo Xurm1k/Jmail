@@ -29,9 +29,11 @@ The project also contains a separate legacy Apps Script worker with a different 
 
 ## Current status and verification boundary
 
-The public onboarding flow is not connected to a deployed shared web app yet: `webapp-config.js` currently contains an empty deployment URL. The intended account-isolation model is documented and implemented in the full-port code, but this repository state alone does not prove a live multi-account deployment or a completed end-to-end user test.
+The public GitHub Pages landing page now has a configured Apps Script Web App URL in `webapp-config.js`. The setup button routes through Google AccountChooser with that URL. This confirms that the onboarding link is configured; it does not prove that the deployed script completes setup or processes data correctly.
 
-The current processing code can move messages it classifies as unrelated or below the configured match threshold to Gmail Trash. A false positive could therefore hide a relevant vacancy. The project documentation advises using a dedicated Gmail account and checking early results. Before inviting outside users, a review/quarantine step should replace automatic Trash behavior and the account-isolation, permissions, recovery, and retention behavior should be verified in separate test accounts.
+The owner has not yet verified the complete flow with a dedicated test account. The deployed script version, execution identity, OAuth scopes, consent behavior, multi-user isolation, and data-retention behavior therefore remain unverified. The intended account-isolation model in the full-port source is not proof of a live multi-account deployment.
+
+The current processing code can move messages it classifies as unrelated or below the configured match threshold to Gmail Trash. A false positive could therefore hide a relevant vacancy. Before inviting outside users, a review/quarantine step should replace automatic Trash behavior and the isolation, permissions, recovery, and retention behavior should be verified in separate test accounts.
 
 Email text, resume content, and criteria are sent to Google Gemini for classification or document preparation. Users need a clear explanation of this data flow and should use only information they are prepared to send to that service.
 
@@ -47,16 +49,17 @@ I used AI-assisted development. My contribution includes the process requirement
 - Separating account-specific user data from a shared application entry point in the intended deployment model.
 - Keeping application submission under human control.
 - Recognizing that a model classification can cause a consequential false positive when paired with destructive email actions.
-- Distinguishing implemented code and documented design from verified deployment and product readiness.
+- Distinguishing a configured public handoff and implemented source code from verified deployment behavior and product readiness.
 
 ## Next steps
 
-1. Connect a deployed Apps Script Web App to the public setup flow and verify the full path with a dedicated test account.
-2. Replace automatic Trash with a review label or quarantine and provide an undo/recovery path.
-3. Verify that one user's settings, credentials, files, and email cannot be accessed by another user.
-4. Review OAuth scopes, consent text, data retention, and the Gemini data flow.
-5. Add repeatable tests for malformed messages, model errors, duplicate alerts, false positives, and setup failures.
-6. Update this case study only after each behavior has been verified.
+1. Verify the configured deployment and complete setup path with a dedicated test account.
+2. Confirm the deployment version, execution identity, and OAuth scopes.
+3. Replace automatic Trash with a review label or quarantine and provide an undo/recovery path.
+4. Verify that one user's settings, credentials, files, and email cannot be accessed by another user.
+5. Review consent text, data retention, and the Gemini data flow.
+6. Add repeatable tests for malformed messages, model errors, duplicate alerts, false positives, and setup failures.
+7. Update this case study only after each behavior has been verified.
 
 ## Portfolio wording
 

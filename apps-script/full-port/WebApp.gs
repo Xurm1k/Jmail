@@ -43,6 +43,8 @@ function migrateJmailResourceNames_() {
 function getJmailSetupStatus() {
   const p = jmailProps_();
   migrateJmailResourceNames_();
+  const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
+  const sender = readJmailJson_("JMAIL_SENDER_JSON", {});
   const spreadsheetId = p.getProperty("SPREADSHEET_ID") || "";
   const folderId = p.getProperty("PDF_FOLDER_ID") || "";
   let spreadsheetUrl = "";
@@ -58,9 +60,53 @@ function getJmailSetupStatus() {
     hasProfile: Boolean(p.getProperty("CAREER_PROFILE_JSON")),
     dailyEnabled: ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === "processJobEmails" && t.getEventType() === ScriptApp.EventType.CLOCK),
     lastRun: readJmailJson_("last_run_stats", null),
-    lastRunAt: p.getProperty("last_run_timestamp") || ""
+    lastRunAt: p.getProperty("last_run_timestamp") || "",
+    profileSettings: {
+      name: sender.name || "", email: sender.email || settings.userEmail || "",
+      phone: sender.phone || "", city: sender.city || sender.address || "",
+      jobCriteria: settings.jobCriteria || "", minMatchScore: Number(settings.minMatchScore || 85),
+      maxCommuteMinutes: Number(settings.maxCommuteMinutes || 60)
+    }
   };
 }
+
+/** Removes this user's Jmail data, resources, labels, filters, triggers, and script authorization. */
+function deleteJmailUserData() {
+  const p = jmailProps_();
+  const warnings = [];
+  const spreadsheetId = p.getProperty("SPREADSHEET_ID");
+  const folderId = p.getProperty("PDF_FOLDER_ID");
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === "processJobEmails")
+    .forEach(t => ScriptApp.deleteTrigger(t));
+  try {
+    const labels = Gmail.Users.Labels.list("me").labels || [];
+    const jmailLabels = labels.filter(label => ["Jmail/Jobs", "Jmail/Processed", "Jmail/Review"].includes(label.name));
+    const labelIds = jmailLabels.map(label => label.id);
+    if (labelIds.length) {
+      const filters = Gmail.Users.Settings.Filters.list("me").filter || [];
+      filters.filter(filter => (filter.action && (filter.action.addLabelIds || []).some(id => labelIds.includes(id))))
+        .forEach(filter => Gmail.Users.Settings.Filters.remove("me", filter.id));
+      jmailLabels.forEach(label => {
+        const userLabel = GmailApp.getUserLabelByName(label.name);
+        if (userLabel) userLabel.deleteLabel();
+      });
+    }
+  } catch (e) { warnings.push("Не удалось удалить некоторые ярлыки или фильтры Gmail."); }
+  if (spreadsheetId) {
+    try { DriveApp.getFileById(spreadsheetId).setTrashed(true); }
+    catch (e) { warnings.push("Не удалось переместить таблицу Jmail в корзину."); }
+  }
+  if (folderId) {
+    try { DriveApp.getFolderById(folderId).setTrashed(true); }
+    catch (e) { warnings.push("Не удалось переместить папку Jmail в корзину."); }
+  }
+  p.deleteAllProperties();
+  try { ScriptApp.invalidateAuth(); }
+  catch (e) { warnings.push("Откройте настройки Google-аккаунта и отзовите доступ Jmail вручную."); }
+  return {deleted: true, warnings: warnings};
+}
+
 
 
 

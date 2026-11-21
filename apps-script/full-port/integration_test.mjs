@@ -59,7 +59,7 @@ function makeScenario({analysis, autoReply=false, documents=true}={}) {
 }
 function candidate(overrides={}) {
   return Object.assign({
-    verdict:'APPLY',match_score:92,is_newsletter:false,
+    verdict:'APPLY',match_score:92,is_newsletter:false,contact_email:'jobs@example.invalid',
     work_mode:'remote',job_location:'',
     role_family:'office_admin',physical_demand:'desk',application_effort:'simple',
     evidence:{role:'Office Coordinator',physical:'Desk based work',application:'Apply by email',location:'Fully remote'},

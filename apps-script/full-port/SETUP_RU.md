@@ -32,11 +32,18 @@
   "reviewLabel": "Jmail/Проверить",
   "minMatchScore": 85,
   "maxCommuteMinutes": 60,
+  "minMatchScore": 85,
+  "jobCriteria": "Удалённая или гибридная работа; немецкий B1; без тяжёлой физической нагрузки",
+  "excludedRoleFamilies": ["data_analyst"],
+  "excludedPhysicalDemands": ["heavy", "prolonged_standing"],
+  "allowedRoleFamilies": ["office_admin", "quality_control", "customer_service", "supervisor", "other"],
+  "allowedPhysicalDemands": ["desk", "light"],
+  "allowedApplicationEfforts": ["simple", "moderate"],
   "userEmail": "user@example.com"
 }
 ```
 
-Схема `CAREER_PROFILE_JSON` должна соответствовать источнику вакансий: `experiences` — массив объектов `{id, company, role, location, period, claims:[{id,tags,text}]}`; также нужны `militaryService`, `education`, `languages`, `skills` (объекты `{id,text}`) и `optionalCareerTransition`. JSON должен помещаться в лимит одного Script Property. Автоматическое преобразование загруженного резюме в этот формат и выдача готового к вставке пакета из PWA ещё не подключены.
+Порог, дополнительные критерии, исключения по типу работы, допустимые форматы роли/нагрузки/отклика задаются в `JMAIL_SETTINGS_JSON`. Значения по умолчанию повторяют текущие ограничения Job Automation; при необходимости пользователь меняет массивы в своих Script Properties.\n\nСхема `CAREER_PROFILE_JSON` должна соответствовать источнику вакансий: `experiences` — массив объектов `{id, company, role, location, period, claims:[{id,tags,text}]}`; также нужны `militaryService`, `education`, `languages`, `skills` (объекты `{id,text}`) и `optionalCareerTransition`. JSON должен помещаться в лимит одного Script Property. Автоматическое преобразование загруженного резюме в этот формат и выдача готового к вставке пакета из PWA ещё не подключены.
 
 ## Сохранённое поведение
 

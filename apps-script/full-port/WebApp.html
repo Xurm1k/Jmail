@@ -17,6 +17,7 @@
     .status{white-space:pre-wrap;color:var(--muted);font-size:13px;margin-top:10px;min-height:20px}.links{display:flex;gap:10px;flex-wrap:wrap}
     .small{font-size:12px;color:var(--muted)}.preview,.run-summary{display:none;background:var(--canvas);border:1px solid var(--line);border-radius:9px;padding:12px;white-space:pre-wrap;margin-top:12px;font-size:13px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    dialog{max-width:620px;width:calc(100% - 32px);border:1px solid var(--line);border-radius:15px;background:var(--paper);color:var(--ink);padding:22px}dialog::backdrop{background:#101812aa}dialog h2{margin-bottom:12px}dialog li{margin:8px 0}
     @media(max-width:600px){.row{grid-template-columns:1fr}main{padding:18px 12px 40px}header{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
@@ -37,10 +38,23 @@
   <section class="panel"><div class="step"><span class="num">2</span><div style="width:100%">
     <h2>Подключить Gemini</h2>
     <p class="small">Нужен личный ключ Google AI Studio: он хранится в закрытых настройках аккаунта и используется только для ваших запросов. Бесплатная квота может меняться; оплату включать не нужно.</p>
-    <a class="button secondary" href="https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Faistudio.google.com%2Fapp%2Fapikey" target="_blank" rel="noopener">Получить ключ Gemini</a>
+    <button class="secondary" id="apiGuideOpen" type="button">Как получить и добавить ключ</button>
     <label for="apiKey">Ключ Gemini</label><input id="apiKey" type="password" autocomplete="new-password">
     <button onclick="saveKey()">Проверить и сохранить ключ</button>
   </div></div></section>
+
+  <dialog id="apiGuide" aria-labelledby="apiGuideTitle">
+    <button class="secondary" id="apiGuideClose" type="button">Закрыть</button>
+    <h2 id="apiGuideTitle">Получить и подключить Gemini API key</h2>
+    <ol>
+      <li data-guide-key="account">Откройте AI Studio под тем же отдельным Google-аккаунтом, который используется для Jmail. Не используйте основную почту.</li>
+      <li data-guide-key="switch">Если открылся основной аккаунт, нажмите на аватар Google и переключитесь на отдельный рабочий аккаунт.</li>
+      <li data-guide-key="create">Нажмите «Create API key» и создайте ключ. Если появится выбор проекта, выберите или создайте проект.</li>
+      <li data-guide-key="paste">Скопируйте ключ, вернитесь в мастер, вставьте его в поле Gemini и нажмите «Проверить и сохранить».</li>
+    </ol>
+    <p data-guide-key="free">Для Gemini 3.1 Flash-Lite Google указывает бесплатную квоту. Без подключения биллинга платные запросы не выполняются; при достижении бесплатных лимитов обработка может остановиться. Не подключайте оплату и не передавайте ключ другим.</p>
+    <a class="button" data-guide-key="open" href="https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Faistudio.google.com%2Fapp%2Fapikey" target="_blank" rel="noopener">Открыть Google AI Studio</a>
+  </dialog>
 
   <section class="panel"><div class="step"><span class="num">3</span><div style="width:100%">
     <h2>Загрузить резюме и задать критерии</h2>
@@ -77,15 +91,23 @@
     de:{"Настройте помощника по вакансиям в своём Google-аккаунте.":"Richten Sie Ihren Job-Assistenten in Ihrem Google-Konto ein.","Язык":"Sprache","Тёмная тема":"Dunkles Design","Светлая тема":"Helles Design","Используйте отдельный Gmail для поиска работы.":"Verwenden Sie ein separates Gmail-Konto für die Jobsuche.","Подключить Google и создать рабочие материалы":"Google verbinden und Arbeitsbereich erstellen","Загрузить резюме и задать критерии":"Lebenslauf hochladen und Kriterien festlegen","Получать письма с вакансиями":"Stellenbenachrichtigungen empfangen","Проверить и включить автоматизацию":"Automatisierung prüfen und aktivieren","Создать папку и таблицу":"Ordner und Tabelle erstellen","Подключить Gemini":"Gemini verbinden","Получить ключ Gemini":"Gemini-Schlüssel abrufen","Ключ Gemini":"Gemini-Schlüssel","Проверить и сохранить ключ":"Schlüssel prüfen und speichern","Резюме (PDF, DOCX или TXT, до 15 000 символов)":"Lebenslauf (PDF, DOCX oder TXT, max. 15.000 Zeichen)","Имя":"Name","Почта для откликов":"E-Mail für Bewerbungen","Телефон":"Telefon","Город или индекс отправления":"Wohnort oder Postleitzahl","Какие вакансии искать и что учитывать":"Stellen und Kriterien","Минимальная оценка (0–100)":"Mindestbewertung (0–100)","Максимальная дорога, минут":"Maximale Pendelzeit in Minuten","Сформировать профиль для проверки":"Profil zur Prüfung erstellen","Подтвердить профиль":"Profil bestätigen","Проверить новые письма":"Neue E-Mails prüfen","Включить ежедневный запуск":"Täglichen Lauf aktivieren","Остановить запуск":"Lauf stoppen","Текст извлекается в браузере. Он отправится в Apps Script и Google Gemini только после нажатия «Сформировать профиль».":"Der Text wird im Browser ausgelesen und erst nach Klick auf „Profil erstellen“ an Apps Script und Google Gemini gesendet."}
   };
   let currentLanguage="ru";
+  const guideTranslations={
+    ru:{title:"Получить и подключить Gemini API key",account:"Откройте AI Studio под тем же отдельным Google-аккаунтом, который используется для Jmail. Не используйте основную почту.",switch:"Если открылся основной аккаунт, нажмите на аватар Google и переключитесь на отдельный рабочий аккаунт.",create:"Нажмите «Create API key» и создайте ключ. Если появится выбор проекта, выберите или создайте проект.",paste:"Скопируйте ключ, вернитесь в мастер, вставьте его в поле Gemini и нажмите «Проверить и сохранить».",free:"Для Gemini 3.1 Flash-Lite Google указывает бесплатную квоту. Без подключения биллинга платные запросы не выполняются; при достижении бесплатных лимитов обработка может остановиться. Не подключайте оплату и не передавайте ключ другим.",open:"Открыть Google AI Studio"},
+    en:{title:"Get and connect a Gemini API key",account:"Open AI Studio with the same separate Google account used for Jmail. Do not use your primary email.",switch:"If your primary account opens, click the Google profile picture and switch to your separate job-search account.",create:"Click Create API key. If asked to choose a project, select or create one.",paste:"Copy the key, return to the setup, paste it into the Gemini field, and click Verify and save.",free:"Google lists a free tier for Gemini 3.1 Flash-Lite. Without billing enabled, paid requests cannot run; processing may stop when free limits are reached. Do not enable billing or share your key.",open:"Open Google AI Studio"},
+    de:{title:"Gemini API-Schlüssel abrufen und verbinden",account:"Öffnen Sie AI Studio mit demselben separaten Google-Konto, das Sie für Jmail verwenden. Nutzen Sie nicht Ihr Hauptkonto.",switch:"Falls Ihr Hauptkonto geöffnet wird, klicken Sie auf das Google-Profilbild und wechseln Sie zum separaten Konto für die Jobsuche.",create:"Klicken Sie auf Create API key. Falls Sie ein Projekt auswählen sollen, wählen oder erstellen Sie eines.",paste:"Kopieren Sie den Schlüssel, kehren Sie zum Setup zurück, fügen Sie ihn in das Gemini-Feld ein und klicken Sie auf Prüfen und speichern.",free:"Google bietet für Gemini 3.1 Flash-Lite ein kostenloses Kontingent. Ohne aktivierte Abrechnung sind keine kostenpflichtigen Anfragen möglich; bei Erreichen des Limits kann die Verarbeitung stoppen. Aktivieren Sie keine Abrechnung und teilen Sie den Schlüssel nicht.",open:"Google AI Studio öffnen"}
+  };
+  function updateGuideText(lang){document.getElementById("apiGuideTitle").textContent=guideTranslations[lang].title;document.querySelectorAll("[data-guide-key]").forEach(n=>n.textContent=guideTranslations[lang][n.dataset.guideKey]);document.getElementById("apiGuideOpen").textContent={ru:"Как получить и добавить ключ",en:"How to get and add a key",de:"Schlüssel erhalten und einfügen"}[lang];document.getElementById("apiGuideClose").textContent={ru:"Закрыть",en:"Close",de:"Schließen"}[lang]}
   const textNodes=[];const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   while(walker.nextNode())textNodes.push({node:walker.currentNode,source:walker.currentNode.nodeValue.trim(),leading:walker.currentNode.nodeValue.match(/^\s*/)[0],trailing:walker.currentNode.nodeValue.match(/\s*$/)[0]});
   function translate(text){return translations[currentLanguage]?.[text]||text}
-  function applyLanguage(lang){currentLanguage=lang;document.documentElement.lang=lang;textNodes.forEach(x=>{if(x.source)x.node.nodeValue=x.leading+translate(x.source)+x.trailing});document.getElementById("themeBtn").textContent=document.body.dataset.theme==="dark"?translate("Светлая тема"):translate("Тёмная тема");localStorage.setItem("jmail-language",lang)}
+  function applyLanguage(lang){currentLanguage=lang;document.documentElement.lang=lang;textNodes.forEach(x=>{if(x.source)x.node.nodeValue=x.leading+translate(x.source)+x.trailing});updateGuideText(lang);document.getElementById("themeBtn").textContent=document.body.dataset.theme==="dark"?translate("Светлая тема"):translate("Тёмная тема");localStorage.setItem("jmail-language",lang)}
   function say(text){statusNode.textContent=translate(text)||""}
   function fail(err){say(err&&err.message?err.message:String(err))}
   function setTheme(theme){document.body.dataset.theme=theme;localStorage.setItem("jmail-theme",theme);document.getElementById("themeBtn").textContent=translate(theme==="dark"?"Светлая тема":"Тёмная тема")}
   document.getElementById("language").addEventListener("change",e=>applyLanguage(e.target.value));
   document.getElementById("themeBtn").addEventListener("click",()=>setTheme(document.body.dataset.theme==="dark"?"light":"dark"));
+  document.getElementById("apiGuideOpen").addEventListener("click",()=>document.getElementById("apiGuide").showModal());
+  document.getElementById("apiGuideClose").addEventListener("click",()=>document.getElementById("apiGuide").close());
   applyLanguage(localStorage.getItem("jmail-language")||"ru");
   setTheme(localStorage.getItem("jmail-theme")||"light");
 
@@ -148,3 +170,4 @@
 </script>
 </body>
 </html>
+

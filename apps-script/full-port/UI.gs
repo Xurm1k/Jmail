@@ -4,6 +4,7 @@
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('🤖 Job Automation')
+    .addItem('⚙️ Настроить профиль и критерии', 'showJmailProfileSetup')
     .addItem('🚀 Запустить обработку вакансий', 'processJobEmails')
     .addItem('🧹 Очистить неподтвержденные строки и архив', 'manualCleanupAction')
     .addToUi();

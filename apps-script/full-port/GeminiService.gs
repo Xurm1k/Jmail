@@ -2,7 +2,7 @@
 // GEMINISERVICE.GS — ВЗАИМОДЕЙСТВИЕ С GEMINI API
 // ==========================================
 function analyzeJobWithGemini(emailContent, currentDate, recentApplications, emailHtml) {
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + CONFIG.GEMINI_API_KEY;
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
 
   const systemInstruction = `
 Ты — экспертный ИИ-аналитик вакансий. Используй только факты из личного профиля кандидата, переданного ниже.
@@ -56,7 +56,7 @@ ${JSON.stringify(recentApplications)}
   `;
 
   const payload = { contents: [{ role: "user", parts: [{ text: systemInstruction + "\n\nHTML письма:\n" + emailHtml + "\n\nТекст вакансии:\n" + emailContent }] }], generationConfig: { responseMimeType: "application/json", responseSchema: getJobAnalysisResponseSchema() } };
-  const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
+  const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", headers:{"x-goog-api-key":CONFIG.GEMINI_API_KEY}, payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
     Logger.log("Gemini analysis HTTP " + responseCode + ": " + response.getContentText().slice(0, 800));
@@ -142,8 +142,8 @@ function getJobAnalysisResponseSchema() {
 }
 
 function generateJobApplicationDocumentsWithGemini(jobData) {
-  const model = CONFIG.GEMINI_DOCUMENTS_MODEL || "gemini-3.5-flash";
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + CONFIG.GEMINI_API_KEY;
+  const model = CONFIG.GEMINI_DOCUMENTS_MODEL || "gemini-3.1-flash-lite";
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent";
   const profileForModel = {
     experiences: CAREER_PROFILE.experiences.map(job => ({
       id: job.id, company: job.company, role: job.role, location: job.location, period: job.period,
@@ -198,6 +198,7 @@ ${String(jobData.job_description || "").slice(0, 16000)}
   const response = UrlFetchApp.fetch(url, {
     method: "post",
     contentType: "application/json",
+    headers: {"x-goog-api-key": CONFIG.GEMINI_API_KEY},
     payload: JSON.stringify(payload),
     muteHttpExceptions: true,
     timeoutSeconds: 60
@@ -310,10 +311,10 @@ function getJobDocumentsResponseSchema() {
 }
 
 function generateCareerAdviceWithGemini(pastData) {
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + CONFIG.GEMINI_API_KEY;
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
   const prompt = `Ты — экспертный карьерный советник. Анализируй только агрегированные данные пользователя. Проанализируй отклики: ${JSON.stringify(pastData)}. Дай практические советы.`;
   const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "text/plain" } };
-  const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
+  const response = UrlFetchApp.fetch(url, { method: "post", contentType: "application/json", headers:{"x-goog-api-key":CONFIG.GEMINI_API_KEY}, payload: JSON.stringify(payload), muteHttpExceptions: true, timeoutSeconds: 45 });
   const responseCode = response.getResponseCode();
   if (responseCode < 200 || responseCode >= 300) {
     Logger.log("Gemini career report HTTP " + responseCode + ": " + response.getContentText().slice(0, 800));
@@ -326,4 +327,5 @@ function generateCareerAdviceWithGemini(pastData) {
     return null;
   }
 }
+
 

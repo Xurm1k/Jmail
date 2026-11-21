@@ -10,7 +10,7 @@ const CONFIG = (function () {
   const sender = readJmailJson_("JMAIL_SENDER_JSON", {});
   return {
     GEMINI_API_KEY: p.getProperty("GEMINI_API_KEY") || "",
-    GEMINI_DOCUMENTS_MODEL: settings.geminiDocumentsModel || "gemini-3.5-flash",
+    GEMINI_DOCUMENTS_MODEL: settings.geminiDocumentsModel || "gemini-3.1-flash-lite",
     SPREADSHEET_ID: p.getProperty("SPREADSHEET_ID") || "",
     USER_EMAIL: settings.userEmail || Session.getEffectiveUser().getEmail() || "",
     GMAIL_LABEL_INPUT: settings.inputLabel || "Jmail/Вакансии",
@@ -32,3 +32,4 @@ const CONFIG = (function () {
     SENDER_INFO: sender
   };
 })();
+

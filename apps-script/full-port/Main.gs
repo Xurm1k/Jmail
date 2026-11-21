@@ -34,26 +34,20 @@ function processJobEmailsUnlocked() {
     if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячный отчет")) return stats;
     checkAndSendMonthlyCareerReport();
 
-    const inputLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_INPUT);
-    if (!inputLabel) {
-      stats.status = "input_label_missing";
-      Logger.log("Не найден входной ярлык; проверьте его название в настройках.");
-      return stats;
-    }
-
     let processedLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PROCESSED);
     if (!processedLabel) processedLabel = GmailApp.createLabel(CONFIG.GMAIL_LABEL_PROCESSED);
     let reviewLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_REVIEW);
     if (!reviewLabel) reviewLabel = GmailApp.createLabel(CONFIG.GMAIL_LABEL_REVIEW);
 
     const recentApplications = getRecentApplicationsFromSheet(90);
-    // Читаем ярлык страницами без общего лимита писем. Снимок собирается до изменения ярлыков,
-    // поэтому смещение страницы не перескакивает после архивирования обработанных писем.
+    // Автоматически проверяем свежие письма во Входящих; входной ярлык вручную ставить не нужно.
+    // Снимок собирается до изменения ярлыков, чтобы пагинация не пропускала письма.
     const threads = [];
     let snapshotComplete = false;
     for (let offset = 0; ; offset += CONFIG.THREADS_PAGE_SIZE) {
       if (!shouldContinueProcessing(startTime, 60, stats, "чтение писем")) break;
-      const page = inputLabel.getThreads(offset, CONFIG.THREADS_PAGE_SIZE);
+      const query = 'in:inbox newer_than:1d -label:"' + CONFIG.GMAIL_LABEL_PROCESSED + '" -label:"' + CONFIG.GMAIL_LABEL_REVIEW + '"';
+      const page = GmailApp.search(query, offset, CONFIG.THREADS_PAGE_SIZE);
       threads.push.apply(threads, page);
       if (page.length < CONFIG.THREADS_PAGE_SIZE) {
         snapshotComplete = true;
@@ -66,7 +60,7 @@ function processJobEmailsUnlocked() {
       const noJobsDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd.MM.yyyy");
       jmailProps_().setProperty("no_jobs_since", noJobsDate);
       stats.status = "no_emails";
-      Logger.log('Во входном ярлыке нет писем. Записана информационная отметка no_jobs_since; триггер не отключается.');
+      Logger.log('Новых писем во Входящих за последние сутки нет. Триггер не отключается.');
       return stats;
     }
     if (threads.length > 0) jmailProps_().deleteProperty("no_jobs_since");
@@ -90,31 +84,29 @@ function processJobEmailsUnlocked() {
     const emailBody = lastMessage.getPlainBody();
     const emailHtml = lastMessage.getBody();
 
-    if (isAutoReply(emailSubject, emailBody)) {
-      thread.moveToTrash();
-      continue;
-    }
-
     try {
       Utilities.sleep(1000);
       const aiResponse = analyzeJobWithGemini(emailBody, currentDate, recentApplications, emailHtml);
         if (!aiResponse) continue;
         stats.analyzed++;
+      if (aiResponse.is_job_related === false) {
+        thread.addLabel(processedLabel);
+        stats.nonJobs = (stats.nonJobs || 0) + 1;
+        continue;
+      }
 
       const eligibility = evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, stats);
       if (eligibility.status === "defer") continue;
       if (eligibility.status === "reject") {
-        thread.removeLabel(inputLabel);
         thread.addLabel(processedLabel);
         thread.moveToArchive();
         stats.rejected++;
         continue;
       }
       if (eligibility.status === "review") {
-        thread.removeLabel(inputLabel);
         thread.addLabel(reviewLabel);
         stats.review++;
-        Logger.log("Письмо отправлено на ручную проверку: " + eligibility.reason);
+        Logger.log("Письмо автоматически отложено для проверки: " + eligibility.reason);
         continue;
       }
 
@@ -176,7 +168,6 @@ function processJobEmailsUnlocked() {
         createDirectNotificationInFertig(aiResponse, processedLabel, aiResponse.job_url);
         aiResponse.thread.moveToTrash();
       } else {
-        aiResponse.thread.removeLabel(inputLabel);
         aiResponse.thread.addLabel(processedLabel);
         aiResponse.thread.moveToArchive(); // Убирает письмо из Входящих.
       }

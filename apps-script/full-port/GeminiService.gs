@@ -16,6 +16,7 @@ ${JSON.stringify(recentApplications)}
 - Базовый порог соответствия — ${CONFIG.MIN_MATCH_SCORE}%.
 - "is_perfect_match": true, если вакансия является идеальным, стопроцентным попаданием в административный профиль, QA или офис без нареканий.
 - "salary_attractiveness_bonus": true, если вакансия предлагает существенно более высокую зарплату (например, хорошие позиции в продажах/ритейле с окладом 40к+ в год или выгодные условия), что делает её приоритетной даже при небольшом отклонении от чисто офисного профиля.
+- Сначала определи, является ли письмо сообщением о конкретной вакансии или подборкой вакансий ("is_job_related": true/false). Подтверждения регистрации, реклама и личная переписка — false.
 - Определи, является ли письмо дайджестом ("is_newsletter": true/false).
 
 КРИТЕРИИ КАНДИДАТА, ВВЕДЁННЫЕ ПОЛЬЗОВАТЕЛЕМ:\n${CONFIG.JOB_CRITERIA || 'Пользователь не указал дополнительных критериев.'}\n\nГЕОГРАФИЯ И ЛОГИСТИКА:
@@ -41,6 +42,7 @@ ${JSON.stringify(recentApplications)}
   "verdict": "<APPLY или SKIP>",
   "is_perfect_match": <true или false>,
   "salary_attractiveness_bonus": <true или false>,
+  "is_job_related": <true или false>,
   "is_newsletter": <true или false>,
   "work_mode": "<on_site, hybrid, remote или unknown>",
   "job_location": "<короткая локация из письма или пустая строка>",
@@ -65,7 +67,7 @@ ${JSON.stringify(recentApplications)}
   
   try {
     const parsed = JSON.parse(JSON.parse(response.getContentText()).candidates[0].content.parts[0].text);
-    if (typeof parsed.match_score !== "number" || parsed.match_score < 0 || parsed.match_score > 100 ||
+    if (typeof parsed.is_job_related !== "boolean" || typeof parsed.match_score !== "number" || parsed.match_score < 0 || parsed.match_score > 100 ||
         !["APPLY", "SKIP"].includes(parsed.verdict) || !parsed.tracker_data ||
         !parsed.evidence || !parsed.company_address ||
         !["on_site", "hybrid", "remote", "unknown"].includes(parsed.work_mode) ||
@@ -89,7 +91,7 @@ function getJobAnalysisResponseSchema() {
   return {
     type: "OBJECT",
     required: [
-      "match_score", "verdict", "is_perfect_match", "salary_attractiveness_bonus", "is_newsletter",
+      "match_score", "verdict", "is_perfect_match", "salary_attractiveness_bonus", "is_job_related", "is_newsletter",
       "work_mode", "job_location", "role_family", "physical_demand", "application_effort", "evidence",
       "contact_email", "job_url", "company_address", "tracker_data"
     ],
@@ -98,6 +100,7 @@ function getJobAnalysisResponseSchema() {
       verdict: { type: "STRING", enum: ["APPLY", "SKIP"] },
       is_perfect_match: { type: "BOOLEAN" },
       salary_attractiveness_bonus: { type: "BOOLEAN" },
+      is_job_related: { type: "BOOLEAN" },
       is_newsletter: { type: "BOOLEAN" },
       work_mode: { type: "STRING", enum: ["on_site", "hybrid", "remote", "unknown"] },
       job_location: { type: "STRING" },

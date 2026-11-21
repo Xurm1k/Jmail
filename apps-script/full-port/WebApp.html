@@ -21,12 +21,12 @@
 <body>
 <main>
   <header><h1>Jmail</h1><p>Настройте помощника по вакансиям в своём Google-аккаунте.</p></header>
-  <div class="note"><b>Используйте отдельный Gmail.</b> Автоматизация может ошибаться и перемещать письма. Jmail не отправляет отклики без вашего действия. Текст резюме и вакансий передаётся Google Gemini для анализа.</div>
+  <div class="note"><b>Используйте отдельный Gmail для поиска работы.</b> Jmail автоматически проверяет новые письма во «Входящих» за последние сутки через Gemini. Не-вакансии остаются в почте. Отклики не отправляются без вашего действия; текст почты, резюме и критерии передаются Google Gemini.
 
   <section class="panel"><div class="step"><span class="num">1</span><div>
     <h2>Подключить Google и создать рабочие материалы</h2>
     <p class="small">Google покажет разрешения перед первым использованием. Подтверждайте доступ только если согласны предоставить Jmail доступ к Gmail, Drive и таблицам этого аккаунта.</p>
-    <button id="setupBtn" onclick="setup()">Создать папку, таблицу и ярлыки</button>
+    <button id="setupBtn" onclick="setup()">Создать папку и таблицу</button>
     <div class="links" id="resourceLinks"></div>
   </div></div></section>
 
@@ -51,15 +51,13 @@
   </div></div></section>
 
   <section class="panel"><div class="step"><span class="num">4</span><div style="width:100%">
-    <h2>Автоматически настроить фильтр Gmail</h2>
-    <label for="senders">Адрес отправителя вакансий</label><input id="senders" placeholder="jobs@example.com, alerts@example.org">
-    <p class="small">Скопируйте адрес из письма с вакансией. Можно указать несколько адресов через запятую. Фильтр добавляет ярлык, не удаляя и не пересылая письма.</p>
-    <button onclick="createFilters()">Создать фильтр Gmail</button>
+    <h2>Автоматический поиск писем</h2>
+    <p class="small">Jmail сам находит новые письма во «Входящих» за последние сутки. Ничего вручную помечать и фильтры настраивать не нужно. Gemini определяет, есть ли вакансия, а затем оценивает её по вашему профилю.</p>
   </div></div></section>
 
   <section class="panel"><div class="step"><span class="num">5</span><div style="width:100%">
     <h2>Проверить работу</h2>
-    <p class="small">Для немедленного теста добавьте ярлык Jmail/Вакансии одному письму в Gmail, затем нажмите кнопку. Оставьте во входном ярлыке одно тестовое письмо.</p>
+    <p class="small">Нажмите кнопку: Jmail сам проверит новые письма во «Входящих» за последние сутки.</p>
     <button onclick="runTest()">Обработать тестовое письмо</button>
     <button class="secondary" onclick="setDaily(true)">Включить ежедневный запуск</button>
     <button class="secondary" onclick="setDaily(false)">Остановить запуск</button>
@@ -75,11 +73,11 @@
       const box=document.getElementById("resourceLinks");box.innerHTML="";
       if(s.spreadsheetUrl)box.innerHTML+='<a class="button secondary" target="_blank" rel="noopener" href="'+s.spreadsheetUrl+'">Открыть таблицу вакансий</a>';
       if(s.folderUrl)box.innerHTML+='<a class="button secondary" target="_blank" rel="noopener" href="'+s.folderUrl+'">Открыть папку документов</a>';
-      document.getElementById("setupBtn").textContent=s.ready?"Показать мои ресурсы Google":"Создать папку, таблицу и ярлыки";
+      document.getElementById("setupBtn").textContent=s.ready?"Показать мои ресурсы Google":"Создать папку и таблицу";
       if(s.ready)say("Google-ресурсы готовы. "+(s.hasApiKey?"Gemini подключён. ":"Добавьте бесплатный ключ Gemini. ")+(s.hasProfile?"Профиль подтверждён. ":"Добавьте и подтвердите профиль. ")+(s.dailyEnabled?"Ежедневный запуск включён.":""));
     }).withFailureHandler(fail).getJmailSetupStatus();
   }
-  function setup(){const b=document.getElementById("setupBtn");b.disabled=true;say("Создаю папку, таблицу и ярлыки…");google.script.run.withSuccessHandler(()=>{b.disabled=false;refresh();say("Готово. Рабочие материалы созданы в вашем Google-аккаунте.")}).withFailureHandler(e=>{b.disabled=false;fail(e)}).setupJmail();}
+  function setup(){const b=document.getElementById("setupBtn");b.disabled=true;say("Создаю папку и таблицу…");google.script.run.withSuccessHandler(()=>{b.disabled=false;refresh();say("Готово. Рабочие материалы созданы в вашем Google-аккаунте.")}).withFailureHandler(e=>{b.disabled=false;fail(e)}).setupJmail();}
   function saveKey(){const key=document.getElementById("apiKey").value;if(!key.trim()){say("Вставьте ключ Gemini.");return}say("Проверяю ключ у Google…");google.script.run.withSuccessHandler(m=>{document.getElementById("apiKey").value="";say(m);refresh()}).withFailureHandler(fail).saveJmailGeminiApiKey(key);}
   async function prepareProfile(){
     const file=document.getElementById("resume").files[0];if(!file){say("Выберите TXT-файл резюме.");return}
@@ -89,8 +87,7 @@
     google.script.run.withSuccessHandler(r=>{document.getElementById("preview").textContent=r.preview;document.getElementById("preview").style.display="block";document.getElementById("approveBtn").style.display="inline-block";say("Проверьте профиль. Неподтверждённые текстом сведения не добавлены.")}).withFailureHandler(fail).saveJmailProfileDraft(payload);
   }
   function approveProfile(){say("Сохраняю подтверждённый профиль…");google.script.run.withSuccessHandler(m=>{document.getElementById("preview").style.display="none";document.getElementById("approveBtn").style.display="none";say(m);refresh()}).withFailureHandler(fail).approveJmailProfile();}
-  function createFilters(){say("Создаю фильтр Gmail…");google.script.run.withSuccessHandler(m=>{say(m);refresh()}).withFailureHandler(fail).createJmailGmailFilters(document.getElementById("senders").value);}
-  function runTest(){say("Обрабатываю письмо с ярлыком Jmail/Вакансии…");google.script.run.withSuccessHandler(r=>{say(r?"Результат:\n"+JSON.stringify(r,null,2):"Запуск завершён. Проверьте таблицу и папку Google Drive.");refresh()}).withFailureHandler(fail).processJobEmails();}
+  function runTest(){say("Проверяю новые письма во «Входящих»…");google.script.run.withSuccessHandler(r=>{say(r?"Результат:\n"+JSON.stringify(r,null,2):"Запуск завершён. Проверьте таблицу и папку Google Drive.");refresh()}).withFailureHandler(fail).processJobEmails();}
   function setDaily(enabled){
     say(enabled?"Включаю ежедневный запуск…":"Останавливаю ежедневный запуск…");
     const runner=google.script.run.withSuccessHandler(m=>{say(m);refresh()}).withFailureHandler(fail);

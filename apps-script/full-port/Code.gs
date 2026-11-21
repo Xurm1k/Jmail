@@ -435,26 +435,20 @@ function processJobEmailsUnlocked() {
     if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячный отчет")) return stats;
     checkAndSendMonthlyCareerReport();
 
-    const inputLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_INPUT);
-    if (!inputLabel) {
-      stats.status = "input_label_missing";
-      Logger.log("Не найден входной ярлык; проверьте его название в настройках.");
-      return stats;
-    }
-
     let processedLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PROCESSED);
     if (!processedLabel) processedLabel = GmailApp.createLabel(CONFIG.GMAIL_LABEL_PROCESSED);
     let reviewLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_REVIEW);
     if (!reviewLabel) reviewLabel = GmailApp.createLabel(CONFIG.GMAIL_LABEL_REVIEW);
 
     const recentApplications = getRecentApplicationsFromSheet(90);
-    // Читаем ярлык страницами без общего лимита писем. Снимок собирается до изменения ярлыков,
-    // поэтому смещение страницы не перескакивает после архивирования обработанных писем.
+    // Автоматически проверяем свежие письма во Входящих; входной ярлык вручную ставить не нужно.
+    // Снимок собирается до изменения ярлыков, чтобы пагинация не пропускала письма.
     const threads = [];
     let snapshotComplete = false;
     for (let offset = 0; ; offset += CONFIG.THREADS_PAGE_SIZE) {
       if (!shouldContinueProcessing(startTime, 60, stats, "чтение писем")) break;
-      const page = inputLabel.getThreads(offset, CONFIG.THREADS_PAGE_SIZE);
+      const query = 'in:inbox newer_than:1d -label:"' + CONFIG.GMAIL_LABEL_PROCESSED + '" -label:"' + CONFIG.GMAIL_LABEL_REVIEW + '"';
+      const page = GmailApp.search(query, offset, CONFIG.THREADS_PAGE_SIZE);
       threads.push.apply(threads, page);
       if (page.length < CONFIG.THREADS_PAGE_SIZE) {
         snapshotComplete = true;
@@ -467,7 +461,7 @@ function processJobEmailsUnlocked() {
       const noJobsDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd.MM.yyyy");
       jmailProps_().setProperty("no_jobs_since", noJobsDate);
       stats.status = "no_emails";
-      Logger.log('Во входном ярлыке нет писем. Записана информационная отметка no_jobs_since; триггер не отключается.');
+      Logger.log('Новых писем во Входящих за последние сутки нет. Триггер не отключается.');
       return stats;
     }
     if (threads.length > 0) jmailProps_().deleteProperty("no_jobs_since");
@@ -491,31 +485,29 @@ function processJobEmailsUnlocked() {
     const emailBody = lastMessage.getPlainBody();
     const emailHtml = lastMessage.getBody();
 
-    if (isAutoReply(emailSubject, emailBody)) {
-      thread.moveToTrash();
-      continue;
-    }
-
     try {
       Utilities.sleep(1000);
       const aiResponse = analyzeJobWithGemini(emailBody, currentDate, recentApplications, emailHtml);
         if (!aiResponse) continue;
         stats.analyzed++;
+      if (aiResponse.is_job_related === false) {
+        thread.addLabel(processedLabel);
+        stats.nonJobs = (stats.nonJobs || 0) + 1;
+        continue;
+      }
 
       const eligibility = evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, stats);
       if (eligibility.status === "defer") continue;
       if (eligibility.status === "reject") {
-        thread.removeLabel(inputLabel);
         thread.addLabel(processedLabel);
         thread.moveToArchive();
         stats.rejected++;
         continue;
       }
       if (eligibility.status === "review") {
-        thread.removeLabel(inputLabel);
         thread.addLabel(reviewLabel);
         stats.review++;
-        Logger.log("Письмо отправлено на ручную проверку: " + eligibility.reason);
+        Logger.log("Письмо автоматически отложено для проверки: " + eligibility.reason);
         continue;
       }
 
@@ -577,7 +569,6 @@ function processJobEmailsUnlocked() {
         createDirectNotificationInFertig(aiResponse, processedLabel, aiResponse.job_url);
         aiResponse.thread.moveToTrash();
       } else {
-        aiResponse.thread.removeLabel(inputLabel);
         aiResponse.thread.addLabel(processedLabel);
         aiResponse.thread.moveToArchive(); // Убирает письмо из Входящих.
       }
@@ -817,6 +808,7 @@ ${JSON.stringify(recentApplications)}
 - Базовый порог соответствия — ${CONFIG.MIN_MATCH_SCORE}%.
 - "is_perfect_match": true, если вакансия является идеальным, стопроцентным попаданием в административный профиль, QA или офис без нареканий.
 - "salary_attractiveness_bonus": true, если вакансия предлагает существенно более высокую зарплату (например, хорошие позиции в продажах/ритейле с окладом 40к+ в год или выгодные условия), что делает её приоритетной даже при небольшом отклонении от чисто офисного профиля.
+- Сначала определи, является ли письмо сообщением о конкретной вакансии или подборкой вакансий ("is_job_related": true/false). Подтверждения регистрации, реклама и личная переписка — false.
 - Определи, является ли письмо дайджестом ("is_newsletter": true/false).
 
 КРИТЕРИИ КАНДИДАТА, ВВЕДЁННЫЕ ПОЛЬЗОВАТЕЛЕМ:\n${CONFIG.JOB_CRITERIA || 'Пользователь не указал дополнительных критериев.'}\n\nГЕОГРАФИЯ И ЛОГИСТИКА:
@@ -842,6 +834,7 @@ ${JSON.stringify(recentApplications)}
   "verdict": "<APPLY или SKIP>",
   "is_perfect_match": <true или false>,
   "salary_attractiveness_bonus": <true или false>,
+  "is_job_related": <true или false>,
   "is_newsletter": <true или false>,
   "work_mode": "<on_site, hybrid, remote или unknown>",
   "job_location": "<короткая локация из письма или пустая строка>",
@@ -866,7 +859,7 @@ ${JSON.stringify(recentApplications)}
   
   try {
     const parsed = JSON.parse(JSON.parse(response.getContentText()).candidates[0].content.parts[0].text);
-    if (typeof parsed.match_score !== "number" || parsed.match_score < 0 || parsed.match_score > 100 ||
+    if (typeof parsed.is_job_related !== "boolean" || typeof parsed.match_score !== "number" || parsed.match_score < 0 || parsed.match_score > 100 ||
         !["APPLY", "SKIP"].includes(parsed.verdict) || !parsed.tracker_data ||
         !parsed.evidence || !parsed.company_address ||
         !["on_site", "hybrid", "remote", "unknown"].includes(parsed.work_mode) ||
@@ -890,7 +883,7 @@ function getJobAnalysisResponseSchema() {
   return {
     type: "OBJECT",
     required: [
-      "match_score", "verdict", "is_perfect_match", "salary_attractiveness_bonus", "is_newsletter",
+      "match_score", "verdict", "is_perfect_match", "salary_attractiveness_bonus", "is_job_related", "is_newsletter",
       "work_mode", "job_location", "role_family", "physical_demand", "application_effort", "evidence",
       "contact_email", "job_url", "company_address", "tracker_data"
     ],
@@ -899,6 +892,7 @@ function getJobAnalysisResponseSchema() {
       verdict: { type: "STRING", enum: ["APPLY", "SKIP"] },
       is_perfect_match: { type: "BOOLEAN" },
       salary_attractiveness_bonus: { type: "BOOLEAN" },
+      is_job_related: { type: "BOOLEAN" },
       is_newsletter: { type: "BOOLEAN" },
       work_mode: { type: "STRING", enum: ["on_site", "hybrid", "remote", "unknown"] },
       job_location: { type: "STRING" },

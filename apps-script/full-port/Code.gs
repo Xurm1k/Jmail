@@ -1,12 +1,18 @@
 /* ===== Config.gs ===== */
-// User-specific values and secrets are read from Script Properties, never committed here.
+// User-specific values and secrets are kept in the accessing users private User Properties.
+// User Properties keep each account's key, profile, settings, and IDs isolated in the shared web app.
+function jmailProps_() {
+  return PropertiesService.getUserProperties
+    ? PropertiesService.getUserProperties()
+    : PropertiesService.getScriptProperties();
+}
 function readJmailJson_(key, fallback) {
-  const raw = PropertiesService.getScriptProperties().getProperty(key);
+  const raw = jmailProps_().getProperty(key);
   if (!raw) return fallback;
   try { return JSON.parse(raw); } catch (e) { throw new Error("Invalid JSON in Script Property: " + key); }
 }
 const CONFIG = (function () {
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
   const sender = readJmailJson_("JMAIL_SENDER_JSON", {});
   return {
@@ -46,7 +52,7 @@ const CAREER_PROFILE = readJmailJson_("CAREER_PROFILE_JSON", {
  * Run setupJmail() once; inspect the created spreadsheet/folder links in Executions.
  */
 function setupJmail() {
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const settings = readJmailJson_("JMAIL_SETTINGS_JSON", {});
   const inputName = settings.inputLabel || "Jmail/Вакансии";
   const processedName = settings.processedLabel || "Jmail/Обработано";
@@ -56,8 +62,9 @@ function setupJmail() {
     try {
       const existing = SpreadsheetApp.openById(existingId);
       console.log("Jmail spreadsheet: " + existing.getUrl());
+      const folderId = p.getProperty("PDF_FOLDER_ID");
       console.log("Setup was already completed. No duplicate resources were created.");
-      return;
+      return {spreadsheetUrl: existing.getUrl(), folderUrl: folderId ? DriveApp.getFolderById(folderId).getUrl() : ""};
     } catch (e) {
       p.deleteProperty("SPREADSHEET_ID");
     }
@@ -77,9 +84,10 @@ function setupJmail() {
   console.log("Jmail spreadsheet: " + ss.getUrl());
   console.log("Jmail Drive folder: " + folder.getUrl());
   console.log("Setup complete. Open the spreadsheet and use Job Automation → Настроить профиль и критерии.");
+  return {spreadsheetUrl: ss.getUrl(), folderUrl: folder.getUrl()};
 }
 
-/** Validates a user's own free Gemini API key before saving it to private Script Properties. */
+/** Validates a user's own free Gemini API key before saving it to private User Properties. */
 function saveJmailGeminiApiKey(apiKey) {
   const key = String(apiKey || "").trim();
   if (key.length < 20 || key.length > 200) throw new Error("Проверьте ключ Gemini: его длина выглядит неверно.");
@@ -93,7 +101,7 @@ function saveJmailGeminiApiKey(apiKey) {
   );
   if (response.getResponseCode() < 200 || response.getResponseCode() >= 300)
     throw new Error("Gemini не принял ключ (HTTP " + response.getResponseCode() + "). Проверьте ключ и доступность бесплатной модели.");
-  PropertiesService.getScriptProperties().setProperty("GEMINI_API_KEY", key);
+  jmailProps_().setProperty("GEMINI_API_KEY", key);
   return "Бесплатный Gemini API подключён. Ключ сохранён в закрытых настройках этого Apps Script.";
 }
 
@@ -120,18 +128,23 @@ function createJmailGmailFilters(senderList) {
 }
 
 function installJmailDailyTrigger() {
+  const p = jmailProps_();
+  if (!p.getProperty("SPREADSHEET_ID") || !p.getProperty("PDF_FOLDER_ID"))
+    throw new Error("Сначала создайте папку и таблицу.");
+  if (!p.getProperty("GEMINI_API_KEY") || !p.getProperty("CAREER_PROFILE_JSON"))
+    throw new Error("Сначала подключите Gemini и подтвердите профиль.");
   ScriptApp.getProjectTriggers()
     .filter(t => t.getHandlerFunction() === "processJobEmails")
     .forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger("processJobEmails").timeBased().everyDays(1).atHour(8).create();
-  SpreadsheetApp.getUi().alert("Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.");
+  return "Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.";
 }
 
 function removeJmailDailyTrigger() {
   ScriptApp.getProjectTriggers()
     .filter(t => t.getHandlerFunction() === "processJobEmails")
     .forEach(t => ScriptApp.deleteTrigger(t));
-  SpreadsheetApp.getUi().alert("Ежедневный запуск остановлен.");
+  return "Ежедневный запуск остановлен.";
 }
 
 /**
@@ -139,11 +152,11 @@ function removeJmailDailyTrigger() {
  * Only exact source phrases are retained as claims, skills, education, or language evidence.
  */
 function buildCareerProfileFromResume(resumeInput, outputProperty) {
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const resume = typeof resumeInput === "string" ? resumeInput : (p.getProperty("CAREER_RESUME_TEXT") || "");
   const key = p.getProperty("GEMINI_API_KEY") || "";
   if (!resume.trim()) throw new Error("No resume text. Upload a text resume in the setup sidebar first.");
-  if (!key) throw new Error("Set GEMINI_API_KEY in Script Properties first.");
+  if (!key) throw new Error("Connect your personal Gemini API key in the Jmail setup wizard first.");
   if (resume.length > 15000) throw new Error("Resume text exceeds the 15,000 character limit. Shorten it and try again.");
 
   const prompt = [
@@ -213,7 +226,7 @@ function buildCareerProfileFromResume(resumeInput, outputProperty) {
     ? Object.assign({}, candidate.optionalCareerTransition, {optional:true}) : null;
   const profile = {experiences, militaryService:military, education, languages, skills, optionalCareerTransition:transition};
   const json = JSON.stringify(profile);
-  if (json.length > 8500 || Utilities.newBlob(json).getBytes().length > 8000) throw new Error("Generated profile is too large for Script Properties. No profile was saved.");
+  if (json.length > 8500 || Utilities.newBlob(json).getBytes().length > 8000) throw new Error("Generated profile is too large for private user storage. No profile was saved.");
   p.setProperty(outputProperty || "CAREER_PROFILE_JSON", json);
   if (typeof resumeInput !== "string") p.deleteProperty("CAREER_RESUME_TEXT");
   return "Profile ready: " + experiences.length + " experience entries, " +
@@ -308,7 +321,7 @@ function jmailProfileSetupHtml_() {
 function saveJmailProfileDraft(payload) {
   if (!payload || !payload.resumeText || payload.resumeText.length > 15000)
     throw new Error("Resume text is empty or too long.");
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const previousProfile = p.getProperty("CAREER_PROFILE_JSON");
   const settings = Object.assign(
     readJmailJson_("JMAIL_SETTINGS_JSON", {}),
@@ -342,7 +355,7 @@ function careerProfilePreview_(profile) {
 }
 
 function approveJmailProfile() {
-  const p = PropertiesService.getScriptProperties();
+  const p = jmailProps_();
   const draft = p.getProperty("CAREER_PROFILE_DRAFT_JSON");
   if (!draft) throw new Error("No profile draft. Prepare a profile first.");
   p.setProperty("CAREER_PROFILE_JSON", draft);
@@ -350,18 +363,53 @@ function approveJmailProfile() {
   return "Профиль сохранён. Теперь проверьте письмо на одном тестовом ярлыке.";
 }
 
+/* ===== WebApp.gs ===== */
+/**
+ * User-facing Jmail setup for a web-app deployment that executes as the user accessing it.
+ * Each account's API key, profile, settings, and resource IDs live in User Properties.
+ */
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile("WebApp")
+    .setTitle("Jmail — помощник по поиску работы")
+    .addMetaTag("viewport", "width=device-width, initial-scale=1");
+}
+
+function getJmailSetupStatus() {
+  const p = jmailProps_();
+  const spreadsheetId = p.getProperty("SPREADSHEET_ID") || "";
+  const folderId = p.getProperty("PDF_FOLDER_ID") || "";
+  let spreadsheetUrl = "";
+  let folderUrl = "";
+  if (spreadsheetId) {
+    try { spreadsheetUrl = SpreadsheetApp.openById(spreadsheetId).getUrl(); } catch (e) {}
+  }
+  if (folderId) {
+    try { folderUrl = DriveApp.getFolderById(folderId).getUrl(); } catch (e) {}
+  }
+  return {
+    ready: Boolean(spreadsheetUrl && folderUrl),
+    spreadsheetUrl: spreadsheetUrl,
+    folderUrl: folderUrl,
+    hasApiKey: Boolean(p.getProperty("GEMINI_API_KEY")),
+    hasProfile: Boolean(p.getProperty("CAREER_PROFILE_JSON")),
+    dailyEnabled: ScriptApp.getProjectTriggers().some(t =>
+      t.getHandlerFunction() === "processJobEmails" && t.getEventType() === ScriptApp.EventType.CLOCK
+    )
+  };
+}
+
 /* ===== Main.gs ===== */
 // ==========================================
 // MAIN.GS — ОСНОВНОЙ ОРКЕСТРАТОР ПРОЦЕССА
 // ==========================================
 function processJobEmails() {
-  const lock = LockService.getScriptLock();
+  const lock = LockService.getUserLock ? LockService.getUserLock() : LockService.getScriptLock();
   if (!lock.tryLock(5000)) {
     Logger.log("Пропуск запуска: другой экземпляр обработки уже работает.");
-    return;
+    return {status: "already_running"};
   }
   try {
-    processJobEmailsUnlocked();
+    return processJobEmailsUnlocked();
   } finally {
     lock.releaseLock();
   }
@@ -382,16 +430,16 @@ function processJobEmailsUnlocked() {
   };
 
   try {
-    if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячные задачи")) return;
+    if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячные задачи")) return stats;
     checkAndCreateMonthlySheet();
-    if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячный отчет")) return;
+    if (!shouldContinueProcessing(startTime, 60, stats, "ежемесячный отчет")) return stats;
     checkAndSendMonthlyCareerReport();
 
     const inputLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_INPUT);
     if (!inputLabel) {
       stats.status = "input_label_missing";
       Logger.log("Не найден входной ярлык; проверьте его название в настройках.");
-      return;
+      return stats;
     }
 
     let processedLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PROCESSED);
@@ -417,15 +465,15 @@ function processJobEmailsUnlocked() {
   
     if (threads.length === 0 && snapshotComplete) {
       const noJobsDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd.MM.yyyy");
-      PropertiesService.getScriptProperties().setProperty("no_jobs_since", noJobsDate);
+      jmailProps_().setProperty("no_jobs_since", noJobsDate);
       stats.status = "no_emails";
       Logger.log('Во входном ярлыке нет писем. Записана информационная отметка no_jobs_since; триггер не отключается.');
-      return;
+      return stats;
     }
-    if (threads.length > 0) PropertiesService.getScriptProperties().deleteProperty("no_jobs_since");
+    if (threads.length > 0) jmailProps_().deleteProperty("no_jobs_since");
     if (threads.length === 0) {
       stats.status = "time_budget_reached";
-      return;
+      return stats;
     }
 
     const currentDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd.MM.yyyy");
@@ -489,7 +537,7 @@ function processJobEmailsUnlocked() {
           ? "time_budget_reached"
           : (stats.rejected > 0 || stats.review > 0 ? "no_eligible_jobs" : "no_valid_analysis");
       }
-      return;
+      return stats;
     }
 
     if (!shouldContinueProcessing(startTime, CONFIG.MIN_SECONDS_TO_START_JOB, stats, "отбор вакансий")) {
@@ -552,7 +600,7 @@ function processJobEmailsUnlocked() {
     stats.runtimeSeconds = Math.round(elapsed * 10) / 10;
     Logger.log("Итог запуска: " + JSON.stringify(stats));
     try {
-      const props = PropertiesService.getScriptProperties();
+      const props = jmailProps_();
       props.setProperty("last_runtime_seconds", String(stats.runtimeSeconds));
       props.setProperty("last_run_timestamp", new Date().toISOString());
       props.setProperty("last_run_status", stats.status);
@@ -561,6 +609,7 @@ function processJobEmailsUnlocked() {
       Logger.log("Не удалось сохранить метрики запуска: " + metricsError.toString());
     }
   }
+  return stats;
 }
 
 function shouldContinueProcessing(startTime, reserveSeconds, stats, phase) {
@@ -1233,7 +1282,7 @@ function checkAndSendMonthlyCareerReport() {
     const now = new Date();
     if (now.getDate() > 7) return;
 
-    const scriptProps = PropertiesService.getScriptProperties();
+    const scriptProps = jmailProps_();
     const currentMonthKey = now.getFullYear() + "-" + (now.getMonth() + 1);
     if (scriptProps.getProperty("LAST_CAREER_REPORT_MONTH") === currentMonthKey) return;
 
@@ -1466,10 +1515,20 @@ function onOpen() {
   ui.createMenu('🤖 Job Automation')
     .addItem('⚙️ Настроить профиль и критерии', 'showJmailProfileSetup')
     .addItem('🚀 Запустить обработку вакансий', 'processJobEmails')
-    .addItem('⏰ Включить ежедневный запуск', 'installJmailDailyTrigger')
-    .addItem('⏸️ Остановить ежедневный запуск', 'removeJmailDailyTrigger')
+    .addItem('⏰ Включить ежедневный запуск', 'installJmailDailyTriggerFromSheet')
+    .addItem('⏸️ Остановить ежедневный запуск', 'removeJmailDailyTriggerFromSheet')
     .addItem('🧹 Очистить неподтвержденные строки и архив', 'manualCleanupAction')
     .addToUi();
+}
+
+function installJmailDailyTriggerFromSheet() {
+  installJmailDailyTrigger();
+  SpreadsheetApp.getUi().alert("Ежедневный запуск включён. Автоматизация будет выполняться примерно в 08:00.");
+}
+
+function removeJmailDailyTriggerFromSheet() {
+  removeJmailDailyTrigger();
+  SpreadsheetApp.getUi().alert("Ежедневный запуск остановлен.");
 }
 
 /**

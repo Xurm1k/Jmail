@@ -27,7 +27,7 @@
   <header><div><h1>Jmail</h1><p>Настройте помощника по вакансиям в своём Google-аккаунте.</p></div>
     <div class="tools"><label for="language" style="margin:0">Язык</label><select id="language" aria-label="Язык"><option value="ru">Русский</option><option value="de">Deutsch</option><option value="en">English</option></select><button id="themeBtn" type="button">Тёмная тема</button></div>
   </header>
-  <div class="note"><b>Используйте отдельный Gmail для поиска работы.</b> Jmail проверяет новые письма во «Входящих» за последние сутки. ИИ автоматически решает, добавлять ли вакансию в список; остальные письма и вакансии перемещаются в корзину. При техническом сбое письмо остаётся для следующего запуска. Отклики автоматически не отправляются. Текст писем, резюме и критерии передаются Google Gemini.</div>
+  <div class="note" id="setupNotice"><b>Используйте отдельный Gmail для поиска работы.</b> Jmail проверяет новые письма во «Входящих» за последние сутки. ИИ автоматически решает, добавлять ли вакансию в список; остальные письма и вакансии перемещаются в корзину. При техническом сбое письмо остаётся для следующего запуска. Отклики автоматически не отправляются. Текст писем, резюме и критерии передаются Google Gemini.</div>
 
   <section class="panel" id="dashboard" hidden>
     <h2>Шаг 5. Управление автоматизацией</h2>
@@ -103,15 +103,7 @@
     <h2>Получать письма с вакансиями</h2>
     <p class="small">Используйте этот Gmail при регистрации на сайтах поиска работы и включите уведомления о новых вакансиях. Jmail сам проверяет новые письма — вручную ставить ярлыки и настраивать фильтры не нужно.</p>
     <p class="small">Jmail/Processed означает, что письмо уже автоматически оценено и не будет повторно проверяться. Подходящие письма архивируются, неподходящие перемещаются в корзину. Ярлык проверки больше не используется; старые письма с ним будут автоматически обработаны при следующем запуске.</p>
-  </div></div></section>
-
-  <section class="panel wizard-step"><div class="step"><span class="num">5</span><div style="width:100%">
-    <h2>Проверить и включить автоматизацию</h2>
-    <p class="small">Нажмите «Проверить новые письма», затем включите ежедневный запуск. ИИ автоматически добавляет подходящие вакансии или перемещает остальные в корзину.</p>
-    <button onclick="runTest()">Проверить новые письма</button>
-    <button class="secondary" onclick="setDaily(true)">Включить ежедневный запуск</button>
-    <button class="secondary" onclick="setDaily(false)">Остановить запуск</button>
-    <div id="runSummary" class="run-summary"></div>
+    <button type="button" onclick="enterStep5AndRun()">Проверить новые письма</button>
   </div></div></section>
   <div class="status" id="status" role="status" aria-live="polite"></div>
 </main>
@@ -136,7 +128,7 @@
   Object.assign(translations.de,{"Будут удалены сохранённые профиль, критерии, API-ключ и настройки; ежедневный запуск и фильтры Jmail будут отключены. Таблица и папка Jmail переместятся в корзину Google Диска. Письма и черновики Gmail не удаляются. Доступ Jmail к Google будет отозван.":"Gespeichertes Profil, Kriterien, API-Schlüssel und Einstellungen werden gelöscht. Jmail-Zeitplan und Filter werden entfernt. Tabelle und Drive-Ordner werden in den Google-Papierkorb verschoben. Gmail-Nachrichten und Entwürfe bleiben erhalten. Der Google-Zugriff von Jmail wird widerrufen.","Ваши сохранённые данные удалены, автоматический запуск остановлен. Письма и черновики Gmail не затронуты.":"Ihre gespeicherten Daten wurden gelöscht und die Automatisierung gestoppt. Gmail-Nachrichten und Entwürfe bleiben unverändert."});
   Object.assign(translations.en,{"Будут удалены сохранённые профиль, критерии, API-ключ и настройки; ежедневный запуск и фильтры Jmail будут отключены. Все письма с ярлыками Jmail вернутся во «Входящие», в том числе письма из корзины. После этого ярлыки удалятся. Таблица и папка Jmail переместятся в корзину Google Диска. Письма и черновики Gmail не удаляются. Доступ Jmail к Google будет отозван.":"Your saved profile, criteria, API key, and settings will be deleted; Jmail's schedule and filters will be removed. All messages with Jmail labels will be returned to Inbox, including messages in Trash, and then the labels will be deleted. The Jmail spreadsheet and folder will be moved to Google Drive Trash. Other Gmail messages and drafts will remain. Jmail's Google access will be revoked."});
   Object.assign(translations.de,{"Будут удалены сохранённые профиль, критерии, API-ключ и настройки; ежедневный запуск и фильтры Jmail будут отключены. Все письма с ярлыками Jmail вернутся во «Входящие», в том числе письма из корзины. После этого ярлыки удалятся. Таблица и папка Jmail переместятся в корзину Google Диска. Письма и черновики Gmail не удаляются. Доступ Jmail к Google будет отозван.":"Gespeichertes Profil, Kriterien, API-Schlüssel und Einstellungen werden gelöscht; Jmail-Zeitplan und Filter werden entfernt. Alle mit Jmail-Labels markierten Nachrichten werden in den Posteingang zurückverschoben, auch Nachrichten aus dem Papierkorb. Danach werden die Labels gelöscht. Die Jmail-Tabelle und der Ordner werden in den Google-Papierkorb verschoben. Andere Gmail-Nachrichten und Entwürfe bleiben erhalten. Der Google-Zugriff von Jmail wird widerrufen."});
-  let currentLanguage="ru", editingSettings=false, profileEditorLoaded=false, consentPending=false;
+  let currentLanguage="ru", editingSettings=false, profileEditorLoaded=false, consentPending=false, currentPage="setup", pageChosen=false;
   const guideTranslations={
     ru:{title:"Получить и подключить Gemini API key",account:"Откройте AI Studio под тем же отдельным Google-аккаунтом, который используется для Jmail. Не используйте основную почту.",switch:"Если открылся основной аккаунт, нажмите на аватар Google и переключитесь на отдельный рабочий аккаунт.",create:"Нажмите «Create API key».",project:"Если появится выбор проекта, оставьте проект по умолчанию. Новый проект создавать не нужно; не подключайте оплату — используйте бесплатный вариант.",paste:"Скопируйте ключ. Закройте это окно, вставьте его в поле «Ключ Gemini» прямо под инструкцией и нажмите «Проверить и сохранить ключ».",open:"Открыть Google AI Studio"},
     en:{title:"Get and connect a Gemini API key",account:"Open AI Studio with the same separate Google account used for Jmail. Do not use your primary email.",switch:"If your primary account opens, click the Google profile picture and switch to your separate job-search account.",create:"Click Create API key.",project:"If asked to choose a project, keep the default project. Do not create a new one or enable billing; use the free option.",paste:"Copy the key, close this guide, paste it into the Gemini key field below, and click Verify and save key.",open:"Open Google AI Studio"},
@@ -178,18 +170,16 @@
       if(s.folderUrl)box.innerHTML+='<a class="button secondary" target="_blank" rel="noopener" href="'+s.folderUrl+'">Открыть папку документов</a>';
       document.getElementById("dashboardLinks").innerHTML=box.innerHTML;
       document.getElementById("setupBtn").textContent=s.ready?translate("Показать мои ресурсы Google"):translate("Создать папку и таблицу");
-      const summary=document.getElementById("runSummary");
-      if(s.lastRun){summary.style.display="block";summary.textContent=renderRunSummary(s.lastRun)}
       const dashboardSummary=document.getElementById("dashboardRunSummary");
       if(s.lastRun){dashboardSummary.style.display="block";dashboardSummary.textContent=renderRunSummary(s.lastRun)}
       document.getElementById("dailyState").textContent=translate(s.dailyEnabled?"Ежедневный запуск включён":"Ежедневный запуск выключен");
       document.getElementById("geminiDataConsent").checked=Boolean(s.hasDataConsent);
       document.getElementById("dashboardConsent").checked=Boolean(s.hasDataConsent);
       const dashboardReady=Boolean(s.hasApiKey&&(s.dashboardUnlocked||s.lastRunAt));
-      document.getElementById("dashboard").hidden=!(dashboardReady&&!editingSettings);
-      document.getElementById("backToDashboard").hidden=!(dashboardReady&&editingSettings);
+      if(!pageChosen&&dashboardReady)currentPage="dashboard";
+      renderCurrentPage(dashboardReady);
       document.querySelectorAll(".wizard-step").forEach(step=>{
-        step.hidden=dashboardReady?(!editingSettings||!step.classList.contains("profile-step")):false;
+        step.hidden=currentPage==="dashboard"||Boolean(editingSettings&&dashboardReady&&!step.classList.contains("profile-step"));
       });
       if(dashboardReady&&!profileEditorLoaded&&s.profileSettings){
         const f=s.profileSettings;
@@ -201,8 +191,21 @@
       if(s.ready&&!dashboardReady)say("Google-ресурсы готовы. "+(s.hasApiKey?"Gemini подключён. ":"Добавьте ключ Gemini. ")+(s.hasProfile?"Профиль подтверждён. ":"Добавьте и подтвердите профиль. "));
     }).withFailureHandler(fail).getJmailSetupStatus();
   }
-  function editSettings(){editingSettings=true;refresh();window.scrollTo({top:0,behavior:"smooth"})}
-  function backToDashboard(){editingSettings=false;refresh();window.scrollTo({top:0,behavior:"smooth"})}
+  function renderCurrentPage(dashboardReady){
+    const showDashboard=currentPage==="dashboard"&&!editingSettings;
+    document.getElementById("setupNotice").hidden=showDashboard;
+    document.getElementById("dashboard").hidden=!showDashboard;
+    document.getElementById("backToDashboard").hidden=!(editingSettings&&dashboardReady);
+  }
+  function enterStep5AndRun(){
+    currentPage="dashboard";pageChosen=true;editingSettings=false;renderCurrentPage(false);
+    document.getElementById("dashboardConsent").checked=document.getElementById("geminiDataConsent").checked;
+    window.scrollTo({top:0,behavior:"smooth"});
+    google.script.run.withFailureHandler(fail).markJmailDashboardUnlocked();
+    runTest();
+  }
+  function editSettings(){editingSettings=true;currentPage="setup";pageChosen=true;refresh();window.scrollTo({top:0,behavior:"smooth"})}
+  function backToDashboard(){editingSettings=false;currentPage="dashboard";pageChosen=true;refresh();window.scrollTo({top:0,behavior:"smooth"})}
   function setup(){const b=document.getElementById("setupBtn");b.disabled=true;say("Создаю папку и таблицу…");google.script.run.withSuccessHandler(r=>{b.disabled=false;refresh();say("Готово. Рабочие материалы созданы в вашем Google-аккаунте.")}).withFailureHandler(e=>{b.disabled=false;fail(e)}).setupJmail();}
   function saveKey(){const key=document.getElementById("apiKey").value;if(!key.trim()){say("Вставьте ключ Gemini.");return}say("Проверяю ключ у Google…");google.script.run.withSuccessHandler(m=>{document.getElementById("apiKey").value="";say(m);refresh()}).withFailureHandler(fail).saveJmailGeminiApiKey(key);}
   async function extractResume(file){
@@ -234,19 +237,17 @@
   }
   function approveProfile(){say("Сохраняю подтверждённый профиль…");google.script.run.withSuccessHandler(m=>{document.getElementById("preview").style.display="none";document.getElementById("approveBtn").style.display="none";editingSettings=false;say(m);refresh()}).withFailureHandler(fail).approveJmailProfile();}
   function runTest(){
-    google.script.run.withSuccessHandler(()=>{
+    const consentBox=currentPage==="dashboard"?document.getElementById("dashboardConsent"):document.getElementById("geminiDataConsent");
+    if(!consentBox.checked){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
+    say("Проверяю новые письма во «Входящих»…");
+    google.script.run.withSuccessHandler(r=>{
       refresh();
-      if(!document.getElementById("geminiDataConsent").checked){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
-      say("Проверяю новые письма во «Входящих»…");
-      google.script.run.withSuccessHandler(r=>{
-        refresh();
-        if(r&&r.status==="consent_required"){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
-        if(r&&r.status==="setup_incomplete"){say("Сначала завершите шаги 1–3: папка/таблица, Gemini и подтверждение профиля.");return}
-        if(r&&r.status==="no_emails"){say("За последние сутки новых писем нет. Включите оповещения о вакансиях и повторите проверку.");return}
-        if(r&&r.status==="already_running"){say("Обработка уже идёт. Дождитесь её завершения.");return}
-        say(r?renderRunSummary(r):"Запуск завершён.");
-      }).withFailureHandler(err=>{refresh();fail(err)}).processJobEmails();
-    }).withFailureHandler(fail).markJmailDashboardUnlocked();
+      if(r&&r.status==="consent_required"){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
+      if(r&&r.status==="setup_incomplete"){say("Сначала завершите шаги 1–3: папка/таблица, Gemini и подтверждение профиля.");return}
+      if(r&&r.status==="no_emails"){say("За последние сутки новых писем нет. Включите оповещения о вакансиях и повторите проверку.");return}
+      if(r&&r.status==="already_running"){say("Обработка уже идёт. Дождитесь её завершения.");return}
+      say(r?renderRunSummary(r):"Запуск завершён.");
+    }).withFailureHandler(err=>{refresh();fail(err)}).processJobEmails();
   }
   function setDaily(enabled){
     if(enabled&&!document.getElementById("geminiDataConsent").checked){say("Сначала подтвердите обработку резюме и писем в Google Gemini.");return}
@@ -269,6 +270,7 @@
 </script>
 </body>
 </html>
+
 
 
 

@@ -12,39 +12,16 @@
 
 ## Первичная установка
 
-1. Создать Apps Script проект под отдельным Gmail аккаунтом, который будет использоваться для вакансий.
-2. Добавить один файл `Code.gs` и скопировать в него содержимое [`full-port/Code.gs`](./Code.gs). Включить показ файла манифеста и вставить [`appsscript.json`](./appsscript.json). Отдельные `.gs` файлы в папке оставлены для чтения и ревью.
-3. В Project Settings → Script Properties добавить:
-   - `GEMINI_API_KEY`: личный ключ Gemini;
-   - `CAREER_PROFILE_JSON`: объект профиля в формате, описанном ниже;
-   - `JMAIL_SENDER_JSON`: объект с `name`, `address`, `phone`, `email`, `city`;
-   - `JMAIL_SETTINGS_JSON`: объект настроек, пример ниже.
-4. Сохранить и запустить `setupJmail()`. Google попросит разрешения на Gmail, Drive, Sheets и внешние запросы. Функция создаст таблицу, папку и нужные ярлыки.
-5. Создать Gmail фильтр, который добавляет уведомления о вакансиях в ярлык `Jmail/Вакансии`.
-6. Вручную запустить `processJobEmails()` на тестовых письмах и проверить PDF, таблицу, черновики, ярлыки и папку. Только после проверки вручную запустить `installJmailDailyTrigger()`.
+1. Открой интерфейс ветки `Jmail_mvp`. В «Мой профиль» загрузи резюме. PDF, DOCX и TXT разбираются локально в браузере; проверь найденные поля и нажми «Скачать извлечённый текст резюме». Файл остаётся у тебя.
+2. Создай Apps Script проект в отдельном Gmail аккаунте, который будет использоваться для вакансий.
+3. Добавь один файл `Code.gs` и скопируй содержимое [полного скрипта](./Code.gs). Включи показ файла манифеста и вставь [appsscript.json](./appsscript.json).
+4. В Project Settings → Script Properties добавь `GEMINI_API_KEY`. Ключ не вставляй в код или сайт.
+5. Сохрани проект и вручную запусти `setupJmail()`. Подтверди запрошенные Google разрешения. Скрипт создаст таблицу, папку и Gmail ярлыки.
+6. Открой созданную таблицу, выбери меню «Job Automation» → «Настроить профиль и критерии». Загрузи TXT, заполни контакты и критерии, нажми «Подготовить профиль». В боковой панели появятся найденные факты и фрагменты резюме; проверь их и подтверди профиль. Генератор сохраняет только поля и утверждения, которые модель вернула дословно из текста резюме. Исходный текст не сохраняется в свойствах скрипта.
+7. Создай Gmail фильтр, который направляет уведомления о вакансиях в ярлык `Jmail/Вакансии`.
+8. На тестовых письмах вручную запусти `processJobEmails()`. Проверь таблицу, PDF, черновики, ярлыки и корзину. Только после проверки запусти `installJmailDailyTrigger()`.
 
-Пример `JMAIL_SETTINGS_JSON`:
-
-```json
-{
-  "inputLabel": "Jmail/Вакансии",
-  "processedLabel": "Jmail/Обработано",
-  "reviewLabel": "Jmail/Проверить",
-  "minMatchScore": 85,
-  "maxCommuteMinutes": 60,
-  "jobCriteria": "Удалённая или гибридная работа; немецкий B1; без тяжёлой физической нагрузки",
-  "excludedRoleFamilies": ["data_analyst"],
-  "excludedPhysicalDemands": ["heavy", "prolonged_standing"],
-  "allowedRoleFamilies": ["office_admin", "quality_control", "customer_service", "supervisor", "other"],
-  "allowedPhysicalDemands": ["desk", "light"],
-  "allowedApplicationEfforts": ["simple", "moderate"],
-  "userEmail": "user@example.com"
-}
-```
-
-Порог, дополнительные критерии, исключения по типу работы, допустимые форматы роли/нагрузки/отклика задаются в `JMAIL_SETTINGS_JSON`. Значения по умолчанию повторяют текущие ограничения Job Automation; при необходимости пользователь меняет массивы в своих Script Properties.
-
-Схема `CAREER_PROFILE_JSON` должна соответствовать источнику вакансий: `experiences` — массив объектов `{id, company, role, location, period, claims:[{id,tags,text}]}`; также нужны `militaryService`, `education`, `languages`, `skills` (объекты `{id,text}`) и `optionalCareerTransition`. JSON должен помещаться в лимит одного Script Property. Автоматическое преобразование загруженного резюме в этот формат и выдача готового к вставке пакета из PWA ещё не подключены.
+Свойства `JMAIL_SETTINGS_JSON` и `JMAIL_SENDER_JSON` мастер создаёт сам. Их можно повторно изменить через боковую панель.
 
 ## Сохранённое поведение
 

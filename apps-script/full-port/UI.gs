@@ -6,6 +6,7 @@ function onOpen() {
   ui.createMenu("🤖 Jmail")
     .addItem("Открыть приложение Jmail", "showJmailWebAppLink")
     .addItem("Проверить новые письма", "processJobEmails")
+    .addItem("🧹 Очистить обработанное и неоткликнувшиеся строки", "manualJmailCleanupAction")
     .addItem("Включить ежедневный запуск", "installJmailDailyTriggerFromSheet")
     .addItem("Остановить ежедневный запуск", "removeJmailDailyTriggerFromSheet")
     .addToUi();
@@ -55,46 +56,12 @@ function onEdit(e) {
   }
 }
 
-function manualCleanupAction() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getActiveSheet();
-    const data = sheet.getDataRange().getValues();
-    
-    let deletedRowsCount = 0;
-    for (let i = data.length - 1; i >= 1; i--) {
-      const statusCell = sheet.getRange(i + 1, 5);
-      const statusValue = statusCell.getValue();
-      
-      if (statusValue === false || statusValue === "" || statusValue === "Unconfirmed") {
-        sheet.deleteRow(i + 1);
-        deletedRowsCount++;
-      }
-    }
-
-    let countFiles = 0;
-    if (CONFIG.PDF_FOLDER_ID) {
-      const folder = DriveApp.getFolderById(CONFIG.PDF_FOLDER_ID);
-      const files = folder.getFiles();
-      while (files.hasNext()) {
-        files.next().setTrashed(true);
-        countFiles++;
-      }
-    }
-
-    const processedLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PROCESSED);
-    let countThreads = 0;
-    if (processedLabel) {
-      const threads = processedLabel.getThreads();
-      for (let j = 0; j < threads.length; j++) {
-        threads[j].moveToTrash();
-        countThreads++;
-      }
-    }
-
-    SpreadsheetApp.getUi().alert(`✅ Очистка завершена!\n• Удалено строк в таблице: ${deletedRowsCount}\n• Удалено файлов с Диска: ${countFiles}\n• Очищено писем в Gmail Fertig: ${countThreads}`);
-  } catch (err) {
-    SpreadsheetApp.getUi().alert("❌ Ошибка при очистке: " + err.toString());
-  }
+function manualJmailCleanupAction() {
+  const ui = SpreadsheetApp.getUi();
+  const answer = ui.alert("Очистить Jmail?", "В корзину будут перемещены письма с ярлыком Jmail/Processed и созданные Jmail документы. Загруженное фото сохранится. Дополнительно будут удалены строки с неотмеченным чекбоксом.", ui.ButtonSet.OK_CANCEL);
+  if (answer !== ui.Button.OK) return;
+  const result = cleanupJmailProcessedAndFiles(true);
+  ui.alert("Очистка завершена. Письма в корзине: " + result.emails + "; файлов в корзине: " + result.files + "; строк удалено: " + result.rows + ".");
 }
+
 

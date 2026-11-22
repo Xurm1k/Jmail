@@ -600,6 +600,68 @@ function saveJmailPhoto(dataUrl, fileName) {
   }
   return true;
 }
+
+/** Clears only Jmail-owned processed mail and generated documents for this Google account. */
+function cleanupJmailProcessedAndFiles(removeUncheckedRows) {
+  const lock = LockService.getUserLock ? LockService.getUserLock() : LockService.getScriptLock();
+  if (!lock.tryLock(5000)) throw new Error("Очистка недоступна, пока Jmail обрабатывает письма. Повторите позже.");
+  try {
+    const props = jmailProps_();
+    const processedName = readJmailJson_("JMAIL_SETTINGS_JSON", {}).processedLabel || "Jmail/Processed";
+    const processedLabel = GmailApp.getUserLabelByName(processedName);
+    let emailCount = 0;
+    if (processedLabel) {
+      for (;;) {
+        // Always take the first page: moving it to Trash shrinks the label's list.
+        const threads = processedLabel.getThreads(0, 100);
+        if (!threads.length) break;
+        threads.forEach(thread => { processedLabel.removeFromThread(thread); thread.moveToTrash(); emailCount++; });
+        if (threads.length < 100) break;
+      }
+    }
+
+    let fileCount = 0;
+    const folderId = props.getProperty("PDF_FOLDER_ID");
+    const photoId = props.getProperty("PHOTO_FILE_ID") || "";
+    if (folderId) {
+      const files = DriveApp.getFolderById(folderId).getFiles();
+      while (files.hasNext()) {
+        const file = files.next();
+        if (file.getId() === photoId) continue;
+        file.setTrashed(true);
+        fileCount++;
+      }
+    }
+
+    let rowCount = 0;
+    if (removeUncheckedRows) {
+      const spreadsheetId = props.getProperty("SPREADSHEET_ID");
+      if (spreadsheetId) {
+        const ss = SpreadsheetApp.openById(spreadsheetId);
+        ss.getSheets().forEach(sheet => {
+          if (sheet.getName() === "Vorlage" || sheet.getLastRow() < 2 || sheet.getLastColumn() < 5) return;
+          const header = sheet.getRange(1, 1, 1, Math.min(sheet.getLastColumn(), 9)).getDisplayValues()[0];
+          if (header[0] !== "Datum" || header[1] !== "Firma" || header[4] !== "Status") return;
+          for (let row = sheet.getLastRow(); row >= 2; row--) {
+            const status = sheet.getRange(row, 5).getValue();
+            if (status === false) { sheet.deleteRow(row); rowCount++; }
+          }
+        });
+      }
+    }
+    return {emails: emailCount, files: fileCount, rows: rowCount};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function manualJmailCleanupAction() {
+  const ui = SpreadsheetApp.getUi();
+  const answer = ui.alert("Очистить Jmail?", "В корзину будут перемещены письма с ярлыком Jmail/Processed и созданные Jmail документы. Загруженное фото сохранится. Дополнительно будут удалены строки с неотмеченным чекбоксом.", ui.ButtonSet.OK_CANCEL);
+  if (answer !== ui.Button.OK) return;
+  const result = cleanupJmailProcessedAndFiles(true);
+  ui.alert("Очистка завершена. Письма в корзине: " + result.emails + "; файлов в корзине: " + result.files + "; строк удалено: " + result.rows + ".");
+}
 function processJobEmails() {
   const props = jmailProps_();
   props.setProperty("JMAIL_DASHBOARD_UNLOCKED", "yes");
@@ -1792,6 +1854,7 @@ function onOpen() {
   ui.createMenu("🤖 Jmail")
     .addItem("Открыть приложение Jmail", "showJmailWebAppLink")
     .addItem("Проверить новые письма", "processJobEmails")
+    .addItem("🧹 Очистить обработанное и неоткликнувшиеся строки", "manualJmailCleanupAction")
     .addItem("Включить ежедневный запуск", "installJmailDailyTriggerFromSheet")
     .addItem("Остановить ежедневный запуск", "removeJmailDailyTriggerFromSheet")
     .addToUi();
@@ -1842,47 +1905,10 @@ function onEdit(e) {
 }
 
 function manualCleanupAction() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getActiveSheet();
-    const data = sheet.getDataRange().getValues();
-    
-    let deletedRowsCount = 0;
-    for (let i = data.length - 1; i >= 1; i--) {
-      const statusCell = sheet.getRange(i + 1, 5);
-      const statusValue = statusCell.getValue();
-      
-      if (statusValue === false || statusValue === "" || statusValue === "Unconfirmed") {
-        sheet.deleteRow(i + 1);
-        deletedRowsCount++;
-      }
-    }
-
-    let countFiles = 0;
-    if (CONFIG.PDF_FOLDER_ID) {
-      const folder = DriveApp.getFolderById(CONFIG.PDF_FOLDER_ID);
-      const files = folder.getFiles();
-      while (files.hasNext()) {
-        files.next().setTrashed(true);
-        countFiles++;
-      }
-    }
-
-    const processedLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PROCESSED);
-    let countThreads = 0;
-    if (processedLabel) {
-      const threads = processedLabel.getThreads();
-      for (let j = 0; j < threads.length; j++) {
-        threads[j].moveToTrash();
-        countThreads++;
-      }
-    }
-
-    SpreadsheetApp.getUi().alert(`✅ Очистка завершена!\n• Удалено строк в таблице: ${deletedRowsCount}\n• Удалено файлов с Диска: ${countFiles}\n• Очищено писем в Gmail Fertig: ${countThreads}`);
-  } catch (err) {
-    SpreadsheetApp.getUi().alert("❌ Ошибка при очистке: " + err.toString());
-  }
+  // Legacy entry point kept for compatibility; now uses the photo-preserving cleanup.
+  manualJmailCleanupAction();
 }
+
 
 
 

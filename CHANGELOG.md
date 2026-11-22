@@ -2,6 +2,14 @@
 
 This log describes user-visible product stages. It does not imply that every release has passed OAuth review or an independent security audit.
 
+## 2026-11-22 — cleanup controls and Drive-backed photo
+
+- Keep the profile photo in the user's Jmail Drive folder during cleanup; generated application documents can be cleared without losing the reusable photo.
+- Add a final-page action that moves Jmail/Processed threads and generated files to Trash while keeping spreadsheet history and the photo.
+- Add a spreadsheet menu cleanup action that performs the same cleanup and removes only unchecked vacancy rows across monthly tabs; applied rows and the template are preserved.
+- Remove the older broad cleanup implementation that could trash every file in the folder, including the photo.
+- Confirm Job Automation still reads the resume photo by its Google Drive file ID, configured from the user's own Drive; its cleanup now preserves that photo.
+
 ## 2026-11-22 — processing and document reliability
 
 - Added a Gmail-backed pending queue so temporary failures remain eligible for later runs instead of aging out after the one-day discovery window.
@@ -52,3 +60,4 @@ The release number above is the Google Apps Script deployment version; GitHub so
 ## Source milestones
 
 The main-branch Git history records the implementation sequence: wizard setup (`ceea854`), inbox classification (`56b5a49`), account isolation (`d8deaa4`), Gemini guide (`0a81c99`), dashboard controls (`a196d9c`), labeled-message restore (`d85d7be`), separate automation page (`71deb12`), button styling (`8f9814d`), resume evidence fix and privacy page (`9e36e0a`), then the Apply-to-dashboard transition and criteria-only editing.
+

@@ -2,6 +2,13 @@
 
 This log describes user-visible product stages. It does not imply that every release has passed OAuth review or an independent security audit.
 
+## 2026-11-22 — multilingual public landing page
+
+- Added Russian, English, German, Ukrainian, Polish, Turkish, Spanish, and French to the public landing page, including its theme control and browser title.
+- Removed the public AI Studio API-key guide; the setup wizard remains the single place for Gemini connection instructions.
+- Replaced the landing-page API callout with a safety notice recommending a dedicated Google account and a separate browser profile with other Google accounts signed out.
+- Bumped the PWA cache version so returning visitors receive the updated landing page.
+
 ## 2026-11-22 — cleanup controls and Drive-backed photo
 
 - Keep the profile photo in the user's Jmail Drive folder during cleanup; generated application documents can be cleared without losing the reusable photo.
@@ -61,5 +68,6 @@ The release number above is the Google Apps Script deployment version; GitHub so
 ## Source milestones
 
 The main-branch Git history records the implementation sequence: wizard setup (`ceea854`), inbox classification (`56b5a49`), account isolation (`d8deaa4`), Gemini guide (`0a81c99`), dashboard controls (`a196d9c`), labeled-message restore (`d85d7be`), separate automation page (`71deb12`), button styling (`8f9814d`), resume evidence fix and privacy page (`9e36e0a`), then the Apply-to-dashboard transition and criteria-only editing.
+
 
 

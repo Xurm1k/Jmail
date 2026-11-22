@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jmail-static-v12';
+const CACHE_NAME = 'jmail-static-v13';
 const CORE_FILES = ['./', './index.html', './privacy.html', './manifest.json', './jmail-icon.svg', './webapp-config.js'];
 
 self.addEventListener('install', event => {
@@ -21,6 +21,7 @@ self.addEventListener('fetch', event => {
     return response;
   }).catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html'))));
 });
+
 
 
 

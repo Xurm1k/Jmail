@@ -628,6 +628,7 @@ function cleanupJmailProcessedAndFiles(removeUncheckedRows) {
       while (files.hasNext()) {
         const file = files.next();
         if (file.getId() === photoId) continue;
+        if (!isJmailGeneratedPdf_(file)) continue;
         file.setTrashed(true);
         fileCount++;
       }
@@ -653,6 +654,18 @@ function cleanupJmailProcessedAndFiles(removeUncheckedRows) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function isJmailGeneratedPdf_(file) {
+  if (file.getMimeType() !== MimeType.PDF) return false;
+  const prefixes = [
+    "CV_", "Cover_Letter_", "Lebenslauf_", "Anschreiben_",
+    "Резюме_", "Сопроводительное_письмо_", "Супровідний_лист_",
+    "List_motywacyjny_", "Özgeçmiş_", "Ön_Yazı_",
+    "Carta_de_presentación_", "Lettre_de_motivation_"
+  ];
+  const name = String(file.getName() || "");
+  return prefixes.some(prefix => name.indexOf(prefix) === 0);
 }
 
 function manualJmailCleanupAction() {
@@ -1908,6 +1921,7 @@ function manualCleanupAction() {
   // Legacy entry point kept for compatibility; now uses the photo-preserving cleanup.
   manualJmailCleanupAction();
 }
+
 
 
 

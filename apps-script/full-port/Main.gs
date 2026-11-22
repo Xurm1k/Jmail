@@ -26,6 +26,7 @@ function processJobEmailsUnlocked() {
     analyzed: 0,
     selected: 0,
     completed: 0,
+    recorded: 0,
     rejected: 0,
     review: 0,
     nonJobs: 0,
@@ -43,27 +44,37 @@ function processJobEmailsUnlocked() {
 
     let processedLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PROCESSED);
     if (!processedLabel) processedLabel = GmailApp.createLabel(CONFIG.GMAIL_LABEL_PROCESSED);
+    let pendingLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_PENDING);
+    if (!pendingLabel) pendingLabel = GmailApp.createLabel(CONFIG.GMAIL_LABEL_PENDING);
     // Existing Review labels are legacy only; their threads are re-evaluated automatically.
     const legacyReviewLabel = GmailApp.getUserLabelByName(CONFIG.GMAIL_LABEL_REVIEW);
 
     const recentApplications = getRecentApplicationsFromSheet(90);
-    // Автоматически проверяем свежие письма во Входящих; входной ярлык вручную ставить не нужно.
-    // Снимок собирается до изменения ярлыков, чтобы пагинация не пропускала письма.
-    const threads = [];
+    // Gmail label is a durable retry queue; failures remain eligible after the
+    // one-day discovery window instead of silently aging out.
+    const freshThreads = [];
     let snapshotComplete = false;
     for (let offset = 0; ; offset += CONFIG.THREADS_PAGE_SIZE) {
       if (!shouldContinueProcessing(startTime, 60, stats, "чтение писем")) break;
-      const query = 'in:inbox newer_than:1d -label:"' + CONFIG.GMAIL_LABEL_PROCESSED + '"';
+      const query = 'in:inbox newer_than:1d -label:"' + CONFIG.GMAIL_LABEL_PROCESSED + '" -label:"' + CONFIG.GMAIL_LABEL_PENDING + '"';
       const page = GmailApp.search(query, offset, CONFIG.THREADS_PAGE_SIZE);
+      freshThreads.push.apply(freshThreads, page);
+      if (page.length < CONFIG.THREADS_PAGE_SIZE) { snapshotComplete = true; break; }
+    }
+    // Persist newly discovered mail before spending the remaining time on retries.
+    for (let i = 0; i < freshThreads.length; i += CONFIG.THREADS_PAGE_SIZE)
+      pendingLabel.addToThreads(freshThreads.slice(i, i + CONFIG.THREADS_PAGE_SIZE));
+    const threads = [];
+    let pendingSnapshotComplete = false;
+    for (let offset = 0; ; offset += CONFIG.THREADS_PAGE_SIZE) {
+      if (!shouldContinueProcessing(startTime, 60, stats, "чтение очереди")) break;
+      const page = pendingLabel.getThreads(offset, CONFIG.THREADS_PAGE_SIZE);
       threads.push.apply(threads, page);
-      if (page.length < CONFIG.THREADS_PAGE_SIZE) {
-        snapshotComplete = true;
-        break;
-      }
+      if (page.length < CONFIG.THREADS_PAGE_SIZE) { pendingSnapshotComplete = true; break; }
     }
     stats.threadsSeen = threads.length;
   
-    if (threads.length === 0 && snapshotComplete) {
+    if (threads.length === 0 && snapshotComplete && pendingSnapshotComplete) {
       const noJobsDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd.MM.yyyy");
       jmailProps_().setProperty("no_jobs_since", noJobsDate);
       stats.status = "no_emails";
@@ -99,6 +110,7 @@ function processJobEmailsUnlocked() {
         if (!aiResponse) continue;
         stats.analyzed++;
       if (aiResponse.is_job_related === false) {
+        pendingLabel.removeFromThread(thread);
         thread.addLabel(processedLabel);
         thread.moveToTrash();
         stats.nonJobs++;
@@ -109,6 +121,7 @@ function processJobEmailsUnlocked() {
       const eligibility = evaluateJobEligibility(aiResponse, emailBody, emailHtml, startTime, stats);
       if (eligibility.status === "defer") continue;
       if (eligibility.status === "reject") {
+        pendingLabel.removeFromThread(thread);
         thread.addLabel(processedLabel);
         thread.moveToTrash();
         stats.rejected++;
@@ -152,6 +165,9 @@ function processJobEmailsUnlocked() {
     const aiResponse = jobsToProcess[j];
     
     try {
+      writeToActiveMonthlySheet(aiResponse);
+      stats.recorded++;
+      aiResponse.company_brand_color = extractCompanyBrandColor_(aiResponse.company_website);
       const cvContent = generateJobApplicationDocumentsWithGemini(aiResponse);
       if (!cvContent) {
         stats.errors++;
@@ -164,16 +180,16 @@ function processJobEmailsUnlocked() {
       aiResponse.cvPdfFileId = generateUniqueCvPDF(aiResponse);
       generateAnschreibenPDF(aiResponse);
 
-      writeToActiveMonthlySheet(aiResponse);
-
       if (aiResponse.contact_email) {
         createGmailDraftWithUniqueCV(aiResponse, aiResponse.emailSubject);
       }
 
       if (aiResponse.is_newsletter === true) {
         createDirectNotificationInFertig(aiResponse, processedLabel, aiResponse.job_url);
+        pendingLabel.removeFromThread(aiResponse.thread);
         aiResponse.thread.moveToTrash();
       } else {
+        pendingLabel.removeFromThread(aiResponse.thread);
         aiResponse.thread.addLabel(processedLabel);
         aiResponse.thread.moveToArchive(); // Убирает письмо из Входящих.
       }

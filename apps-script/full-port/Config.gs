@@ -21,6 +21,7 @@ const CONFIG = (function () {
     USER_EMAIL: settings.userEmail || Session.getEffectiveUser().getEmail() || "",
     GMAIL_LABEL_INPUT: settings.inputLabel || "Jmail/Jobs",
     GMAIL_LABEL_PROCESSED: settings.processedLabel || "Jmail/Processed",
+    GMAIL_LABEL_PENDING: "Jmail/Pending",
     GMAIL_LABEL_REVIEW: settings.reviewLabel || "Jmail/Review",
     MIN_MATCH_SCORE: Number(settings.minMatchScore || 85),
     JOB_CRITERIA: settings.jobCriteria || "",

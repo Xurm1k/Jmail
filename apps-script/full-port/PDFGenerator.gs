@@ -11,7 +11,8 @@ function safeBrandColor(value) {
   return /^#[0-9a-fA-F]{6}$/.test(String(value || "")) ? value : "#1a365d";
 }
 
-function getDocumentThemeColor(theme) {
+function getDocumentThemeColor(theme, companyBrandColor) {
+  if (/^#[0-9a-fA-F]{6}$/.test(String(companyBrandColor || ""))) return companyBrandColor;
   const palettes = {
     navy: "#183153",
     teal: "#0f766e",
@@ -21,9 +22,67 @@ function getDocumentThemeColor(theme) {
   };
   return palettes[theme] || palettes.navy;
 }
+function extractCompanyBrandColor_(websiteUrl) {
+  const match = String(websiteUrl || "").match(/^https:\/\/([a-z0-9.-]+)(?::443)?(?:\/[^\s?#]*)?(?:[?#][^\s]*)?$/i);
+  if (!match) return "";
+  const host = match[1].toLowerCase();
+  if (!host.includes(".") || /\.(?:local|internal|localhost|test|invalid)$/i.test(host) || /^\d+(?:\.\d+){3}$/.test(host) || host.split(".").some(part => !part || part === "localhost")) return "";
+  try {
+    const response = UrlFetchApp.fetch("https://" + host + "/", {method:"get", followRedirects:false, muteHttpExceptions:true, timeoutSeconds:5, headers:{Accept:"text/html"}});
+    if (response.getResponseCode() !== 200) return "";
+    const html = response.getContentText().slice(0, 150000);
+    const meta = html.match(/<meta[^>]+name=["']theme-color["'][^>]+content=["'](#[0-9a-f]{6})["']/i) || html.match(/<meta[^>]+content=["'](#[0-9a-f]{6})["'][^>]+name=["']theme-color["']/i);
+    const variable = html.match(/--(?:brand|primary|main|theme)(?:-[a-z0-9]+)*\s*:\s*(#[0-9a-f]{6})\b/i);
+    const color = meta ? meta[1] : (variable ? variable[1] : "");
+    return /^#[0-9a-fA-F]{6}$/.test(color) ? color : "";
+  } catch (e) {
+    Logger.log("Could not read a public company brand color; using the standard document palette.");
+    return "";
+  }
+}
+function getDocumentFileLabels_() {
+  const lang = jmailProps_().getProperty("JMAIL_UI_LANGUAGE") || "en";
+  return ({
+    ru: {cv:"Резюме", letter:"Сопроводительное_письмо", photo:"Фото"},
+    de: {cv:"Lebenslauf", letter:"Anschreiben", photo:"Foto"},
+    en: {cv:"CV", letter:"Cover_Letter", photo:"Photo"},
+    uk: {cv:"Резюме", letter:"Супровідний_лист", photo:"Фото"},
+    pl: {cv:"CV", letter:"List_motywacyjny", photo:"Zdjęcie"},
+    tr: {cv:"Özgeçmiş", letter:"Ön_Yazı", photo:"Fotoğraf"},
+    es: {cv:"CV", letter:"Carta_de_presentación", photo:"Foto"},
+    fr: {cv:"CV", letter:"Lettre_de_motivation", photo:"Photo"}
+  })[lang] || {cv:"CV", letter:"Cover_Letter", photo:"Photo"};
+}
+function letterParagraphsHtml_(letter) {
+  let text = String(letter || "").replace(/\r/g, "").trim();
+  text = text.replace(/\n*\s*(?:Mit freundlichen Grüßen|Freundliche Grüße|Hochachtungsvoll|Kind regards|Best regards|Sincerely)[,.]?\s*$/i, "").trim();
+  let paragraphs = text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+  if (paragraphs.length === 1) {
+    const sentences = paragraphs[0].split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ])/u);
+    if (sentences.length >= 4) {
+      paragraphs = [];
+      for (let i = 0; i < sentences.length; i += 2) paragraphs.push(sentences.slice(i, i + 2).join(" "));
+    }
+  }
+  return paragraphs.map(p => "<p>" + escapeHtml(p).replace(/\n/g, "<br>") + "</p>").join("");
+}
+function signedCoverLetterText_(letter) {
+  let text = String(letter || "").replace(/\r/g, "").trim();
+  text = text.replace(/\n*\s*(?:Mit freundlichen Grüßen|Freundliche Grüße|Hochachtungsvoll|Kind regards|Best regards|Sincerely)[,.]?\s*$/i, "").trim();
+  if (text && !/\n\s*\n/.test(text)) {
+    const sentences = text.split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ])/u);
+    if (sentences.length >= 4) {
+      const paragraphs = [];
+      for (let i = 0; i < sentences.length; i += 2) paragraphs.push(sentences.slice(i, i + 2).join(" "));
+      text = paragraphs.join("\n\n");
+    }
+  }
+  return text + "\n\nMit freundlichen Grüßen,\n\n" + String((CONFIG.SENDER_INFO || {}).name || "");
+}
 function generateUniqueCvPDF(aiData) {
   const documentData = aiData.cv_document || {};
-  const brandColor = getDocumentThemeColor(documentData.design_theme);
+  const names = getDocumentFileLabels_();
+  const brandColor = getDocumentThemeColor(documentData.design_theme, aiData.company_brand_color);
   const photoStyle = ['square', 'rounded', 'circle'].includes(documentData.photo_style)
     ? documentData.photo_style
     : 'rounded';
@@ -88,7 +147,7 @@ function generateUniqueCvPDF(aiData) {
     const photoFile = DriveApp.getFileById(CONFIG.PHOTO_FILE_ID);
     const photoBlob = photoFile.getBlob();
     photoBase64 = 'data:' + photoBlob.getContentType() + ';base64,' + Utilities.base64Encode(photoBlob.getBytes());
-  } catch (e) {}
+  } catch (e) { Logger.log("Profile photo could not be loaded. Upload a JPG, PNG, or WebP image in the setup form."); }
 
   const safeCompany = String((aiData.company_address || {}).name || aiData.tracker_data.company || 'Unternehmen')
     .replace(/[^a-zA-Z0-9_-]/g, '_')
@@ -106,7 +165,7 @@ function generateUniqueCvPDF(aiData) {
     '.footer-note{font-size:8pt;color:#687383;margin-top:10px}.transition{border-left:2px solid ' + brandColor + ';padding-left:8px}' +
     '</style></head><body>' +
     '<div class="header"><table class="header-table"><tr><td class="photo-cell">' +
-    (photoBase64 ? '<img src="' + photoBase64 + '" class="photo ' + photoStyle + '">' : '<div class="photo-placeholder">Foto</div>') +
+    (photoBase64 ? '<img src="' + photoBase64 + '" class="photo ' + photoStyle + '">' : '<div class="photo-placeholder">' + escapeHtml(names.photo) + '</div>') +
     '</td><td class="info-cell"><div class="name">' + escapeHtml(CONFIG.SENDER_INFO.name) + '</div>' +
     '<div class="target">' + escapeHtml(documentData.cv_headline || aiData.tracker_data.bereich || 'Bewerbung') + '</div>' +
     '<div class="contact">' + escapeHtml(CONFIG.SENDER_INFO.address) + '<br>' +
@@ -118,8 +177,8 @@ function generateUniqueCvPDF(aiData) {
     '<section><h2 class="section-title">Sprachen</h2><div class="languages">' + languagesHtml + '</div></section>' +
     '</body></html>';
 
-  const blob = Utilities.newBlob(htmlContent, 'text/html', 'Lebenslauf_' + safeCompany + '.html');
-  const pdfBlob = blob.getAs(MimeType.PDF).setName('Lebenslauf_' + safeCompany + '.pdf');
+  const blob = Utilities.newBlob(htmlContent, 'text/html', names.cv + '_' + safeCompany + '.html');
+  const pdfBlob = blob.getAs(MimeType.PDF).setName(names.cv + '_' + safeCompany + '.pdf');
   const folder = DriveApp.getFolderById(CONFIG.PDF_FOLDER_ID);
   const file = folder.createFile(pdfBlob);
   return file.getId();
@@ -137,7 +196,7 @@ function generateAnschreibenPDF(aiData) {
   const city = escapeHtml(companyData.city || CONFIG.SENDER_INFO.city || "");
   const bereich = escapeHtml(tracker.bereich || "Mitarbeiter");
   const dateStr = escapeHtml(tracker.date);
-  const brandColor = getDocumentThemeColor((aiData.cv_document || {}).design_theme);
+  const brandColor = getDocumentThemeColor((aiData.cv_document || {}).design_theme, aiData.company_brand_color);
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -150,7 +209,9 @@ function generateAnschreibenPDF(aiData) {
         .recipient { margin-bottom: 35px; line-height: 1.4; }
         .date { text-align: right; margin-bottom: 30px; font-size: 10pt; color: #444444; }
         .subject { font-size: 12pt; font-weight: bold; margin-bottom: 25px; color: ${brandColor}; }
-        .content { text-align: justify; white-space: pre-line; }
+        .content { text-align: justify; }
+        .content p { margin: 0 0 12px; text-indent: 0; }
+        .signature { margin-top: 20px; line-height: 1.6; }
       </style>
     </head>
     <body>
@@ -163,13 +224,16 @@ function generateAnschreibenPDF(aiData) {
       </div>
       <div class="date">${escapeHtml(CONFIG.SENDER_INFO.city || "")}, den ${dateStr}</div>
       <div class="subject">Bewerbung als ${bereich}</div>
-      <div class="content">${escapeHtml(aiData.cover_letter)}</div>
+      <div class="content">${letterParagraphsHtml_(aiData.cover_letter)}</div>
+      <div class="signature">Mit freundlichen Grüßen,<br><br><strong>${escapeHtml(CONFIG.SENDER_INFO.name || "")}</strong></div>
     </body>
     </html>
   `;
 
-  const blob = Utilities.newBlob(htmlContent, "text/html", `Anschreiben_${company.replace(/[^a-zA-Z0-9]/g, "_")}.html`);
-  const pdfBlob = blob.getAs(MimeType.PDF);
+  const names = getDocumentFileLabels_();
+  const safeCompany = String(companyData.name || tracker.company || "Company").replace(/[^\p{L}\p{N}_-]/gu, "_").slice(0, 60);
+  const blob = Utilities.newBlob(htmlContent, "text/html", names.letter + "_" + safeCompany + ".html");
+  const pdfBlob = blob.getAs(MimeType.PDF).setName(names.letter + "_" + safeCompany + ".pdf");
   const folder = DriveApp.getFolderById(CONFIG.PDF_FOLDER_ID);
   const file = folder.createFile(pdfBlob);
 

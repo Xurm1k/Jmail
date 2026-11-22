@@ -1,8 +1,8 @@
 // ==========================================
 // SHEETMANAGER.GS — РАБОТА С GOOGLE SHEETS
 // ==========================================
-function getActiveMonthlySheet() {
-  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+function getActiveMonthlySheet(spreadsheet) {
+  const ss = spreadsheet || SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
   const now = new Date();
   const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
   const sheetName = monthNames[now.getMonth()] + " " + now.getFullYear();
@@ -40,10 +40,13 @@ function writeToActiveMonthlySheet(aiData) {
   ];
   
   sheet.appendRow(rowData);
-  
   const lastRow = sheet.getLastRow();
-  const statusCell = sheet.getRange(lastRow, 5);
-  statusCell.setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
+  try {
+    sheet.getRange(lastRow, 5).setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
+  } catch (validationError) {
+    Logger.log("Vacancy row was saved; checkbox formatting will be repaired later.");
+  }
+  return lastRow;
 }
 
 function checkAndCreateMonthlySheet() {

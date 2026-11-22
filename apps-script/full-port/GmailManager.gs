@@ -43,7 +43,7 @@ function createGmailDraftWithUniqueCV(aiData, originalSubject) {
 
   const cvFile = DriveApp.getFileById(aiData.cvPdfFileId);
   const subject = "Bewerbung als " + (aiData.tracker_data.bereich || "Mitarbeiter") + " - " + CONFIG.SENDER_INFO.name;
-  const body = aiData.cover_letter || "";
+  const body = signedCoverLetterText_(aiData.cover_letter || "");
   return GmailApp.createDraft(aiData.contact_email, subject, body, {
     attachments: [cvFile.getBlob()]
   });

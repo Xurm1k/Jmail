@@ -49,7 +49,7 @@ function getJmailSetupStatus() {
   const folderId = p.getProperty("PDF_FOLDER_ID") || "";
   let spreadsheetUrl = "";
   let folderUrl = "";
-  if (spreadsheetId) { try { spreadsheetUrl = SpreadsheetApp.openById(spreadsheetId).getUrl(); } catch (e) {} }
+  if (spreadsheetId) { try { const ss = SpreadsheetApp.openById(spreadsheetId); spreadsheetUrl = ss.getUrl() + "#gid=" + getActiveMonthlySheet(ss).getSheetId(); } catch (e) {} }
   if (folderId) { try { folderUrl = DriveApp.getFolderById(folderId).getUrl(); } catch (e) {} }
   return {
     ready: Boolean(spreadsheetUrl && folderUrl),
@@ -88,7 +88,7 @@ function deleteJmailUserData() {
   let restoreComplete = true;
   try {
     const labels = Gmail.Users.Labels.list("me").labels || [];
-    const jmailLabels = labels.filter(label => ["Jmail/Jobs", "Jmail/Processed", "Jmail/Review"].includes(label.name));
+    const jmailLabels = labels.filter(label => ["Jmail/Jobs", "Jmail/Pending", "Jmail/Processed", "Jmail/Review"].includes(label.name));
     const threadIds = new Set();
     jmailLabels.forEach(label => {
       let pageToken = null;

@@ -2,6 +2,17 @@
 
 This log describes user-visible product stages. It does not imply that every release has passed OAuth review or an independent security audit.
 
+## 2026-11-22 — processing and document reliability
+
+- Added a Gmail-backed pending queue so temporary failures remain eligible for later runs instead of aging out after the one-day discovery window.
+- Save every accepted vacancy to the spreadsheet before generating PDFs or drafts; show a separate count of rows actually recorded.
+- Open the spreadsheet on the active monthly vacancy tab to avoid landing on the blank template tab.
+- Format cover letters into readable paragraphs and add the applicant's typed closing and name to PDFs and drafts.
+- Added an optional separate photo upload because the current browser import extracts PDF text but not its embedded portrait; uploaded photos stay in the user's Jmail Drive folder.
+- Added Ukrainian, Polish, Turkish, Spanish, and French choices alongside Russian, German, and English. Untranslated interface messages fall back to English.
+- Use an official company website only when a direct link appears in the alert email; extract a public theme color without sending the resume or message body to that site.
+- Applied the spreadsheet-first and document-formatting fixes to the local Job Automation source as well.
+
 ## Beta — `Jmail_beta`
 
 - Started as a code-generating setup concept: collect criteria and produce a Google Apps Script for the user to install.

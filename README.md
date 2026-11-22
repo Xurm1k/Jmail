@@ -1,6 +1,12 @@
 # Jmail
 
-Jmail is a guided Gmail job-alert assistant. A job seeker connects a separate Google account, adds a Gemini API key, uploads a CV, and sets job-fit and commute criteria. Jmail creates a personal Google Sheet and Drive folder, evaluates recent job-alert email, and prepares application material. It does not submit applications automatically.
+Jmail is a guided Gmail job-alert assistant. A job seeker connects a separate Google account, adds a Gemini API key, uploads a CV, and sets job-fit and commute criteria. Jmail creates a personal Google Sheet and Drive folder, evaluates recent job-alert email, and prepares application material. The user reviews the results and decides which applications to send; Jmail does not submit applications automatically.
+
+## User problem and portfolio value
+
+A high volume of job alerts can mean repeated reading, matching, tracking, and document preparation, even when employers do not respond. Jmail is designed to reduce that avoidable admin and cognitive load by organizing suitable vacancies and preparing materials for review. It cannot change employer response rates, remove uncertainty from a job search, or guarantee time savings; these outcomes have not been measured in a user study.
+
+From an Operations Analytics and Business Analysis perspective, the project demonstrates workflow redesign, explicit decision criteria, exception recovery, data-flow trade-offs, and human control over a consequential process.
 
 The project grew out of a UX problem: the earlier beta asked a new user to navigate too many technical setup steps before receiving a useful result. The current flow keeps setup in a guided web app and moves recurring controls to a dedicated automation page.
 

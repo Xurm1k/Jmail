@@ -8,11 +8,13 @@ Jmail is a Google Apps Script web app for people who receive job alerts by email
 
 **Status:** active pilot. Not OAuth-verified or independently security-audited.
 
-## The problem I kept noticing
+Jmail is a guided Gmail job-alert assistant. A job seeker connects a separate Google account, adds a Gemini API key, uploads a CV, and sets job-fit and commute criteria. Jmail creates a personal Google Sheet and Drive folder, evaluates recent job-alert email, and prepares application material. The user reviews the results and decides which applications to send; Jmail does not submit applications automatically.
 
-The beta was doing its main technical job: generate an Apps Script. But the path to use that script still asked a job seeker to behave like a developer—move between tools, understand what to paste where, set up Google resources, and hope the pieces connected. That felt like the wrong first experience for someone who came to reduce job-search work.
+## User problem and portfolio value
 
-I did not have a research cohort or measured usability study to point to. This redesign started with a product question from using the flow myself: **how quickly can someone get from “I need help sorting job alerts” to a clear, usable control screen?**
+A high volume of job alerts can mean repeated reading, matching, tracking, and document preparation, even when employers do not respond. Jmail is designed to reduce that avoidable admin and cognitive load by organizing suitable vacancies and preparing materials for review. It cannot change employer response rates, remove uncertainty from a job search, or guarantee time savings; these outcomes have not been measured in a user study.
+
+From an Operations Analytics and Business Analysis perspective, the project demonstrates workflow redesign, explicit decision criteria, exception recovery, data-flow trade-offs, and human control over a consequential process.
 
 ## What changed
 
@@ -33,7 +35,7 @@ AI automatically decides whether a message matches the profile. Suitable message
 
 ## What I learned
 
-An automation can be technically capable and still feel unusable if its setup makes the person assemble the system. Product work here meant reducing handoffs, making the transition from setup to everyday use explicit, and keeping destructive actions visually distinct.
+An automation can be technically capable and still feel unusable if its setup makes the person assemble the system. Product work here meant reducing handoffs, making the transition from setup to everyday use explicit, and keeping destructive actions visually distinct. For my Operations Analytics and Business Analysis profile, the case demonstrates process mapping, decision criteria, exception handling, QA-minded iteration, and the discipline to state what automation cannot solve.
 
 ## Evidence and next steps
 
